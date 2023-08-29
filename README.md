@@ -1,2 +1,2 @@
-# qip
+# QIP
 Questionário Interativo Psicopatológico
