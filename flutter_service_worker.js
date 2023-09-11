@@ -3,8 +3,9 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"assets/AssetManifest.bin": "69e0438d90220fa8721af8af0c7c1970",
-"assets/AssetManifest.json": "bcf5ee432f1192d3d61c67929fdb4e5e",
+const RESOURCES = {"assets/AssetManifest.bin": "e3f21ae5067457b25e9a06faee2ff8ab",
+"assets/AssetManifest.json": "c8bc8ab78ed17dc3b316ca3051509526",
+"assets/assets/arvore_circulos.png": "d5127c8a8fd0263a4dafa6d58aa3c107",
 "assets/assets/arvore_free.png": "973cafdac6d739f1c161ca7f4976d9e1",
 "assets/assets/assinatura_keiji.png": "0272b78d4d33f9614a1245001302988e",
 "assets/assets/assinatura_resia.png": "e5ef8e46a858d6e2ba146f9368cad13d",
@@ -132,9 +133,9 @@ const RESOURCES = {"assets/AssetManifest.bin": "69e0438d90220fa8721af8af0c7c1970
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
-"index.html": "11b7df4a9e36f64b275ab920ce07044c",
-"/": "11b7df4a9e36f64b275ab920ce07044c",
-"main.dart.js": "62f4ef50df87266a1bd328309c525670",
+"index.html": "06f57b3bd6cfc9256cfc19f15d09325c",
+"/": "06f57b3bd6cfc9256cfc19f15d09325c",
+"main.dart.js": "2acaa81a2af795e2bb174f139b0475fa",
 "manifest.json": "b10d1f42962c72025e561082ad9ac588",
 "version.json": "dd75e386ed00e07c7ef4778e055cdb20"};
 // The application shell files that are downloaded before a service worker can
