@@ -45,7 +45,7 @@ class _TelasPageState extends State<TelasPage> {
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
               color: Colors.lightGreen.shade100,
-              child: SingleChildScrollView(
+              //child: SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
                     switch (telas[widget.id]!['style'] ?? 'form') {
@@ -81,7 +81,7 @@ class _TelasPageState extends State<TelasPage> {
                   ],
                 ),
               ),
-            ),
+           // ),
           );
   }
 
@@ -104,7 +104,7 @@ class _TelasPageState extends State<TelasPage> {
                 controller.answer += answerNotifier.value;
                 if(widget.id == 75){
                   controller.storage.addData(controller.answer);
-                  //controller.storage.addData(resp);
+                  controller.storage.addData(resp);
                 }
                 Modular.to.popAndPushNamed("/", arguments: widget.id! + 1);
               },

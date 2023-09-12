@@ -16,7 +16,7 @@ class TypeYesNo extends StatefulWidget {
 class _TypeYesNoState extends State<TypeYesNo> {
   final _formKey = GlobalKey<FormState>();
   List<String> answer = [];
-  List<String> answerAux = [];
+  List<ValueNotifier<String>> answerAux = [];
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +51,7 @@ class _TypeYesNoState extends State<TypeYesNo> {
     List<Widget> widgetList = [];
     for (int i = 0; i < items.length; i++) {
       answer.add("");
-      answerAux.add("");
+      answerAux.add(ValueNotifier<String>(""));
       widgetList.add(const SizedBox(height: 10));
       widgetList.add(
         Text(
@@ -62,7 +62,7 @@ class _TypeYesNoState extends State<TypeYesNo> {
       );
       widgetList.add(const SizedBox(height: 10));
       widgetList.add(
-        FormField(
+        FormField<String>(
           initialValue: "",
           autovalidateMode: AutovalidateMode.always,
           builder: (FormFieldState<String> state) {
@@ -74,7 +74,6 @@ class _TypeYesNoState extends State<TypeYesNo> {
                     value: "Sim",
                     groupValue: answerAux[i],
                     onChanged: (value) {
-                      answerAux[i] = value.toString();
                       answer[i] = "$value; ${DateTime.now().toString()}";
                       state.didChange(answer[i]);
                     },
@@ -86,7 +85,6 @@ class _TypeYesNoState extends State<TypeYesNo> {
                     value: "Não",
                     groupValue: answerAux[i],
                     onChanged: (value) {
-                      answerAux[i] = value.toString();
                       answer[i] = "$value; ${DateTime.now().toString()}";
                       state.didChange(answer[i]);
                     },

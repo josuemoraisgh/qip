@@ -41,7 +41,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
     'header': 'Questionário Sociodemográfico',
     'itens': [
       {
-        'options_style': 'textForm', // multiSelect,singleSelect,multiSelect,textForm
+        'options_style':
+            'textForm', // multiSelect,singleSelect,multiSelect,textForm
         'labelText': ['Que horas são neste instante?', 'Data de hoje?'],
         'icons': [Icons.lock_clock, Icons.date_range],
         'keyboardType': [TextInputType.datetime, TextInputType.datetime],
@@ -70,7 +71,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         'has_divider': true,
       },
       {
-        'options_style': 'textForm', // multiSelect,singleSelect,multiSelect,textForm
+        'options_style':
+            'textForm', // multiSelect,singleSelect,multiSelect,textForm
         'labelText': ['Qua a sua Idade?'],
         'icons': [Icons.cake],
         'keyboardType': [TextInputType.number],
@@ -121,7 +123,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       {
         'title': 'Qual foi o sexo atribuído no seu nascimento?',
         'icon': Icons.wc,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect        
+        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
         'hasPrefiroNaoDizer': false,
         'options': const ["Feminino", "Masculino"],
         'radioIsVisible': false,
@@ -131,7 +133,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       {
         'title': "Assinale a alternativa que identifica a sua Cor ou Raça:",
         'icon': Icons.person,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect        
+        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
         'hasPrefiroNaoDizer': true,
         'options': const ["Preta", "Branca", "Parda", "Amarela", "IndÍgena"],
         'radioIsVisible': false,
@@ -158,7 +160,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       {
         'title': "Dentro de sua família, você é o(a) único(a) filho(a)?",
         'icon': Icons.diversity_3,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect        
+        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
         'hasPrefiroNaoDizer': false,
         'options': const ["Sim"],
         'radioIsVisible': false,
@@ -186,7 +188,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       {
         'title': "Qual o seu estado civil?",
         'icon': Icons.diversity_2,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect        
+        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
         'hasPrefiroNaoDizer': false,
         'radioIsVisible': false,
         'options_columns_size': 2,
@@ -219,7 +221,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       {
         'title': "Possui filhos(as)?",
         'icon': Icons.group_add,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect        
+        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
         'hasPrefiroNaoDizer': false,
         'radioIsVisible': false,
         'options_columns_size': 2,
@@ -247,7 +249,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       {
         'title': "Possui filhos(as) menores de 6 anos?",
         'icon': Icons.child_friendly,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect        
+        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
         'hasPrefiroNaoDizer': false,
         'radioIsVisible': false,
         'options_columns_size': 2,
@@ -257,7 +259,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       {
         'title': "Religião *",
         'icon': Icons.church,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect        
+        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
         'hasPrefiroNaoDizer': false,
         'radioIsVisible': false,
         'options_columns_size': 2,
@@ -285,7 +287,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       {
         'title': "Escolaridade *",
         'icon': Icons.school,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect        
+        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
         'hasPrefiroNaoDizer': false,
         'radioIsVisible': false,
         'options': const [
@@ -304,7 +306,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       {
         'title': "Renda familiar mensal de sua casa (somatória)",
         'icon': Icons.attach_money,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect        
+        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
         'hasPrefiroNaoDizer': false,
         'radioIsVisible': false,
         'options': const [
@@ -872,7 +874,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         'body': 'assets/intel_1.png',
         'mim_size_awnser': 1,
         'max_size_awnser': 1,
-        'options_style': 'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
         'options_columns_size': 3,
         'options': [
           'assets/intel_1a.png',
@@ -906,28 +909,32 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
     'header': 'Complete as sequências a seguir:',
     'itens': [
       {
-        'options_style': 'textForm', // multiSelect,singleSelect,multiSelect,textForm
+        'options_style':
+            'textForm', // multiSelect,singleSelect,multiSelect,textForm
         'title': ['2, 4, 8, 16, ?'],
         'labelText': ["Seguência *"],
         'icons': [Icons.confirmation_num],
         'has_divider': true,
       },
       {
-        'options_style': 'textForm', // multiSelect,singleSelect,multiSelect,textForm
+        'options_style':
+            'textForm', // multiSelect,singleSelect,multiSelect,textForm
         'title': ['1, 3, 9, ?'],
         'labelText': ["Seguência *"],
         'icons': [Icons.confirmation_num],
         'has_divider': true,
       },
       {
-        'options_style': 'textForm', // multiSelect,singleSelect,multiSelect,textForm
+        'options_style':
+            'textForm', // multiSelect,singleSelect,multiSelect,textForm
         'title': ['3, 7, 11, 15, ? '],
         'labelText': ["Seguência *"],
         'icons': [Icons.confirmation_num],
         'has_divider': true,
       },
       {
-        'options_style': 'textForm', // multiSelect,singleSelect,multiSelect,textForm
+        'options_style':
+            'textForm', // multiSelect,singleSelect,multiSelect,textForm
         'title': ['32, 16, 8, ? '],
         'labelText': ["Seguência *"],
         'icons': [Icons.confirmation_num],
@@ -988,7 +995,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       {
         'icons': [Icons.location_city, Icons.location_history],
         'options_columns_size': 1,
-        'options_style': 'textForm', // multiSelect,singleSelect,multiSelect,textForm
+        'options_style':
+            'textForm', // multiSelect,singleSelect,multiSelect,textForm
         'labelText': ['CIDADE:', 'ESTADO:'],
       },
     ]
@@ -1328,7 +1336,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
         'body': 'assets/intel_2.png',
         'mim_size_awnser': 1,
         'max_size_awnser': 1,
-        'options_style': 'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
         'options_columns_size': 3,
         'options': [
           'assets/intel_2a.png',
@@ -1387,7 +1396,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
         'body': '', // body_type: audio
         'mim_size_awnser': 1,
         'max_size_awnser': 2,
-        'options_style': 'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
         'options_columns_size': 3,
         'options': [
           'assets/questao45leao.png',
@@ -1555,7 +1565,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       {
         'mim_size_awnser': 1,
         'max_size_awnser': 3,
-        'options_style': 'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
         'options_columns_size': 3,
         'options': [
           'assets/emoji_sempre_atrasado.png',
@@ -1586,7 +1597,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
         'body': '', // body_type: audio
         'mim_size_awnser': 1,
         'max_size_awnser': 3,
-        'options_style': 'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
         'options_columns_size': 3,
         'options': [
           'assets/emoji_esperancoso.png',
@@ -1617,7 +1629,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
         'body': '', // body_type: audio
         'mim_size_awnser': 1,
         'max_size_awnser': 3,
-        'options_style': 'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
         'options_columns_size': 3,
         'options': [
           'assets/emoji_apaixonado.png',
@@ -1648,7 +1661,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
         'body': '', // body_type: audio
         'mim_size_awnser': 1,
         'max_size_awnser': 3,
-        'options_style': 'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
         'options_columns_size': 3,
         'options': [
           'assets/emoji_com_raiva.png',
@@ -1901,7 +1915,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
             'Daltonismo é o termo usado para denominar a falta de sensibilidade ocular que algumas pessoas possuem na percepção de determinadas cores. Você tem Daltonismo? Já foi diagnosticado por um profissional especializado? Se sim, você pode optar por não realizar este teste; no entanto, se preferir tentar, isso não resultará em desvantagem. Basta clicar em \'SIM\' para prosseguir com a atividade.\n',
       },
       {
-        'options_style': 'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
         'radioIsVisible': false,
         'options_columns_size': 3,
         'options': [
@@ -1912,6 +1927,7 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
+  /*
   73: const {
     'hasProx': true,
     'isSendAnswer': false,
@@ -1921,31 +1937,45 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
     'itens':
         'Marque a cor que você mais gosta e pinte os retângulos e os círculos das figuras abaixo.\n\nFaça da forma que mais te agrada.',
   },
-  /*
+*/
   73: const {
     'hasProx': true,
     'isSendAnswer': true,
     'style': 'form',
-    'header':
-        'Marque a cor que você mais gosta e pinte os retângulos e os círculos das figuras abaixo.\n\nFaça da forma que mais te agrada.',
+    'header': 'Encontre os objetos!',
     'itens': [
       {
-        'options_style': 'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 2,
+        'body_hasFrame': false,
+        'body':
+            'Marque a cor que você mais gosta e pinte os retângulos e os círculos das figuras abaixo.\n\nFaça da forma que mais te agrada.\n',
+        'options_style': 'arvoreCiculos',
+        'options_columns_size': 3,
         'options': [
-          'Azul'
-              'Verde'
-              'Laranja'
-              'Amarelo'
-              'Vermelho'
-              'Violeta'
-              'Marrom'
-              'Preto'
-              'Branco'
-        ]
+          'Azul',
+          'Verde',
+          'Laranja',
+          'Amarelo',
+          'Vermelho',
+          'Rosa',
+          'Marrom',
+          'Preto',
+          'Branco',
+        ],
+        'colors': [
+          Colors.blue,
+          Colors.green,
+          Colors.orange,
+          Colors.yellow,
+          Colors.red,
+          Colors.pink,
+          Colors.grey,
+          Colors.black,
+          Colors.white24,
+        ],
+        'imagem': 'assets/arvore_circulos.png',
       },
     ],
-  },*/
+  },
   74: const {
     'hasProx': true,
     'isSendAnswer': true,
@@ -1953,7 +1983,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
     'header': 'Selecione qual dia da semana é hoje:',
     'itens': [
       {
-        'options_style': 'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
         'options_columns_size': 2,
         'options': [
           'Segunda-feira',
@@ -1975,7 +2006,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
         'Quanto tempo, aproximadamente, você acha que investiu para fazer este teste?',
     'itens': [
       {
-        'options_style': 'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
+        'options_style':
+            'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
         'options_columns_size': 2,
         'options': [
           '5 minutos',

@@ -10,7 +10,7 @@ class MultiSelectionList extends StatefulWidget {
   final Icon? icon;
   final List<String> itens;
   final int? optionsColumnsSize;
-  final String? Function(List<String>?)? validator;
+  final String? Function(List<ValueNotifier<String>>?)? validator;
   const MultiSelectionList({
     super.key,
     required this.answerFunc,
@@ -27,13 +27,13 @@ class MultiSelectionList extends StatefulWidget {
 }
 
 class _MultiSelectionListState extends State<MultiSelectionList> {
-  late List<String> answers;
+  late List<ValueNotifier<String>> answers;
   late final GlobalKey<FormState> _formKey;
 
   @override
   void initState() {
     _formKey = GlobalKey<FormState>();
-    answers = List.filled(widget.itens.length, "");
+    answers = List.filled(widget.itens.length, ValueNotifier<String>(""));
     super.initState();
   }
 
@@ -50,11 +50,11 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
         }
       },
       autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
-      child: FormField<List<String>>(
+      child: FormField<List<ValueNotifier<String>>>(
         initialValue: answers,
         autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
         validator: widget.validator,
-        builder: (FormFieldState<List<String>> state) => Column(
+        builder: (FormFieldState<List<ValueNotifier<String>>> state) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             if (widget.description != null)
@@ -82,30 +82,28 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
                     ? CustomButton(
                         title: widget.itens[i],
                         value: widget.itens[i],
-                        groupValue: answers[i] != "" ? widget.itens[i] : "",
+                        groupValue: answers[i],
                         onChanged: (String? _) {
-                          setState(() {
-                            if (answers[i] != "") {
-                              answers[i] = "";
+                            if (answers[i].value != "") {
+                              answers[i].value = "";
                             } else {
-                              answers[i] =
+                              answers[i].value =
                                   "${widget.itens[i]} - ${DateTime.now().toString()}";
                             }
                             state.didChange(answers);
-                          });
                         },
                       )
                     : TextButton(
                         child: Opacity(
-                          opacity: answers[i] != "" ? 1 : 0.3,
+                          opacity: answers[i].value != "" ? 1 : 0.3,
                           child: Image.asset(widget.itens[i]),
                         ),
                         onPressed: () {
                           setState(() {
-                            if (answers[i] != "") {
-                              answers[i] = "";
+                            if (answers[i].value != "") {
+                              answers[i].value = "";
                             } else {
-                              answers[i] =
+                              answers[i].value =
                                   "${widget.itens[i]} - ${DateTime.now().toString()}";
                             }
                             state.didChange(answers);

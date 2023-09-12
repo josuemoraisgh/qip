@@ -1,33 +1,39 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
 
+
+
 class CustomButton extends StatelessWidget {
   final String title;
+  final Color? color;
   final String value;
-  final String groupValue;
-  final Function(String?) onChanged;
+  final ValueNotifier<String> groupValue;
+  final Function(String?)? onChanged;
 
   const CustomButton({
     super.key,
     required this.title,
     required this.value,
     required this.groupValue,
-    required this.onChanged,
+    this.onChanged,
+    this.color,
   });
 
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(BuildContext context) => ValueListenableBuilder(
+          valueListenable: groupValue,
+          builder: (context, groupValueNotifier, _) => Padding(
         padding: const EdgeInsets.all(5),
         child: ElevatedButton(
           style: ButtonStyle(
-            backgroundColor: value == groupValue
-                ? MaterialStateProperty.all<Color>(Colors.black54)
+            backgroundColor: value == groupValueNotifier
+                ? MaterialStateProperty.all<Color>(color ?? Colors.black54)
                 : MaterialStateProperty.all<Color>(Colors.white),
             elevation: MaterialStateProperty.all(8),
             shape: MaterialStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18.0),
-                side: const BorderSide(width: 0.2, color: Colors.black54),
+                side: BorderSide(width: 0.2, color: color ?? Colors.black54),
               ),
             ),
           ),
@@ -35,12 +41,13 @@ class CustomButton extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 18,
-              color: value == groupValue ? Colors.white : Colors.black87,
+              color: value == groupValueNotifier ? Colors.white : Colors.black87,
             ),
           ),
           onPressed: () {
-            onChanged(value);
+            groupValue.value = value;
+            if(onChanged != null) onChanged!(value);
           },
         ),
-      );
+      ),);
 }

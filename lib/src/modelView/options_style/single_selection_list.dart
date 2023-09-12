@@ -10,6 +10,7 @@ class SingleSelectionList extends StatefulWidget {
   final String? description;
   final IconData? icon;
   final List<String> itens;
+  final List<Color>? colors;
   final bool hasPrefiroNaoDizer;
   final int? optionsColumnsSize;
   final String? otherLabel;
@@ -25,6 +26,7 @@ class SingleSelectionList extends StatefulWidget {
     this.otherItem,
     this.optionsColumnsSize,
     this.answerId,
+    this.colors,
   });
 
   @override
@@ -34,8 +36,8 @@ class SingleSelectionList extends StatefulWidget {
 class _SingleSelectionListState extends State<SingleSelectionList> {
   final _formKey = GlobalKey<FormState>();
   static const double fontSize = 18;
-  String answer = "";
-  String answerOther = "";
+  ValueNotifier<String> answer = ValueNotifier<String>("");
+  ValueNotifier<String> answerOther = ValueNotifier<String>("");
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +46,7 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
       onChanged: () {
         if (_formKey.currentState!.validate()) {
           widget.answerFunc(
-              "${answer == (widget.otherLabel ?? "Outro (Qual?)") ? answerOther : answer} - ${DateTime.now().toString()}",
+              "${answer.value == (widget.otherLabel ?? "Outro (Qual?)") ? answerOther : answer} - ${DateTime.now().toString()}",
               widget.answerId ?? 0);
         } else {
           widget.answerFunc('', widget.answerId ?? 0);
@@ -73,29 +75,29 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
               ],
             ),
           if (widget.description != null) const SizedBox(height: 15),
-          FormField<String>(
+          FormField<ValueNotifier<String>>(
             initialValue: answer,
             autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
-            validator: (String? value) {
+            validator: (ValueNotifier<String>? value) {
               if (value == null) {
                 return 'Por favor escolha um item';
               } else {
-                if (value.isEmpty) {
+                if (value.value.isEmpty) {
                   return 'Por favor escolha um item';
                 }
               }
               return (null);
             },
-            builder: (FormFieldState<String> state) => MontaAlternativas(
+            builder: (FormFieldState<ValueNotifier<String>> state) => MontaAlternativas(
               optionsColumnsSize: widget.optionsColumnsSize,
               length: widget.itens.length,
               builder: (int id) => Expanded(
                 child: CustomButton(
                   title: widget.itens[id],
                   value: widget.itens[id],
+                  color: widget.colors?[id],
                   groupValue: answer,
                   onChanged: (String? e) {
-                    answer = e.toString();
                     state.didChange(answer);
                   },
                 ),
@@ -108,7 +110,6 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
                         value: "Prefiro não dizer",
                         groupValue: answer,
                         onChanged: (String? e) {
-                          answer = e.toString();
                           state.didChange(answer);
                         }),
                   ),
@@ -123,16 +124,14 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
                           : widget.otherLabel!,
                       groupValue: answer,
                       onChanged: (String? e) {
-                        answer = e.toString();
                         state.didChange(answer);
                       },
                     ),
                   ),
-                if (answer == (widget.otherLabel ?? "other"))
+                if (answer.value == (widget.otherLabel ?? "other"))
                   Expanded(
                     child: QuestionFrame(
                       answerFunc: (e, i) {
-                        answerOther = e.toString();
                         state.didChange(answerOther);
                       },
                       item: widget.otherItem!,

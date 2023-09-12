@@ -13,16 +13,23 @@ class MontaAlternativas extends StatelessWidget {
     required this.builder,
     this.childList,
   }) : super(key: key);
-
+/*
   @override
   Widget build(BuildContext context) {
-    List<Widget> widgetListRow = [];
-    for (int i = 0; i < length; i++) {
-      widgetListRow.add(builder(i));
-    }
-    if (childList != null) {
-      widgetListRow = widgetListRow + childList!;
-    }
+    return GridView.builder(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: optionsColumnsSize ?? 1,
+      ),
+      itemCount: length + (childList?.length ?? 0),
+      itemBuilder: (BuildContext context, int index) =>
+          index < length ? builder(index) : childList?[index - length],
+    );
+  }
+*/
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> widgetListRow = List.generate(length, (index) => builder(index)) +
+          (childList != null ? childList! : []);
     widgetListRow = widgetListRow
         .slices(optionsColumnsSize ?? 1)
         .map<Widget>(
