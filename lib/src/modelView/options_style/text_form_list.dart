@@ -1,17 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ia_triagem/src/modelView/base_widget/monta_alternativas.dart';
 
 class TextFormList extends StatefulWidget {
-  final Map<String, dynamic> itens;
+  final String? title;
+  final List<String>? options;
+  final List<String>? labelText;
   final int? optionsColumnsSize;
-  final Function(String, int) answerFunc;
-  final int? answerId;
-  const TextFormList(
-      {super.key,
-      required this.answerFunc,
-      required this.itens,
-      this.optionsColumnsSize,
-      this.answerId});
+  final List<IconData>? icons;
+  final Function(String) answerFunc;
+  final List<TextInputType>? keyboardType;
+  final List<List<TextInputFormatter>>? inputFormatters;
+  final List<String? Function(String?)>? validator;
+  const TextFormList({
+    super.key,
+    required this.answerFunc,
+    this.optionsColumnsSize,
+    this.title,
+    this.options,
+    this.labelText,
+    this.icons,
+    this.keyboardType,
+    this.inputFormatters,
+    this.validator,
+  });
 
   @override
   State<TextFormList> createState() => _TextFormListState();
@@ -26,8 +38,7 @@ class _TextFormListState extends State<TextFormList> {
   @override
   void initState() {
     _formKey = GlobalKey<FormState>();
-    tamanho = widget.itens['options']?.length ??
-        (widget.itens['labelText']?.length ?? 1);
+    tamanho = widget.options?.length ?? (widget.labelText?.length ?? 1);
     answer = List.filled(tamanho, "");
     textEditingController = List.filled(tamanho, TextEditingController());
     super.initState();
@@ -41,24 +52,24 @@ class _TextFormListState extends State<TextFormList> {
       onChanged: () {
         if (_formKey.currentState!.validate()) {
           _formKey.currentState!.save();
-          widget.answerFunc(answer.join(';'), widget.answerId ?? 0);
+          widget.answerFunc(answer.join(';'));
         } else {
-          widget.answerFunc('', widget.answerId ?? 0);
+          widget.answerFunc('');
         }
       },
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8.0),          
+          borderRadius: BorderRadius.circular(8.0),
           border: Border.all(width: 0.2, color: Colors.black),
           color: Colors.white,
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black,
-                  blurRadius: 2.0,
-                  spreadRadius: 0.0,
-                  offset: Offset(2.0, 2.0), // shadow direction: bottom right
-                )
-              ],          
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black,
+              blurRadius: 2.0,
+              spreadRadius: 0.0,
+              offset: Offset(2.0, 2.0), // shadow direction: bottom right
+            )
+          ],
         ),
         child: Padding(
           padding:
@@ -69,12 +80,12 @@ class _TextFormListState extends State<TextFormList> {
             builder: (int id) => Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: ((widget.itens['title']?[id] ?? "") != ""
+                children: ((widget.title?[id] ?? "") != ""
                         ? <Widget>[
                             const SizedBox(width: 15),
                             Center(
                               child: Text(
-                                widget.itens['title']![id],
+                                widget.title![id],
                                 textAlign: TextAlign.justify,
                                 style: const TextStyle(
                                     fontSize: 35,
@@ -86,22 +97,25 @@ class _TextFormListState extends State<TextFormList> {
                         : <Widget>[]) +
                     <Widget>[
                       const SizedBox(height: 15),
-                      widget.itens['options']?[id] == null
+                      widget.options?[id] == null
                           ? _montaEdit(id)
-                          :  Row(
-                                children: widget.itens['options']?[id][0] == "-"
-                                    ? <Widget>[
-                                        Flexible(flex: 20, child: _montaEdit(id)),
-                                        const Flexible(flex: 3, child: SizedBox(width: 5)),
-                                        Flexible(flex: 10, child:_montaTexto(id)),
-                                      ]
-                                    : <Widget>[
-                                        Flexible(flex: 10, child:_montaTexto(id)),                                        
-                                        const Flexible(flex: 3, child: SizedBox(width: 5)),
-                                        Expanded(flex: 20, child: _montaEdit(id)),                                        
-                                      ],
-                              ),
-                          
+                          : Row(
+                              children: widget.options?[id][0] == "-"
+                                  ? <Widget>[
+                                      Flexible(flex: 20, child: _montaEdit(id)),
+                                      const Flexible(
+                                          flex: 3, child: SizedBox(width: 5)),
+                                      Flexible(
+                                          flex: 10, child: _montaTexto(id)),
+                                    ]
+                                  : <Widget>[
+                                      Flexible(
+                                          flex: 10, child: _montaTexto(id)),
+                                      const Flexible(
+                                          flex: 3, child: SizedBox(width: 5)),
+                                      Expanded(flex: 20, child: _montaEdit(id)),
+                                    ],
+                            ),
                     ],
               ),
             ),
@@ -125,7 +139,7 @@ class _TextFormListState extends State<TextFormList> {
       width: 100,
       decoration: myContainerDecoration(),
       child: Text(
-        widget.itens['options']?[id] ?? "",
+        widget.options?[id] ?? "",
         textAlign: TextAlign.center,
         style: const TextStyle(
             color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18.0),
@@ -138,16 +152,14 @@ class _TextFormListState extends State<TextFormList> {
       initialValue: answer[id],
       decoration: InputDecoration(
         border: const UnderlineInputBorder(),
-        icon: widget.itens['icons']?[id] != null
-            ? Icon(widget.itens['icons']![id])
-            : null,
-        labelText: widget.itens['labelText']?[id],
+        icon: widget.icons?[id] != null ? Icon(widget.icons![id]) : null,
+        labelText: widget.labelText?[id],
       ),
-      keyboardType: widget.itens['keyboardType']?[id],
-      inputFormatters: widget.itens['inputFormatters']?[id],
+      keyboardType: widget.keyboardType?[id],
+      inputFormatters: widget.inputFormatters?[id],
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (value) {
-        final String? condicao = widget.itens['validator']?[id](value);
+        final String? condicao = widget.validator?[id](value);
         if (condicao != null) {
           answer[id] = "";
           return condicao;

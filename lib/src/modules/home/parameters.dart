@@ -2,18 +2,26 @@ import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../modelView/options_style/send_email.dart';
+import '../../modelView/options_style/single_selection_list.dart';
+import '../../modelView/options_style/text_form_list.dart';
+import 'telas_controller.dart';
+
 Map<int, Map<String, dynamic>> telas = {
-  1: const {
+  1: {
     'hasProx': true,
     'isSendAnswer': false,
     'header': "Questionário Interativo Psicopatológico (QIP)",
-    'style': 'terms',
-    'body1': """
+    'itens': (TelasController controller, FormFieldState<List<String>> state) {
+      final List<String> answer = [""];
+      return [
+        const Text(
+          """
 
-  TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO
+TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO
 
   
-Você está sendo convidado (a) a participar da pesquisa intitulada “Sistematização de ferramentas para Avaliação Psicopatológica utilizando técnica de Inteligência Artificial”, sob a responsabilidade dos pesquisadores Prof. Dr. Keiji Yamanaka, Ms. Résia da Silva Morais (da Faculdade de Engenharia Elétrica da Universidade Federal de Uberlândia). Nesta pesquisa nós estamos buscando confirmar a possibilidade de usar técnicas de Inteligência artificial para avaliar as estruturas de saúde mental chamadas de Funções Mentais Psíquicas (atenção, consciência, orientação, experiências de tempo e de espaço, sensopercepção, memória, afetividade, vontade e psicomotricidade, pensamento, juízos de realidade, linguagem, Inteligência e cognição social), essenciais para uma excelente avaliação psicopatológica com o objetivo de ajudar os profissionais da área da saúde mental. 
+Você está sendo convidado(a) a participar da pesquisa intitulada “Sistematização de ferramentas para Avaliação Psicopatológica utilizando técnica de Inteligência Artificial”, sob a responsabilidade dos pesquisadores Prof. Dr. Keiji Yamanaka, Ms. Résia da Silva Morais (da Faculdade de Engenharia Elétrica da Universidade Federal de Uberlândia). Nesta pesquisa nós estamos buscando confirmar a possibilidade de usar técnicas de Inteligência artificial para avaliar as estruturas de saúde mental chamadas de Funções Mentais Psíquicas (atenção, consciência, orientação, experiências de tempo e de espaço, sensopercepção, memória, afetividade, vontade e psicomotricidade, pensamento, juízos de realidade, linguagem, Inteligência e cognição social), essenciais para uma excelente avaliação psicopatológica com o objetivo de ajudar os profissionais da área da saúde mental. 
 O Termo/Registro de Consentimento Livre e Esclarecido está sendo obtido pelos pesquisadores Dr. Keiji Yamanaka e Ms. Résia da Silva Morais, antecedendo toda e qualquer experimentação que envolva a pesquisa. Conforme o item IV da Resol. CNS 466/12 ou Cap. III da Resol. 510/2016, o participante terá o tempo que julgar necessário para decidir se deseja participar da pesquisa. Se você tiver qualquer dúvida em relação à pesquisa, você pode entrar em contato com o(a) pesquisador(a) pelo e-mail duvidaspsicopatologiacomia@gmail.com para discutir as informações do estudo
 Na sua participação, após você ter compreendido as informações que constituem o Termo de Consentimento Livre e Esclarecido e após ter assinado eletronicamente o campo no qual “Concorda” participar da pesquisa, serão apresentadas telas com as instruções das tarefas que você irá responder. Certifique-se que esteja em um ambiente silencioso, sem estímulos de distração. Em algumas telas serão apresentados sons, sendo assim, fundamental o uso de fones ou que você ligue os alto-falantes do seu dispositivo. A avaliação das Funções Psíquicas será através de 45 testes apresentados através de 66 telas e você gastará em torno de 25 minutos. Em algumas questões, será solicitado que você ouça primeiramente alguns sons para respondê-las, e cada tela apresentada pelo questionário interativo permitirá a identificação da relação entre as respostas dadas por você e sinais de possíveis funções mentais afetadas.
 As respostas serão coletadas e registradas por meio da plataforma do Google Forms e do sistema TensorFlow que agrupará os dados possibilitando a análise das ferramentas de avaliação psicopatológica. O pesquisador responsável atenderá as orientações das Resoluções nº 466/2012, Capítulo XI, Item Xl.2: f e nº 510/2016, Capítulo VI, Art. 28: IV; e manterá os dados da pesquisa em arquivo, físico ou digital, sob sua guarda e responsabilidade, por um período mínimo de 5 (cinco) anos após o término da pesquisa. Uma vez concluída a coleta de dados, o pesquisador responsável irá fazer o download dos dados coletados para um dispositivo eletrônico local, apagando todo e qualquer registro de qualquer plataforma virtual, ambiente compartilhado ou "nuvem". Em nenhum momento você será identificado. Os resultados da pesquisa serão publicados e ainda assim a sua identidade será preservada.
@@ -23,304 +31,412 @@ Você é livre para deixar de participar da pesquisa a qualquer momento sem qual
 Você poderá também entrar em contato com o CEP - Comitê de Ética na Pesquisa com Seres Humanos na Universidade Federal de Uberlândia, localizado na Av. João Naves de Ávila, nº 2121, bloco A, sala 224, campus Santa Mônica – Uberlândia/MG, 38408-100; telefone: 34-3239-4131 ou pelo e-mail: cep@propp.ufu.br. O CEP é um colegiado independente criado para defender os interesses dos participantes das pesquisas em sua integridade e dignidade e para contribuir para o desenvolvimento da pesquisa dentro de padrões éticos conforme resoluções do Conselho Nacional de Saúde.
 Ao assinalar a opção “Concordo”, a seguir, você declara que aceita participar do projeto citado acima, voluntariamente, após ter sido devidamente esclarecido, pelos pesquisadores; que entendeu como é a pesquisa, que pode solicitar esclarecimentos em relação as dúvidas com o/a pesquisador/a via e-mail (duvidaspsicopatologiacomia@gmail.com); e que pode desistir em qualquer momento, durante e depois de participar; você autoriza a divulgação dos dados obtidos neste estudo mantendo em sigilo sua identidade. 
 """,
-    'body2': """
+          textAlign: TextAlign.justify,
+        ),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            if (value.contains('Concordo')) {
+              answer[0] = value;
+              state.didChange(answer);
+            } else {
+              answer[0] = "";
+              state.didChange(answer);
+            }
+          },
+          hasPrefiroNaoDizer: false,
+          options: const ['Concordo', 'Não concordo'],
+          optionsColumnsSize: 2,
+        ),
+        const SizedBox(height: 10.0),
+        const Text(
+          """
 Solicitamos que você salve este documento em seus arquivos. Se desejar receber uma cópia deste registro de consentimento por e-mail, por favor, preencha-o abaixo e clique no botão de enviar:
 """,
-    'body3': """
+          textAlign: TextAlign.justify,
+        ),
+        const SizedBox(height: 10.0),
+        const SendEmail(),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        const Text(
+          """
 
   DECLARAÇÃO DOS PESQUISADORES
 
 Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livre e Esclarecido deste participante para a participação neste estudo. Declaramos ainda que nos comprometemos a cumprir todos os termos aqui descritos;
 """,
-    'image': ['assets/assinatura_keiji.png', 'assets/assinatura_resia.png'],
+          textAlign: TextAlign.justify,
+        ),
+        const SizedBox(height: 10.0),
+        Image.asset(
+          'assets/assinatura_keiji.png',
+          alignment: Alignment.bottomCenter,
+        ),
+        const SizedBox(height: 10.0),
+        Image.asset(
+          'assets/assinatura_resia.png',
+          alignment: Alignment.bottomCenter,
+        ),
+      ];
+    },
   },
   2: {
     'hasProx': true,
     'isSendAnswer': true,
-    'style': 'form',
     'header': 'Questionário Sociodemográfico',
-    'itens': [
-      {
-        'options_style':
-            'textForm', // multiSelect,singleSelect,multiSelect,textForm
-        'labelText': ['Que horas são neste instante?', 'Data de hoje?'],
-        'icons': [Icons.lock_clock, Icons.date_range],
-        'keyboardType': [TextInputType.datetime, TextInputType.datetime],
-        'inputFormatters': [
-          [FilteringTextInputFormatter.digitsOnly, HoraInputFormatter()],
-          [FilteringTextInputFormatter.digitsOnly, DataInputFormatter()],
-        ],
-        'validator': [
-          (value) {
-            if (value == null) {
-              return 'Horário Inválido!!';
-            } else if ((value.isEmpty) || (value.length != 5)) {
-              return 'Horário Inválido!!';
-            }
-            return null;
+    'itens': (TelasController controller, FormFieldState<List<String>> state) {
+      final List<String> answer = ["", "", "", "", "", "", "", "", "", "", ""];
+      return [
+        TextFormList(
+          answerFunc: (String value) {
+            answer[0] = value;
+            state.didChange(answer);
           },
-          (value) {
-            if (value == null) {
-              return 'Data atual Incorreta!!';
-            } else if ((value.isEmpty) || (value.length != 10)) {
-              return 'Data atual Incorreta!!';
-            }
-            return null;
-          },
-        ],
-        'has_divider': true,
-      },
-      {
-        'options_style':
-            'textForm', // multiSelect,singleSelect,multiSelect,textForm
-        'labelText': ['Qua a sua Idade?'],
-        'icons': [Icons.cake],
-        'keyboardType': [TextInputType.number],
-        'inputFormatters': [
-          [FilteringTextInputFormatter.digitsOnly]
-        ],
-        'validator': [
-          (String? value) {
-            if ((value == null) ||
-                (value.isEmpty) ||
-                (int.parse(value) <= 0) ||
-                (int.parse(value) >= 130)) {
-              return 'Idade invalida!! Corrija por favor';
-            }
-            return null;
-          }
-        ],
-        'has_divider': true,
-      },
-      {
-        'title': 'Gênero *',
-        'icon': Icons.transgender,
-        'hasPrefiroNaoDizer': true,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'options': ["Feminino", "Masculino"],
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'otherItem': {
-          'options_style': 'textForm', //multiSelect,textForm,multiSelect
-          'labelText': ["Qual o seu gênero?"],
-          'keyboardType': [TextInputType.number],
-          'inputFormatters': [
-            [FilteringTextInputFormatter.singleLineFormatter]
-          ],
-          'validator': [
-            (String? value) {
-              if (value == null) {
-                return 'Descrição invalida!! Corrija por favor';
-              } else if ((value.isEmpty) || (value.length < 3)) {
-                return 'Descrição invalida!! Corrija por favor';
-              }
-              return null;
-            },
-          ]
-        },
-        'has_divider': true,
-      },
-      {
-        'title': 'Qual foi o sexo atribuído no seu nascimento?',
-        'icon': Icons.wc,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'hasPrefiroNaoDizer': false,
-        'options': const ["Feminino", "Masculino"],
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'has_divider': true,
-      },
-      {
-        'title': "Assinale a alternativa que identifica a sua Cor ou Raça:",
-        'icon': Icons.person,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'hasPrefiroNaoDizer': true,
-        'options': const ["Preta", "Branca", "Parda", "Amarela", "IndÍgena"],
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'otherItem': {
-          'options_style': 'textForm', //multiSelect,textForm,multiSelect
-          'labelText': ["Qual a sua Cor ou Raça ?"],
-          'inputFormatters': [
-            [FilteringTextInputFormatter.singleLineFormatter]
-          ],
-          'validator': [
+          optionsColumnsSize: 1,
+          labelText: const ['Que horas são neste instante?', 'Data de hoje?'],
+          validator: [
             (value) {
               if (value == null) {
-                return 'Descrição invalida!! Corrija por favor';
-              } else if ((value.isEmpty) || (value.length < 3)) {
-                return 'Descrição invalida!! Corrija por favor';
+                return 'Horário Inválido!!';
+              } else if ((value.isEmpty) || (value.length != 5)) {
+                return 'Horário Inválido!!';
               }
               return null;
             },
-          ]
-        },
-        'has_divider': true,
-      },
-      {
-        'title': "Dentro de sua família, você é o(a) único(a) filho(a)?",
-        'icon': Icons.diversity_3,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'hasPrefiroNaoDizer': false,
-        'options': const ["Sim"],
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'otherLabel': "Não",
-        'otherItem': {
-          'options_style': 'textForm', //multiSelect,textForm,multiSelect
-          'labelText': ["Quantos irmãos voçê tem?"],
-          'inputFormatters': [
+            (value) {
+              if (value == null) {
+                return 'Data atual Incorreta!!';
+              } else if ((value.isEmpty) || (value.length != 10)) {
+                return 'Data atual Incorreta!!';
+              }
+              return null;
+            },
+          ],
+          icons: const [Icons.lock_clock, Icons.date_range],
+          keyboardType: const [TextInputType.datetime, TextInputType.datetime],
+          inputFormatters: [
+            [FilteringTextInputFormatter.digitsOnly, HoraInputFormatter()],
+            [FilteringTextInputFormatter.digitsOnly, DataInputFormatter()],
+          ],
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        TextFormList(
+          answerFunc: (String value) {
+            answer[1] = value;
+            state.didChange(answer);
+          },
+          labelText: const ['Qua a sua Idade?'],
+          icons: const [Icons.cake],
+          keyboardType: const [TextInputType.number],
+          inputFormatters: [
             [FilteringTextInputFormatter.digitsOnly]
           ],
-          'validator': [
-            (value) {
-              if (value == null) {
-                return 'Quantidade invalida!! Corrija por favor';
-              } else if ((value.isEmpty)) {
-                return 'Quantidade invalida!! Corrija por favor';
-              }
-              return null;
-            },
-          ]
-        },
-        'has_divider': true,
-      },
-      {
-        'title': "Qual o seu estado civil?",
-        'icon': Icons.diversity_2,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'hasPrefiroNaoDizer': false,
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': const [
-          "Solteiro (a):",
-          "Casado (a)",
-          "Viúvo (a)",
-          "Divorciado(a)",
-          "Amaziado",
-        ],
-        'otherItem': {
-          'options_style': 'textForm', //multiSelect,textForm,multiSelect
-          'labelText': ["Qual estado civil ?"],
-          'inputFormatters': [
-            [FilteringTextInputFormatter.singleLineFormatter]
-          ],
-          'validator': [
-            (value) {
-              if (value == null) {
-                return 'Descrição invalida!! Corrija por favor';
-              } else if ((value.isEmpty) || (value.length < 3)) {
-                return 'Descrição invalida!! Corrija por favor';
-              }
-              return null;
-            },
-          ],
-        },
-        'has_divider': true,
-      },
-      {
-        'title': "Possui filhos(as)?",
-        'icon': Icons.group_add,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'hasPrefiroNaoDizer': false,
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': const ["Não"],
-        'otherLabel': "Sim",
-        'otherItem': {
-          'options_style': 'textForm', //multiSelect,textForm,multiSelect
-          'labelText': ["Quantos filhos voçê tem?"],
-          'inputFormatters': [
-            [FilteringTextInputFormatter.singleLineFormatter]
-          ],
-          'validator': [
-            (value) {
-              if (value == null) {
-                return 'Quantidade invalida!! Corrija por favor';
-              } else if ((value.isEmpty)) {
-                return 'Quantidade invalida!! Corrija por favor';
-              }
-              return null;
-            },
-          ],
-        },
-        'has_divider': true,
-      },
-      {
-        'title': "Possui filhos(as) menores de 6 anos?",
-        'icon': Icons.child_friendly,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'hasPrefiroNaoDizer': false,
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': const ["Não", "Sim"],
-        'has_divider': true,
-      },
-      {
-        'title': "Religião *",
-        'icon': Icons.church,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'hasPrefiroNaoDizer': false,
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': const ["Sem religião"],
-        'otherLabel': "Tenho religião",
-        'otherItem': {
-          'options_style': 'textForm', //multiSelect,textForm,multiSelect
-          'labelText': ["Qual é a Religião?"],
-          'inputFormatters': [
-            [FilteringTextInputFormatter.singleLineFormatter]
-          ],
-          'validator': [
-            (value) {
-              if (value == null) {
-                return 'Religião invalida!! Corrija por favor';
-              } else if ((value.isEmpty)) {
-                return 'Religião invalida!! Corrija por favor';
+          validator: [
+            (String? value) {
+              if ((value == null) ||
+                  (value.isEmpty) ||
+                  (int.parse(value) <= 0) ||
+                  (int.parse(value) >= 130)) {
+                return 'Idade invalida!! Corrija por favor';
               }
               return null;
             }
           ],
-        },
-        'has_divider': true,
-      },
-      {
-        'title': "Escolaridade *",
-        'icon': Icons.school,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'hasPrefiroNaoDizer': false,
-        'radioIsVisible': false,
-        'options': const [
-          "Sem Escolaridade",
-          "Ensino Fundamental (1º grau) incompleto",
-          "Ensino Fundamental (1º grau) completo",
-          "Ensino Médio (2º grau) incompleto",
-          "Ensino Médio (2º grau) completo",
-          "Superior Incompleto",
-          "Superior Completo",
-          "Mestrado",
-          "Doutorado",
-        ],
-        'has_divider': true,
-      },
-      {
-        'title': "Renda familiar mensal de sua casa (somatória)",
-        'icon': Icons.attach_money,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'hasPrefiroNaoDizer': false,
-        'radioIsVisible': false,
-        'options': const [
-          "Até 1 salário mínimo",
-          "Mais de 1 a 2 salários mínimos",
-          "Mais de 2 a 3 salários mínimos",
-          "Mais de 3 a 5 salários mínimos",
-          "Mais de 5 a 8 salários mínimos",
-          "Mais de 8 a 12 salários mínimos",
-          "Mais de 12 a 20 salários mínimos",
-          "Mais de 20 salários mínimos",
-        ],
-      }
-    ], // options_type: text
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[2] = value;
+            state.didChange(answer);
+          },
+          title: 'Gênero *',
+          icon: Icons.transgender,
+          hasPrefiroNaoDizer: true,
+          options: const ["Feminino", "Masculino"],
+          optionsColumnsSize: 2,
+          otherItem: TextFormList(
+            answerFunc: (String value) {
+              answer[2] = value;
+              state.didChange(answer);
+            },
+            labelText: const ["Qual o seu gênero?"],
+            keyboardType: const [TextInputType.number],
+            inputFormatters: [
+              [FilteringTextInputFormatter.singleLineFormatter]
+            ],
+            validator: [
+              (String? value) {
+                if (value == null) {
+                  return 'Descrição invalida!! Corrija por favor';
+                } else if ((value.isEmpty) || (value.length < 3)) {
+                  return 'Descrição invalida!! Corrija por favor';
+                }
+                return null;
+              },
+            ],
+          ),
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[3] = value;
+            state.didChange(answer);
+          },
+          title: 'Qual foi o sexo atribuído no seu nascimento?',
+          icon: Icons.wc,
+          hasPrefiroNaoDizer: false,
+          options: const ["Feminino", "Masculino"],
+          optionsColumnsSize: 2,
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[4] = value;
+            state.didChange(answer);
+          },
+          title: "Assinale a alternativa que identifica a sua Cor ou Raça:",
+          icon: Icons.person,
+          hasPrefiroNaoDizer: true,
+          options: const ["Preta", "Branca", "Parda", "Amarela", "IndÍgena"],
+          optionsColumnsSize: 2,
+          otherItem: TextFormList(
+              answerFunc: (String value) {
+                answer[4] = value;
+                state.didChange(answer);
+              },
+              labelText: const [
+                "Qual a sua Cor ou Raça ?"
+              ],
+              inputFormatters: [
+                [FilteringTextInputFormatter.singleLineFormatter]
+              ],
+              validator: [
+                (value) {
+                  if (value == null) {
+                    return 'Descrição invalida!! Corrija por favor';
+                  } else if ((value.isEmpty) || (value.length < 3)) {
+                    return 'Descrição invalida!! Corrija por favor';
+                  }
+                  return null;
+                },
+              ]),
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[5] = value;
+            state.didChange(answer);
+          },
+          title: "Dentro de sua família, você é o(a) único(a) filho(a)?",
+          icon: Icons.diversity_3,
+          hasPrefiroNaoDizer: false,
+          options: const ["Sim"],
+          optionsColumnsSize: 2,
+          otherLabel: "Não",
+          otherItem: TextFormList(
+              answerFunc: (String value) {
+                answer[5] = value;
+                state.didChange(answer);
+              },
+              labelText: const [
+                "Quantos irmãos voçê tem?"
+              ],
+              inputFormatters: [
+                [FilteringTextInputFormatter.digitsOnly]
+              ],
+              validator: [
+                (value) {
+                  if (value == null) {
+                    return 'Quantidade invalida!! Corrija por favor';
+                  } else if ((value.isEmpty)) {
+                    return 'Quantidade invalida!! Corrija por favor';
+                  }
+                  return null;
+                },
+              ]),
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[5] = value;
+            state.didChange(answer);
+          },
+          title: "Qual o seu estado civil?",
+          icon: Icons.diversity_2,
+          hasPrefiroNaoDizer: false,
+          optionsColumnsSize: 2,
+          options: const [
+            "Solteiro (a):",
+            "Casado (a)",
+            "Viúvo (a)",
+            "Divorciado(a)",
+            "Amaziado",
+          ],
+          otherItem: TextFormList(
+            answerFunc: (String value) {
+              answer[5] = value;
+              state.didChange(answer);
+            },
+            labelText: const ["Qual estado civil ?"],
+            inputFormatters: [
+              [FilteringTextInputFormatter.singleLineFormatter]
+            ],
+            validator: [
+              (value) {
+                if (value == null) {
+                  return 'Descrição invalida!! Corrija por favor';
+                } else if ((value.isEmpty) || (value.length < 3)) {
+                  return 'Descrição invalida!! Corrija por favor';
+                }
+                return null;
+              },
+            ],
+          ),
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[6] = value;
+            state.didChange(answer);
+          },
+          title: "Possui filhos(as)?",
+          icon: Icons.group_add,
+          hasPrefiroNaoDizer: false,
+          optionsColumnsSize: 2,
+          options: const ["Não"],
+          otherLabel: "Sim",
+          otherItem: TextFormList(
+            answerFunc: (String value) {
+              answer[6] = value;
+              state.didChange(answer);
+            },
+            labelText: const ["Quantos filhos voçê tem?"],
+            inputFormatters: [
+              [FilteringTextInputFormatter.singleLineFormatter]
+            ],
+            validator: [
+              (value) {
+                if (value == null) {
+                  return 'Quantidade invalida!! Corrija por favor';
+                } else if ((value.isEmpty)) {
+                  return 'Quantidade invalida!! Corrija por favor';
+                }
+                return null;
+              },
+            ],
+          ),
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[7] = value;
+            state.didChange(answer);
+          },
+          title: "Possui filhos(as) menores de 6 anos?",
+          icon: Icons.child_friendly,
+          hasPrefiroNaoDizer: false,
+          optionsColumnsSize: 2,
+          options: const ["Não", "Sim"],
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[8] = value;
+            state.didChange(answer);
+          },
+          title: "Religião *",
+          icon: Icons.church,
+          hasPrefiroNaoDizer: false,
+          optionsColumnsSize: 2,
+          options: const ["Sem religião"],
+          otherLabel: "Tenho religião",
+          otherItem: TextFormList(
+            answerFunc: (String value) {
+              answer[8] = value;
+              state.didChange(answer);
+            },
+            labelText: const ["Qual é a Religião?"],
+            inputFormatters: [
+              [FilteringTextInputFormatter.singleLineFormatter]
+            ],
+            validator: [
+              (value) {
+                if (value == null) {
+                  return 'Religião invalida!! Corrija por favor';
+                } else if ((value.isEmpty)) {
+                  return 'Religião invalida!! Corrija por favor';
+                }
+                return null;
+              }
+            ],
+          ),
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[9] = value;
+            state.didChange(answer);
+          },
+          title: "Escolaridade *",
+          icon: Icons.school,
+          hasPrefiroNaoDizer: false,
+          options: const [
+            "Sem Escolaridade",
+            "Ensino Fundamental (1º grau) incompleto",
+            "Ensino Fundamental (1º grau) completo",
+            "Ensino Médio (2º grau) incompleto",
+            "Ensino Médio (2º grau) completo",
+            "Superior Incompleto",
+            "Superior Completo",
+            "Mestrado",
+            "Doutorado",
+          ],
+        ),
+        const SizedBox(height: 10.0),
+        const Divider(),
+        const SizedBox(height: 10.0),
+        SingleSelectionList(
+          answerFunc: (String value) {
+            answer[10] = value;
+            state.didChange(answer);
+          },
+          title: "Renda familiar mensal de sua casa (somatória)",
+          icon: Icons.attach_money,
+          hasPrefiroNaoDizer: false,
+          options: const [
+            "Até 1 salário mínimo",
+            "Mais de 1 a 2 salários mínimos",
+            "Mais de 2 a 3 salários mínimos",
+            "Mais de 3 a 5 salários mínimos",
+            "Mais de 5 a 8 salários mínimos",
+            "Mais de 8 a 12 salários mínimos",
+            "Mais de 12 a 20 salários mínimos",
+            "Mais de 20 salários mínimos",
+          ],
+        ),
+      ];
+    },
   },
   3: {
     'hasProx': true,

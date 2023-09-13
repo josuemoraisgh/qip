@@ -1,32 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:ia_triagem/src/modelView/base_widget/monta_alternativas.dart';
-import 'package:ia_triagem/src/modelView/card_question/question_frame.dart';
 
 import '../base_widget/custom_button.dart';
 
 class SingleSelectionList extends StatefulWidget {
-  final void Function(String, int) answerFunc;
+  final void Function(String) answerFunc;
   final int? answerId;
-  final String? description;
+  final String? title;
   final IconData? icon;
-  final List<String> itens;
+  final List<String> options;
   final List<Color>? colors;
   final bool hasPrefiroNaoDizer;
   final int? optionsColumnsSize;
   final String? otherLabel;
-  final Map<String, dynamic>? otherItem;
+  final Widget? otherItem;
   const SingleSelectionList({
     super.key,
     required this.answerFunc,
-    this.description,
+    this.title,
     this.icon,
-    required this.itens,
+    required this.options,
     required this.hasPrefiroNaoDizer,
     this.otherLabel,
-    this.otherItem,
     this.optionsColumnsSize,
     this.answerId,
     this.colors,
+    this.otherItem,
   });
 
   @override
@@ -46,17 +45,16 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
       onChanged: () {
         if (_formKey.currentState!.validate()) {
           widget.answerFunc(
-              "${answer.value == (widget.otherLabel ?? "Outro (Qual?)") ? answerOther : answer} - ${DateTime.now().toString()}",
-              widget.answerId ?? 0);
+              "${answer.value == (widget.otherLabel ?? "Outro (Qual?)") ? answerOther : answer} - ${DateTime.now().toString()}");
         } else {
-          widget.answerFunc('', widget.answerId ?? 0);
+          widget.answerFunc('');
         }
       },
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (widget.description != null)
+          if (widget.title != null)
             Row(
               children: [
                 if (widget.icon != null)
@@ -64,7 +62,7 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
                 const SizedBox(width: 15),
                 Expanded(
                   child: Text(
-                    widget.description!,
+                    widget.title!,
                     textAlign: TextAlign.justify,
                     style: const TextStyle(
                         fontSize: fontSize,
@@ -74,7 +72,7 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
                 ),
               ],
             ),
-          if (widget.description != null) const SizedBox(height: 15),
+          if (widget.title != null) const SizedBox(height: 15),
           FormField<ValueNotifier<String>>(
             initialValue: answer,
             autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
@@ -88,13 +86,14 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
               }
               return (null);
             },
-            builder: (FormFieldState<ValueNotifier<String>> state) => MontaAlternativas(
+            builder: (FormFieldState<ValueNotifier<String>> state) =>
+                MontaAlternativas(
               optionsColumnsSize: widget.optionsColumnsSize,
-              length: widget.itens.length,
+              length: widget.options.length,
               builder: (int id) => Expanded(
                 child: CustomButton(
-                  title: widget.itens[id],
-                  value: widget.itens[id],
+                  title: widget.options[id],
+                  value: widget.options[id],
                   color: widget.colors?[id],
                   groupValue: answer,
                   onChanged: (String? e) {
@@ -130,13 +129,7 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
                   ),
                 if (answer.value == (widget.otherLabel ?? "other"))
                   Expanded(
-                    child: QuestionFrame(
-                      answerFunc: (e, i) {
-                        state.didChange(answerOther);
-                      },
-                      item: widget.otherItem!,
-                      answerId: 0,
-                    ),
+                    child: widget.otherItem!,
                   ),
               ],
             ),

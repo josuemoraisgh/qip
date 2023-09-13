@@ -4,7 +4,7 @@ import 'package:ia_triagem/src/modelView/base_widget/monta_alternativas.dart';
 import '../base_widget/custom_button.dart';
 
 class MultiSelectionList extends StatefulWidget {
-  final Function(String, int) answerFunc;
+  final Function(String) answerFunc;
   final int? answerId;
   final String? description;
   final Icon? icon;
@@ -44,9 +44,9 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
       onChanged: () {
         if (_formKey.currentState!.validate()) {
           _formKey.currentState!.save();
-          widget.answerFunc(answers.join(";"), widget.answerId ?? 0);
+          widget.answerFunc(answers.join(";"));
         } else {
-          widget.answerFunc("", widget.answerId ?? 0);
+          widget.answerFunc("");
         }
       },
       autovalidateMode: AutovalidateMode.always, //.onUserInteraction,

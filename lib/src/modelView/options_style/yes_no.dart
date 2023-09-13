@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../base_widget/custom_button.dart';
 import '../../modules/home/parameters.dart';
-import '../card_question/header_card.dart';
 
 class TypeYesNo extends StatefulWidget {
   final int id;
@@ -20,29 +19,20 @@ class _TypeYesNoState extends State<TypeYesNo> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: HeaderCard(
-        headerTitle: Text(
-          telas[widget.id]!['header'],
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 26, height: 2, color: Colors.white),
-        ),
-        widgetBody: Form(
-          key: _formKey,
-          onChanged: () {
-            if (_formKey.currentState!.validate()) {
-              _formKey.currentState!.save();
-              widget.answer.value = [answer.join(";")];
-            } else {
-              widget.answer.value = [];
-            }
-          },
-          autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
-          child: Column(
-            children:
-                _montaAternativas(telas[widget.id]!['options'] as List<String>),
-          ),
-        ),
+    return Form(
+      key: _formKey,
+      onChanged: () {
+        if (_formKey.currentState!.validate()) {
+          _formKey.currentState!.save();
+          widget.answer.value = [answer.join(";")];
+        } else {
+          widget.answer.value = [];
+        }
+      },
+      autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
+      child: Column(
+        children:
+            _montaAternativas(telas[widget.id]!['options'] as List<String>),
       ),
     );
   }

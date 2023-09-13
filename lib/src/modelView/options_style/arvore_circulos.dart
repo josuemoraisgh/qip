@@ -9,7 +9,7 @@ class ArvoreCiculos extends StatefulWidget {
   final List<String> itens;
   final int? optionsColumnsSize;
   final List<Color>? colors;
-  final Function(String, int) answerFunc;
+  final Function(String) answerFunc;
   final int? answerId;
   const ArvoreCiculos({
     Key? key,
@@ -117,10 +117,9 @@ class _ArvoreCiculosState extends State<ArvoreCiculos> {
                       paintSelected.forEach((key, value) =>
                           aux += "${key.toString()} - ${value.toString()}; ");
                       widget.answerFunc(
-                          "${aux.toString()} - ${DateTime.now().toString()}",
-                          widget.answerId ?? 0);
+                          "${aux.toString()} - ${DateTime.now().toString()}");
                     } else {
-                      widget.answerFunc('', widget.answerId ?? 0);
+                      widget.answerFunc('');
                     }
                     setState(() {});
                   },

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class FindImages extends StatefulWidget {
   final String imagem;
-  final Function(String, int) answerFunc;
+  final Function(String) answerFunc;
   final int? answerId;
   final List<Offset> pointSelected;
   const FindImages(
@@ -58,10 +58,9 @@ class _FindImagesState extends State<FindImages> {
               }
               if (widget.pointSelected.isNotEmpty) {
                 widget.answerFunc(
-                    "${widget.pointSelected.toString().replaceAll('Offset', '')} - ${DateTime.now().toString()}",
-                    widget.answerId ?? 0);
+                    "${widget.pointSelected.toString().replaceAll('Offset', '')} - ${DateTime.now().toString()}");
               } else {
-                widget.answerFunc('', widget.answerId ?? 0);
+                widget.answerFunc('');
               }
               setState(() {});
             },

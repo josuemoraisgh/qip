@@ -4,7 +4,7 @@ import 'find_images.dart';
 class FiveErrors extends StatefulWidget {
   final String imagemFull;
   final String imagemClean;
-  final Function(String, int) answerFunc;
+  final Function(String) answerFunc;
   final int? answerId;
   const FiveErrors(
       {Key? key,

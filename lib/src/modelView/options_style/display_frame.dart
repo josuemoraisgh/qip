@@ -100,7 +100,7 @@ class _DisplayFrameState extends State<DisplayFrame> {
                               body,
                               textAlign: TextAlign.justify,
                               style: const TextStyle(
-                                  fontSize: 20,
+                                  fontSize: 15.0,
                                   color: Colors.black,
                                   decorationColor: Colors.black),
                             )
