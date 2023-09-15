@@ -9,11 +9,12 @@ class ArvoreCiculos extends StatefulWidget {
   final List<String> itens;
   final int? optionsColumnsSize;
   final List<Color>? colors;
-  final Function(String) answerFunc;
+  //final Function(String) answerFunc;
+  final ValueNotifier<String> answer;
   final int? answerId;
   const ArvoreCiculos({
     Key? key,
-    required this.answerFunc,
+    required this.answer,
     this.answerId,
     required this.imagem,
     required this.itens,
@@ -69,7 +70,7 @@ class _ArvoreCiculosState extends State<ArvoreCiculos> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: selectedColor ,
+      valueListenable: selectedColor,
       builder: (context, selectedColorNotifier, _) => Column(
         children: [
           MontaAlternativas(
@@ -115,11 +116,10 @@ class _ArvoreCiculosState extends State<ArvoreCiculos> {
                     if (paintSelected.isNotEmpty) {
                       var aux = "";
                       paintSelected.forEach((key, value) =>
-                          aux += "${key.toString()} - ${value.toString()}; ");
-                      widget.answerFunc(
-                          "${aux.toString()} - ${DateTime.now().toString()}");
+                          aux += "${key.toString()} - ${value.toString()};");
+                      //widget.answerFunc("${aux.toString()} - ${DateTime.now().toString()}");
                     } else {
-                      widget.answerFunc('');
+                      //widget.answerFunc('');
                     }
                     setState(() {});
                   },

@@ -5,14 +5,15 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../modules/home/telas_controller.dart';
 
 class SendEmail extends StatefulWidget {
-  const SendEmail({super.key});
+  final ValueNotifier<String> answer;
+  const SendEmail({super.key, required this.answer});
 
   @override
   State<SendEmail> createState() => _SendEmailState();
 }
 
 class _SendEmailState extends State<SendEmail> {
-  late TelasController controller;  
+  late TelasController controller;
   final _formKey = GlobalKey<FormState>();
   final textController = TextEditingController();
   final focusNode = FocusNode();
@@ -21,6 +22,12 @@ class _SendEmailState extends State<SendEmail> {
   void initState() {
     super.initState();
     controller = Modular.get<TelasController>();
+    textController.text = widget.answer.value;
+    textController.addListener(
+      () {
+        widget.answer.value = textController.text;
+      },
+    );
   }
 
   @override

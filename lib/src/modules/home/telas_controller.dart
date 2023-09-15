@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../interfaces/asssistido_remote_storage_interface.dart';
 
@@ -5,4 +6,6 @@ import '../interfaces/asssistido_remote_storage_interface.dart';
 class TelasController {
   final storage = Modular.get<AssistidoRemoteStorageInterface>();
   List<String> answer = [];
+  final answerAux = ValueNotifier<List<ValueNotifier<String>>>([]);
+  final emailAux = ValueNotifier<String>("");
 }

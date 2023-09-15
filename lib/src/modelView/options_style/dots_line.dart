@@ -5,9 +5,10 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 class DotsLine extends StatefulWidget {
-  final Function(String) answerFunc;
+  final ValueNotifier<String> answer;
+  //final Function(String)? answerFunc;
   final int? answerId;
-  const DotsLine({super.key, required this.answerFunc, this.answerId});
+  const DotsLine({super.key, this.answerId, required this.answer});
 
   @override
   State<DotsLine> createState() => _DotsLineState();
@@ -29,6 +30,17 @@ class _DotsLineState extends State<DotsLine> {
         pointScreem += [Offset(x * mult + bias, y * mult + bias)];
       }
     }
+    var aux = widget.answer.value.split(";");
+    pointSelected = List.generate(
+      aux.length,
+      (index) {
+        var aux2 = aux[index].split(" ");
+        return (
+          Offset(double.parse(aux2[0]), double.parse(aux2[1])),
+          Offset(double.parse(aux2[2]), double.parse(aux2[3]))
+        );
+      },
+    );
   }
 
   @override
@@ -117,10 +129,10 @@ class _DotsLineState extends State<DotsLine> {
                     }
                   }
                   if (pointSelected.isNotEmpty) {
-                    widget.answerFunc(
-                        "${pointSelected.toString().replaceAll('Offset', '')} - ${DateTime.now().toString()}");
+                    widget.answer.value =
+                        pointSelected.toString().replaceAll('Offset', '');
                   } else {
-                    widget.answerFunc('vazio');
+                    widget.answer.value = '';
                   }
                   setState(() {});
                 },

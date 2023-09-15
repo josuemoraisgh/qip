@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../base_widget/custom_button.dart';
-import '../../modules/home/parameters.dart';
 
 class TypeYesNo extends StatefulWidget {
   final int id;
-  final ValueNotifier<List<String>> answer;
-  const TypeYesNo({Key? key, required this.id, required this.answer})
+  final ValueNotifier<String> answer;
+  final List<String> options;
+  const TypeYesNo(
+      {Key? key, required this.id, required this.answer, required this.options})
       : super(key: key);
 
   @override
@@ -14,8 +15,19 @@ class TypeYesNo extends StatefulWidget {
 
 class _TypeYesNoState extends State<TypeYesNo> {
   final _formKey = GlobalKey<FormState>();
-  List<String> answer = [];
-  List<ValueNotifier<String>> answerAux = [];
+  late List<ValueNotifier<String>> answerAux;
+
+  @override
+  void initState() {
+    super.initState();
+    var aux = widget.answer.value.split(";");
+    if (aux.length != widget.options.length) {
+      answerAux = List.filled(widget.options.length, ValueNotifier<String>(""));
+    } else {
+      answerAux = List.generate(
+          widget.options.length, (index) => ValueNotifier<String>(aux[index]));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,29 +35,26 @@ class _TypeYesNoState extends State<TypeYesNo> {
       key: _formKey,
       onChanged: () {
         if (_formKey.currentState!.validate()) {
-          _formKey.currentState!.save();
-          widget.answer.value = [answer.join(";")];
+          widget.answer.value = answerAux.join(";");
         } else {
-          widget.answer.value = [];
+          widget.answer.value = "";
         }
+        _formKey.currentState!.save();
       },
       autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
       child: Column(
-        children:
-            _montaAternativas(telas[widget.id]!['options'] as List<String>),
+        children: _montaAternativas(widget.options),
       ),
     );
   }
 
-  List<Widget> _montaAternativas(List<String> items) {
+  List<Widget> _montaAternativas(List<String> options) {
     List<Widget> widgetList = [];
-    for (int i = 0; i < items.length; i++) {
-      answer.add("");
-      answerAux.add(ValueNotifier<String>(""));
+    for (int i = 0; i < options.length; i++) {
       widgetList.add(const SizedBox(height: 10));
       widgetList.add(
         Text(
-          (telas[widget.id]!['options'][i] as String),
+          widget.options[i],
           textAlign: TextAlign.justify,
           style: const TextStyle(fontSize: 24.0),
         ),
@@ -64,8 +73,7 @@ class _TypeYesNoState extends State<TypeYesNo> {
                     value: "Sim",
                     groupValue: answerAux[i],
                     onChanged: (value) {
-                      answer[i] = "$value; ${DateTime.now().toString()}";
-                      state.didChange(answer[i]);
+                      state.didChange(value);
                     },
                   ),
                 ),
@@ -75,8 +83,7 @@ class _TypeYesNoState extends State<TypeYesNo> {
                     value: "Não",
                     groupValue: answerAux[i],
                     onChanged: (value) {
-                      answer[i] = "$value; ${DateTime.now().toString()}";
-                      state.didChange(answer[i]);
+                      state.didChange(value);
                     },
                   ),
                 ),

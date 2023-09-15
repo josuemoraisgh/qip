@@ -22,8 +22,8 @@ class TelasPage extends StatefulWidget {
 class _TelasPageState extends State<TelasPage> {
   late TelasController controller;
   final _formKey = GlobalKey<FormState>();
-  final _formFieldkey = GlobalKey<FormFieldState>();
-  final answerNotifier = ValueNotifier<List<String>>([]);
+  final formFieldkey = GlobalKey<FormFieldState<List<ValueNotifier<String>>>>();
+  final answerNotifier = ValueNotifier<List<ValueNotifier<String>>>([]);
   var player = AudioPlayer();
 
   @override
@@ -35,7 +35,7 @@ class _TelasPageState extends State<TelasPage> {
           .then((value) {
         setState(() {
           if (telas[widget.id]!['hasProx']) {
-            answerNotifier.value = ['Sucess'];
+            answerNotifier.value = [ValueNotifier<String>('Sucess')];
           } else {
             Modular.to.popAndPushNamed("/", arguments: widget.id + 1);
           }
@@ -72,6 +72,9 @@ class _TelasPageState extends State<TelasPage> {
 
   @override
   Widget build(BuildContext context) {
+    controller.answerAux.value = List.generate(
+        telas[widget.id]!['answerLenght'],
+        (index) => ValueNotifier<String>(""));
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final double tam = typeSpace(constraints.maxWidth);
@@ -126,6 +129,8 @@ class _TelasPageState extends State<TelasPage> {
                     margin: const EdgeInsets.all(0.0),
                     shape: const OutlineInputBorder(
                         borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
                             bottomLeft: Radius.circular(20),
                             bottomRight: Radius.circular(20)),
                         borderSide: BorderSide(color: Colors.white)),
@@ -137,32 +142,34 @@ class _TelasPageState extends State<TelasPage> {
                         key: _formKey,
                         onChanged: () {
                           if (_formKey.currentState!.validate()) {
-                            answerNotifier.value = [
-                              _formFieldkey.currentState?.value.join(";")
-                            ];
+                            List<ValueNotifier<String>> answer =
+                                formFieldkey.currentState!.value!;
+                            answerNotifier.value = answer;
                           } else {
                             answerNotifier.value = [];
                           }
                         },
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        child: FormField<List<String>>(
-                          key: _formFieldkey,
-                          //initialValue: answer,
-                          validator: (List<String>? value) {
+                        child: FormField<List<ValueNotifier<String>>>(
+                          key: formFieldkey,
+                          initialValue: controller.answerAux.value,
+                          validator: (List<ValueNotifier<String>>? value) {
                             if (value == null) {
                               return 'Por favor responda todas as questões';
                             } else {
-                              final count =
-                                  value.where((item) => item != "").length;
+                              final count = value
+                                  .where((item) => item.value != "")
+                                  .length;
                               if (count != value.length) {
                                 return 'Por favor responda todas as questões';
                               }
                             }
                             return (null);
                           },
-                          builder: (FormFieldState<List<String>> state) {
-                            var itens =
-                                telas[widget.id]!['itens']!(controller, state);
+                          builder: (FormFieldState<List<ValueNotifier<String>>>
+                              state) {
+                            List<Widget> itens = telas[widget.id]!['itens']!(
+                                controller, formFieldkey);
                             return ListView.builder(
                               //shrinkWrap: true,
                               itemCount: itens.length,
@@ -208,9 +215,10 @@ class _TelasPageState extends State<TelasPage> {
   }
 
   Widget _proximaButton() {
-    return ValueListenableBuilder<List<String>>(
+    return ValueListenableBuilder<List<ValueNotifier<String>>>(
       valueListenable: answerNotifier,
-      builder: (BuildContext context, List<String> resp, Widget? child) =>
+      builder: (BuildContext context, List<ValueNotifier<String>> resp,
+              Widget? child) =>
           ElevatedButton(
         style: ButtonStyle(
           fixedSize: MaterialStateProperty.all<Size>(const Size(170, 40)),
@@ -222,8 +230,11 @@ class _TelasPageState extends State<TelasPage> {
         onPressed: resp.isEmpty
             ? null
             : () {
-                debugPrint("${widget.id.toString()};${resp.toString()}");
-                controller.answer += answerNotifier.value;
+                List<String> aux = resp.map((e) => e.value).toList();
+                debugPrint("${widget.id.toString()};${aux.toString()}");
+                controller.answer += [
+                  "${DateTime.now().toString()} - ${aux.join(";")}"
+                ];
                 if (widget.id == 75) {
                   controller.storage.addData(controller.answer);
                   controller.storage.addData(resp);

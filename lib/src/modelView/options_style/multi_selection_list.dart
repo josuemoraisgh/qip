@@ -4,7 +4,8 @@ import 'package:ia_triagem/src/modelView/base_widget/monta_alternativas.dart';
 import '../base_widget/custom_button.dart';
 
 class MultiSelectionList extends StatefulWidget {
-  final Function(String) answerFunc;
+  //final void Function(String) answerFunc;
+  final ValueNotifier<String> answer;
   final int? answerId;
   final String? description;
   final Icon? icon;
@@ -13,7 +14,8 @@ class MultiSelectionList extends StatefulWidget {
   final String? Function(List<ValueNotifier<String>>?)? validator;
   const MultiSelectionList({
     super.key,
-    required this.answerFunc,
+    required this.answer,
+    //required this.answerFunc,
     this.description,
     this.icon,
     required this.itens,
@@ -27,14 +29,22 @@ class MultiSelectionList extends StatefulWidget {
 }
 
 class _MultiSelectionListState extends State<MultiSelectionList> {
-  late List<ValueNotifier<String>> answers;
+  late List<ValueNotifier<String>> answerAux;
   late final GlobalKey<FormState> _formKey;
 
   @override
   void initState() {
-    _formKey = GlobalKey<FormState>();
-    answers = List.filled(widget.itens.length, ValueNotifier<String>(""));
     super.initState();
+
+    _formKey = GlobalKey<FormState>();
+
+    var aux = widget.answer.value.split(";");
+    if (aux.length != widget.itens.length) {
+      answerAux = List.filled(widget.itens.length, ValueNotifier<String>(""));
+    } else {
+      answerAux = List.generate(
+          widget.itens.length, (index) => ValueNotifier<String>(aux[index]));
+    }
   }
 
   @override
@@ -43,15 +53,17 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
       key: _formKey,
       onChanged: () {
         if (_formKey.currentState!.validate()) {
-          _formKey.currentState!.save();
-          widget.answerFunc(answers.join(";"));
+          widget.answer.value = answerAux.join(';');
+          //if(widget.answerFunc != null) widget.answerFunc!(answerAux.join(';'));
         } else {
-          widget.answerFunc("");
+          widget.answer.value = '';
+          //if(widget.answerFunc != null) widget.answerFunc!('');
         }
+        _formKey.currentState!.save();
       },
       autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
       child: FormField<List<ValueNotifier<String>>>(
-        initialValue: answers,
+        initialValue: answerAux,
         autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
         validator: widget.validator,
         builder: (FormFieldState<List<ValueNotifier<String>>> state) => Column(
@@ -82,31 +94,24 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
                     ? CustomButton(
                         title: widget.itens[i],
                         value: widget.itens[i],
-                        groupValue: answers[i],
-                        onChanged: (String? _) {
-                            if (answers[i].value != "") {
-                              answers[i].value = "";
-                            } else {
-                              answers[i].value =
-                                  "${widget.itens[i]} - ${DateTime.now().toString()}";
-                            }
-                            state.didChange(answers);
+                        groupValue: answerAux[i],
+                        onChanged: (_) {
+                          state.didChange(answerAux);
                         },
                       )
                     : TextButton(
                         child: Opacity(
-                          opacity: answers[i].value != "" ? 1 : 0.3,
+                          opacity: answerAux[i].value != "" ? 1 : 0.3,
                           child: Image.asset(widget.itens[i]),
                         ),
                         onPressed: () {
                           setState(() {
-                            if (answers[i].value != "") {
-                              answers[i].value = "";
+                            if (answerAux[i].value != "") {
+                              answerAux[i].value = "";
                             } else {
-                              answers[i].value =
-                                  "${widget.itens[i]} - ${DateTime.now().toString()}";
+                              answerAux[i].value = widget.itens[i];
                             }
-                            state.didChange(answers);
+                            state.didChange(answerAux);
                           });
                         },
                       ),

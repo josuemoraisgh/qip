@@ -4,15 +4,17 @@ import 'find_images.dart';
 class FiveErrors extends StatefulWidget {
   final String imagemFull;
   final String imagemClean;
-  final Function(String) answerFunc;
+  //final Function(String) answerFunc;
+  final ValueNotifier<String> answer;
   final int? answerId;
-  const FiveErrors(
-      {Key? key,
-      required this.answerFunc,
-      this.answerId,
-      required this.imagemFull,
-      required this.imagemClean})
-      : super(key: key);
+  const FiveErrors({
+    Key? key,
+    required this.answer,
+    //required this.answerFunc,
+    this.answerId,
+    required this.imagemFull,
+    required this.imagemClean,
+  }) : super(key: key);
 
   @override
   State<FiveErrors> createState() => _FiveErrorsState();
@@ -92,8 +94,8 @@ class _FiveErrorsState extends State<FiveErrors> {
                         key: const ValueKey<int>(1),
                         imagem: widget.imagemClean,
                         answerId: widget.answerId ?? 0,
-                        answerFunc: widget.answerFunc,
-                        pointSelected: pointSelected,
+                        answer: widget.answer,
+                        //answerFunc: widget.answerFunc,
                       )),
           ),
         ),

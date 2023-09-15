@@ -7,16 +7,44 @@ import '../../modelView/options_style/single_selection_list.dart';
 import '../../modelView/options_style/text_form_list.dart';
 import 'telas_controller.dart';
 
+void addListenerSimples(
+  TelasController controller,
+  GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+) {
+  state.currentState!.didChange(controller.answerAux.value);
+}
+
+void addListenerComposto(
+  TelasController controller,
+  GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+  int i1,
+  int i2,
+) {
+  if (controller.answerAux.value[i1].value != 'other') {
+    if (controller.answerAux.value[i2].value == '') {
+      controller.answerAux.value[i2].value = 'Sucess';
+    }
+  } else {
+    if (controller.answerAux.value[i2].value == 'Sucess') {
+      controller.answerAux.value[i2].value = '';
+    }
+  }
+  state.currentState!.didChange(controller.answerAux.value);
+}
+
 Map<int, Map<String, dynamic>> telas = {
   1: {
     'hasProx': true,
     'isSendAnswer': false,
     'header': "Questionário Interativo Psicopatológico (QIP)",
-    'itens': (TelasController controller, FormFieldState<List<String>> state) {
-      final List<String> answer = [""];
-      return [
-        const Text(
-          """
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const Text(
+            """
 
 TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO
 
@@ -31,72 +59,73 @@ Você é livre para deixar de participar da pesquisa a qualquer momento sem qual
 Você poderá também entrar em contato com o CEP - Comitê de Ética na Pesquisa com Seres Humanos na Universidade Federal de Uberlândia, localizado na Av. João Naves de Ávila, nº 2121, bloco A, sala 224, campus Santa Mônica – Uberlândia/MG, 38408-100; telefone: 34-3239-4131 ou pelo e-mail: cep@propp.ufu.br. O CEP é um colegiado independente criado para defender os interesses dos participantes das pesquisas em sua integridade e dignidade e para contribuir para o desenvolvimento da pesquisa dentro de padrões éticos conforme resoluções do Conselho Nacional de Saúde.
 Ao assinalar a opção “Concordo”, a seguir, você declara que aceita participar do projeto citado acima, voluntariamente, após ter sido devidamente esclarecido, pelos pesquisadores; que entendeu como é a pesquisa, que pode solicitar esclarecimentos em relação as dúvidas com o/a pesquisador/a via e-mail (duvidaspsicopatologiacomia@gmail.com); e que pode desistir em qualquer momento, durante e depois de participar; você autoriza a divulgação dos dados obtidos neste estudo mantendo em sigilo sua identidade. 
 """,
-          textAlign: TextAlign.justify,
-        ),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            if (value.contains('Concordo')) {
-              answer[0] = value;
-              state.didChange(answer);
-            } else {
-              answer[0] = "";
-              state.didChange(answer);
-            }
-          },
-          hasPrefiroNaoDizer: false,
-          options: const ['Concordo', 'Não concordo'],
-          optionsColumnsSize: 2,
-        ),
-        const SizedBox(height: 10.0),
-        const Text(
-          """
+            textAlign: TextAlign.justify,
+          ),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(
+                () {
+                  if (controller.answerAux.value[0].value == 'Concordo') {
+                    state.currentState!.didChange(controller.answerAux.value);
+                  } else {
+                    state.currentState!.didChange([]);
+                  }
+                },
+              ),
+            hasPrefiroNaoDizer: false,
+            options: const ['Concordo', 'Não concordo'],
+            optionsColumnsSize: 2,
+          ),
+          const SizedBox(height: 10.0),
+          const Text(
+            """
 Solicitamos que você salve este documento em seus arquivos. Se desejar receber uma cópia deste registro de consentimento por e-mail, por favor, preencha-o abaixo e clique no botão de enviar:
 """,
-          textAlign: TextAlign.justify,
-        ),
-        const SizedBox(height: 10.0),
-        const SendEmail(),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        const Text(
-          """
+            textAlign: TextAlign.justify,
+          ),
+          const SizedBox(height: 10.0),
+          SendEmail(answer: controller.emailAux),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          const Text(
+            """
 
   DECLARAÇÃO DOS PESQUISADORES
 
 Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livre e Esclarecido deste participante para a participação neste estudo. Declaramos ainda que nos comprometemos a cumprir todos os termos aqui descritos;
 """,
-          textAlign: TextAlign.justify,
-        ),
-        const SizedBox(height: 10.0),
-        Image.asset(
-          'assets/assinatura_keiji.png',
-          alignment: Alignment.bottomCenter,
-        ),
-        const SizedBox(height: 10.0),
-        Image.asset(
-          'assets/assinatura_resia.png',
-          alignment: Alignment.bottomCenter,
-        ),
-      ];
-    },
+            textAlign: TextAlign.justify,
+          ),
+          const SizedBox(height: 10.0),
+          Image.asset(
+            'assets/assinatura_keiji.png',
+            alignment: Alignment.bottomCenter,
+          ),
+          const SizedBox(height: 10.0),
+          Image.asset(
+            'assets/assinatura_resia.png',
+            alignment: Alignment.bottomCenter,
+          ),
+        ],
   },
   2: {
     'hasProx': true,
     'isSendAnswer': true,
     'header': 'Questionário Sociodemográfico',
-    'itens': (TelasController controller, FormFieldState<List<String>> state) {
-      final List<String> answer = ["", "", "", "", "", "", "", "", "", "", ""];
-      return [
-        TextFormList(
-          answerFunc: (String value) {
-            answer[0] = value;
-            state.didChange(answer);
-          },
-          optionsColumnsSize: 1,
-          labelText: const ['Que horas são neste instante?', 'Data de hoje?'],
-          validator: [
-            (value) {
+    'answerLenght': 19,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TextFormList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            labelText: 'Que horas são neste instante?',
+            validator: (value) {
               if (value == null) {
                 return 'Horário Inválido!!';
               } else if ((value.isEmpty) || (value.length != 5)) {
@@ -104,7 +133,23 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               }
               return null;
             },
-            (value) {
+            icon: Icons.lock_clock,
+            keyboardType: TextInputType.datetime,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              HoraInputFormatter()
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            labelText: 'Data de hoje?',
+            validator: (value) {
               if (value == null) {
                 return 'Data atual Incorreta!!';
               } else if ((value.isEmpty) || (value.length != 10)) {
@@ -112,65 +157,54 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               }
               return null;
             },
-          ],
-          icons: const [Icons.lock_clock, Icons.date_range],
-          keyboardType: const [TextInputType.datetime, TextInputType.datetime],
-          inputFormatters: [
-            [FilteringTextInputFormatter.digitsOnly, HoraInputFormatter()],
-            [FilteringTextInputFormatter.digitsOnly, DataInputFormatter()],
-          ],
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        TextFormList(
-          answerFunc: (String value) {
-            answer[1] = value;
-            state.didChange(answer);
-          },
-          labelText: const ['Qua a sua Idade?'],
-          icons: const [Icons.cake],
-          keyboardType: const [TextInputType.number],
-          inputFormatters: [
-            [FilteringTextInputFormatter.digitsOnly]
-          ],
-          validator: [
-            (String? value) {
-              if ((value == null) ||
-                  (value.isEmpty) ||
-                  (int.parse(value) <= 0) ||
-                  (int.parse(value) >= 130)) {
-                return 'Idade invalida!! Corrija por favor';
-              }
-              return null;
-            }
-          ],
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[2] = value;
-            state.didChange(answer);
-          },
-          title: 'Gênero *',
-          icon: Icons.transgender,
-          hasPrefiroNaoDizer: true,
-          options: const ["Feminino", "Masculino"],
-          optionsColumnsSize: 2,
-          otherItem: TextFormList(
-            answerFunc: (String value) {
-              answer[2] = value;
-              state.didChange(answer);
-            },
-            labelText: const ["Qual o seu gênero?"],
-            keyboardType: const [TextInputType.number],
+            icon: Icons.date_range,
+            keyboardType: TextInputType.datetime,
             inputFormatters: [
-              [FilteringTextInputFormatter.singleLineFormatter]
+              FilteringTextInputFormatter.digitsOnly,
+              DataInputFormatter()
             ],
-            validator: [
-              (String? value) {
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+              answer: controller.answerAux.value[2]
+                ..addListener(() =>
+                    state.currentState!.didChange(controller.answerAux.value)),
+              labelText: 'Qual a sua Idade?',
+              icon: Icons.cake,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (String? value) {
+                if ((value == null) ||
+                    (value.isEmpty) ||
+                    (int.parse(value) <= 0) ||
+                    (int.parse(value) >= 130)) {
+                  return 'Idade invalida!! Corrija por favor';
+                }
+                return null;
+              }),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[3]
+              ..addListener(() => addListenerComposto(controller, state, 3, 4)),
+            title: 'Gênero *',
+            icon: Icons.transgender,
+            hasPrefiroNaoDizer: true,
+            options: const ["Feminino", "Masculino"],
+            optionsColumnsSize: 2,
+            otherItem: TextFormList(
+              answer: controller.answerAux.value[4]
+                ..addListener(() =>
+                    state.currentState!.didChange(controller.answerAux.value)),
+              labelText: "Qual o seu gênero?",
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.singleLineFormatter
+              ],
+              validator: (String? value) {
                 if (value == null) {
                   return 'Descrição invalida!! Corrija por favor';
                 } else if ((value.isEmpty) || (value.length < 3)) {
@@ -178,265 +212,229 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 }
                 return null;
               },
-            ],
+            ),
           ),
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[3] = value;
-            state.didChange(answer);
-          },
-          title: 'Qual foi o sexo atribuído no seu nascimento?',
-          icon: Icons.wc,
-          hasPrefiroNaoDizer: false,
-          options: const ["Feminino", "Masculino"],
-          optionsColumnsSize: 2,
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[4] = value;
-            state.didChange(answer);
-          },
-          title: "Assinale a alternativa que identifica a sua Cor ou Raça:",
-          icon: Icons.person,
-          hasPrefiroNaoDizer: true,
-          options: const ["Preta", "Branca", "Parda", "Amarela", "IndÍgena"],
-          optionsColumnsSize: 2,
-          otherItem: TextFormList(
-              answerFunc: (String value) {
-                answer[4] = value;
-                state.didChange(answer);
-              },
-              labelText: const [
-                "Qual a sua Cor ou Raça ?"
-              ],
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[5]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'Qual foi o sexo atribuído no seu nascimento?',
+            icon: Icons.wc,
+            hasPrefiroNaoDizer: false,
+            options: const ["Feminino", "Masculino"],
+            optionsColumnsSize: 2,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[6]
+              ..addListener(() => addListenerComposto(controller, state, 6, 7)),
+            title: "Assinale a alternativa que identifica a sua Cor ou Raça:",
+            icon: Icons.person,
+            hasPrefiroNaoDizer: true,
+            options: const ["Preta", "Branca", "Parda", "Amarela", "IndÍgena"],
+            optionsColumnsSize: 2,
+            otherItem: TextFormList(
+              answer: controller.answerAux.value[7]
+                ..addListener(() =>
+                    state.currentState!.didChange(controller.answerAux.value)),
+              labelText: "Qual a sua Cor ou Raça ?",
               inputFormatters: [
-                [FilteringTextInputFormatter.singleLineFormatter]
+                FilteringTextInputFormatter.singleLineFormatter
               ],
-              validator: [
-                (value) {
-                  if (value == null) {
-                    return 'Descrição invalida!! Corrija por favor';
-                  } else if ((value.isEmpty) || (value.length < 3)) {
-                    return 'Descrição invalida!! Corrija por favor';
-                  }
-                  return null;
-                },
-              ]),
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[5] = value;
-            state.didChange(answer);
-          },
-          title: "Dentro de sua família, você é o(a) único(a) filho(a)?",
-          icon: Icons.diversity_3,
-          hasPrefiroNaoDizer: false,
-          options: const ["Sim"],
-          optionsColumnsSize: 2,
-          otherLabel: "Não",
-          otherItem: TextFormList(
-              answerFunc: (String value) {
-                answer[5] = value;
-                state.didChange(answer);
+              validator: (value) {
+                if (value == null) {
+                  return 'Descrição invalida!! Corrija por favor';
+                } else if ((value.isEmpty) || (value.length < 3)) {
+                  return 'Descrição invalida!! Corrija por favor';
+                }
+                return null;
               },
-              labelText: const [
-                "Quantos irmãos voçê tem?"
-              ],
+            ),
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[8]
+              ..addListener(() => addListenerComposto(controller, state, 8, 9)),
+            title: "Dentro de sua família, você é o(a) único(a) filho(a)?",
+            icon: Icons.diversity_3,
+            hasPrefiroNaoDizer: false,
+            options: const ["Sim"],
+            optionsColumnsSize: 2,
+            otherLabel: "Não",
+            otherItem: TextFormList(
+              answer: controller.answerAux.value[9]
+                ..addListener(() =>
+                    state.currentState!.didChange(controller.answerAux.value)),
+              labelText: "Quantos irmãos voçê tem?",
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (value) {
+                if (value == null) {
+                  return 'Quantidade invalida!! Corrija por favor';
+                } else if ((value.isEmpty)) {
+                  return 'Quantidade invalida!! Corrija por favor';
+                }
+                return null;
+              },
+            ),
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[10]
+              ..addListener(() => addListenerComposto(controller, state, 10, 11)),
+            title: "Qual o seu estado civil?",
+            icon: Icons.diversity_2,
+            hasPrefiroNaoDizer: false,
+            optionsColumnsSize: 2,
+            options: const [
+              "Solteiro (a):",
+              "Casado (a)",
+              "Viúvo (a)",
+              "Divorciado(a)",
+              "Amaziado",
+            ],
+            otherItem: TextFormList(
+              answer: controller.answerAux.value[11]
+                ..addListener(() =>
+                    state.currentState!.didChange(controller.answerAux.value)),
+              labelText: "Qual estado civil ?",
               inputFormatters: [
-                [FilteringTextInputFormatter.digitsOnly]
+                FilteringTextInputFormatter.singleLineFormatter
               ],
-              validator: [
-                (value) {
+              validator: (value) {
+                if (value == null) {
+                  return 'Descrição invalida!! Corrija por favor';
+                } else if ((value.isEmpty) || (value.length < 3)) {
+                  return 'Descrição invalida!! Corrija por favor';
+                }
+                return null;
+              },
+            ),
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[12]
+              ..addListener(() => addListenerComposto(controller, state, 12, 13)),
+            title: "Possui filhos(as)?",
+            icon: Icons.group_add,
+            hasPrefiroNaoDizer: false,
+            optionsColumnsSize: 2,
+            options: const ["Não"],
+            otherLabel: "Sim",
+            otherItem: TextFormList(
+              answer: controller.answerAux.value[13]
+                ..addListener(() =>
+                    state.currentState!.didChange(controller.answerAux.value)),
+              labelText: "Quantos filhos voçê tem?",
+              inputFormatters: [
+                FilteringTextInputFormatter.singleLineFormatter
+              ],
+              validator: (value) {
+                if (value == null) {
+                  return 'Quantidade invalida!! Corrija por favor';
+                } else if ((value.isEmpty)) {
+                  return 'Quantidade invalida!! Corrija por favor';
+                }
+                return null;
+              },
+            ),
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[14]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: "Possui filhos(as) menores de 6 anos?",
+            icon: Icons.child_friendly,
+            hasPrefiroNaoDizer: false,
+            optionsColumnsSize: 2,
+            options: const ["Não", "Sim"],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[15]
+              ..addListener(() => addListenerComposto(controller, state, 15, 16)),
+            title: "Religião *",
+            icon: Icons.church,
+            hasPrefiroNaoDizer: false,
+            optionsColumnsSize: 2,
+            options: const ["Sem religião"],
+            otherLabel: "Tenho religião",
+            otherItem: TextFormList(
+                answer: controller.answerAux.value[16]
+                  ..addListener(() => state.currentState!
+                      .didChange(controller.answerAux.value)),
+                labelText: "Qual é a Religião?",
+                inputFormatters: [
+                  FilteringTextInputFormatter.singleLineFormatter
+                ],
+                validator: (value) {
                   if (value == null) {
-                    return 'Quantidade invalida!! Corrija por favor';
+                    return 'Religião invalida!! Corrija por favor';
                   } else if ((value.isEmpty)) {
-                    return 'Quantidade invalida!! Corrija por favor';
+                    return 'Religião invalida!! Corrija por favor';
                   }
                   return null;
-                },
-              ]),
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[5] = value;
-            state.didChange(answer);
-          },
-          title: "Qual o seu estado civil?",
-          icon: Icons.diversity_2,
-          hasPrefiroNaoDizer: false,
-          optionsColumnsSize: 2,
-          options: const [
-            "Solteiro (a):",
-            "Casado (a)",
-            "Viúvo (a)",
-            "Divorciado(a)",
-            "Amaziado",
-          ],
-          otherItem: TextFormList(
-            answerFunc: (String value) {
-              answer[5] = value;
-              state.didChange(answer);
-            },
-            labelText: const ["Qual estado civil ?"],
-            inputFormatters: [
-              [FilteringTextInputFormatter.singleLineFormatter]
-            ],
-            validator: [
-              (value) {
-                if (value == null) {
-                  return 'Descrição invalida!! Corrija por favor';
-                } else if ((value.isEmpty) || (value.length < 3)) {
-                  return 'Descrição invalida!! Corrija por favor';
-                }
-                return null;
-              },
+                }),
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[17]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: "Escolaridade *",
+            icon: Icons.school,
+            hasPrefiroNaoDizer: false,
+            options: const [
+              "Sem Escolaridade",
+              "Ensino Fundamental (1º grau) incompleto",
+              "Ensino Fundamental (1º grau) completo",
+              "Ensino Médio (2º grau) incompleto",
+              "Ensino Médio (2º grau) completo",
+              "Superior Incompleto",
+              "Superior Completo",
+              "Mestrado",
+              "Doutorado",
             ],
           ),
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[6] = value;
-            state.didChange(answer);
-          },
-          title: "Possui filhos(as)?",
-          icon: Icons.group_add,
-          hasPrefiroNaoDizer: false,
-          optionsColumnsSize: 2,
-          options: const ["Não"],
-          otherLabel: "Sim",
-          otherItem: TextFormList(
-            answerFunc: (String value) {
-              answer[6] = value;
-              state.didChange(answer);
-            },
-            labelText: const ["Quantos filhos voçê tem?"],
-            inputFormatters: [
-              [FilteringTextInputFormatter.singleLineFormatter]
-            ],
-            validator: [
-              (value) {
-                if (value == null) {
-                  return 'Quantidade invalida!! Corrija por favor';
-                } else if ((value.isEmpty)) {
-                  return 'Quantidade invalida!! Corrija por favor';
-                }
-                return null;
-              },
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[18]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: "Renda familiar mensal de sua casa (somatória)",
+            icon: Icons.attach_money,
+            hasPrefiroNaoDizer: false,
+            options: const [
+              "Até 1 salário mínimo",
+              "Mais de 1 a 2 salários mínimos",
+              "Mais de 2 a 3 salários mínimos",
+              "Mais de 3 a 5 salários mínimos",
+              "Mais de 5 a 8 salários mínimos",
+              "Mais de 8 a 12 salários mínimos",
+              "Mais de 12 a 20 salários mínimos",
+              "Mais de 20 salários mínimos",
             ],
           ),
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[7] = value;
-            state.didChange(answer);
-          },
-          title: "Possui filhos(as) menores de 6 anos?",
-          icon: Icons.child_friendly,
-          hasPrefiroNaoDizer: false,
-          optionsColumnsSize: 2,
-          options: const ["Não", "Sim"],
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[8] = value;
-            state.didChange(answer);
-          },
-          title: "Religião *",
-          icon: Icons.church,
-          hasPrefiroNaoDizer: false,
-          optionsColumnsSize: 2,
-          options: const ["Sem religião"],
-          otherLabel: "Tenho religião",
-          otherItem: TextFormList(
-            answerFunc: (String value) {
-              answer[8] = value;
-              state.didChange(answer);
-            },
-            labelText: const ["Qual é a Religião?"],
-            inputFormatters: [
-              [FilteringTextInputFormatter.singleLineFormatter]
-            ],
-            validator: [
-              (value) {
-                if (value == null) {
-                  return 'Religião invalida!! Corrija por favor';
-                } else if ((value.isEmpty)) {
-                  return 'Religião invalida!! Corrija por favor';
-                }
-                return null;
-              }
-            ],
-          ),
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[9] = value;
-            state.didChange(answer);
-          },
-          title: "Escolaridade *",
-          icon: Icons.school,
-          hasPrefiroNaoDizer: false,
-          options: const [
-            "Sem Escolaridade",
-            "Ensino Fundamental (1º grau) incompleto",
-            "Ensino Fundamental (1º grau) completo",
-            "Ensino Médio (2º grau) incompleto",
-            "Ensino Médio (2º grau) completo",
-            "Superior Incompleto",
-            "Superior Completo",
-            "Mestrado",
-            "Doutorado",
-          ],
-        ),
-        const SizedBox(height: 10.0),
-        const Divider(),
-        const SizedBox(height: 10.0),
-        SingleSelectionList(
-          answerFunc: (String value) {
-            answer[10] = value;
-            state.didChange(answer);
-          },
-          title: "Renda familiar mensal de sua casa (somatória)",
-          icon: Icons.attach_money,
-          hasPrefiroNaoDizer: false,
-          options: const [
-            "Até 1 salário mínimo",
-            "Mais de 1 a 2 salários mínimos",
-            "Mais de 2 a 3 salários mínimos",
-            "Mais de 3 a 5 salários mínimos",
-            "Mais de 5 a 8 salários mínimos",
-            "Mais de 8 a 12 salários mínimos",
-            "Mais de 12 a 20 salários mínimos",
-            "Mais de 20 salários mínimos",
-          ],
-        ),
-      ];
-    },
+        ],
   },
   3: {
     'hasProx': true,

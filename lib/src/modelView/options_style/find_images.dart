@@ -3,25 +3,35 @@ import 'package:flutter/material.dart';
 
 class FindImages extends StatefulWidget {
   final String imagem;
-  final Function(String) answerFunc;
+  //final Function(String)? answerFunc;
+  final ValueNotifier<String> answer;
   final int? answerId;
-  final List<Offset> pointSelected;
-  const FindImages(
-      {Key? key,
-      required this.answerFunc,
-      this.answerId,
-      required this.imagem,
-      required this.pointSelected})
-      : super(key: key);
+  const FindImages({
+    Key? key,
+    required this.answer,
+    //this.answerFunc,
+    this.answerId,
+    required this.imagem,
+  }) : super(key: key);
 
   @override
   State<FindImages> createState() => _FindImagesState();
 }
 
 class _FindImagesState extends State<FindImages> {
+  late List<Offset> pointSelected;
+
   @override
   void initState() {
     super.initState();
+    var aux = widget.answer.value.split(";");
+    pointSelected = List.generate(
+      aux.length,
+      (index) {
+        var aux2 = aux[index].split(" ");
+        return Offset(double.parse(aux2[0]), double.parse(aux2[1]));
+      },
+    );
   }
 
   @override
@@ -46,21 +56,21 @@ class _FindImagesState extends State<FindImages> {
           child: GestureDetector(
             key: const ValueKey<int>(1),
             onPanDown: (DragDownDetails details) {
-              if (widget.pointSelected.firstWhere(
+              if (pointSelected.firstWhere(
                       (element) =>
                           distance(element, details.localPosition) <= 11,
                       orElse: () => Offset.zero) !=
                   Offset.zero) {
-                widget.pointSelected.removeWhere((element) =>
+                pointSelected.removeWhere((element) =>
                     distance(element, details.localPosition) <= 11);
               } else {
-                widget.pointSelected.add(details.localPosition);
+                pointSelected.add(details.localPosition);
               }
-              if (widget.pointSelected.isNotEmpty) {
-                widget.answerFunc(
-                    "${widget.pointSelected.toString().replaceAll('Offset', '')} - ${DateTime.now().toString()}");
+              if (pointSelected.isNotEmpty) {
+                widget.answer.value =
+                    pointSelected.toString().replaceAll('Offset', '');
               } else {
-                widget.answerFunc('');
+                widget.answer.value = '';
               }
               setState(() {});
             },
@@ -71,7 +81,7 @@ class _FindImagesState extends State<FindImages> {
                   alignment: Alignment.center,
                 ),
                 CustomPaint(
-                  painter: OpenPainter(pointSelected: widget.pointSelected),
+                  painter: OpenPainter(pointSelected: pointSelected),
                 ),
               ],
             ),
