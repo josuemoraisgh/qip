@@ -31,14 +31,14 @@ class TextFormList extends StatefulWidget {
 }
 
 class _TextFormListState extends State<TextFormList> {
-  late TextEditingController textController;
+  final textController = TextEditingController();
+  final focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    textController = TextEditingController();
     textController.text = widget.answer.value;
-    textController.addListener(
+    focusNode.addListener(
       () {
         widget.answer.value = textController.text;
       },
@@ -48,64 +48,62 @@ class _TextFormListState extends State<TextFormList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.0),
-            border: Border.all(width: 0.2, color: Colors.black),
-            color: Colors.white,
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black,
-                blurRadius: 2.0,
-                spreadRadius: 0.0,
-                offset: Offset(2.0, 2.0), // shadow direction: bottom right
-              )
-            ],
-          ),
-          child: Padding(
-            padding:
-                const EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: ((widget.title ?? "") != ""
-                      ? <Widget>[
-                          const SizedBox(width: 15),
-                          Center(
-                            child: Text(
-                              widget.title!,
-                              textAlign: TextAlign.justify,
-                              style: const TextStyle(
-                                  fontSize: 35,
-                                  color: Colors.black,
-                                  decorationColor: Colors.black),
-                            ),
-                          ),
-                        ]
-                      : <Widget>[]) +
-                  <Widget>[
-                    const SizedBox(height: 15),
-                    widget.options == null
-                        ? _montaEdit()
-                        : Row(
-                            children: widget.options?[0] == "-"
-                                ? <Widget>[
-                                    Flexible(
-                                        flex: 20, child: _montaEdit()),
-                                    const Flexible(
-                                        flex: 3, child: SizedBox(width: 5)),
-                                    Flexible(flex: 10, child: _montaTexto()),
-                                  ]
-                                : <Widget>[
-                                    Flexible(flex: 10, child: _montaTexto()),
-                                    const Flexible(
-                                        flex: 3, child: SizedBox(width: 5)),
-                                    Expanded(
-                                        flex: 20, child: _montaEdit()),
-                                  ],
-                          ),
-                  ],
-            ),
-          ),
-        );
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(width: 0.2, color: Colors.black),
+        color: Colors.white,
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black,
+            blurRadius: 2.0,
+            spreadRadius: 0.0,
+            offset: Offset(2.0, 2.0), // shadow direction: bottom right
+          )
+        ],
+      ),
+      child: Padding(
+        padding:
+            const EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: ((widget.title ?? "") != ""
+                  ? <Widget>[
+                      const SizedBox(width: 15),
+                      Center(
+                        child: Text(
+                          widget.title!,
+                          textAlign: TextAlign.justify,
+                          style: const TextStyle(
+                              fontSize: 35,
+                              color: Colors.black,
+                              decorationColor: Colors.black),
+                        ),
+                      ),
+                    ]
+                  : <Widget>[]) +
+              <Widget>[
+                const SizedBox(height: 15),
+                widget.options == null
+                    ? _montaEdit()
+                    : Row(
+                        children: widget.options?[0] == "-"
+                            ? <Widget>[
+                                Flexible(flex: 20, child: _montaEdit()),
+                                const Flexible(
+                                    flex: 3, child: SizedBox(width: 5)),
+                                Flexible(flex: 10, child: _montaTexto()),
+                              ]
+                            : <Widget>[
+                                Flexible(flex: 10, child: _montaTexto()),
+                                const Flexible(
+                                    flex: 3, child: SizedBox(width: 5)),
+                                Expanded(flex: 20, child: _montaEdit()),
+                              ],
+                      ),
+              ],
+        ),
+      ),
+    );
   }
 
   BoxDecoration myContainerDecoration() {
@@ -134,6 +132,7 @@ class _TextFormListState extends State<TextFormList> {
     return TextFormField(
       //initialValue: answer,
       controller: textController,
+      focusNode: focusNode,
       decoration: InputDecoration(
         border: const UnderlineInputBorder(),
         icon: widget.icon != null ? Icon(widget.icon!) : null,

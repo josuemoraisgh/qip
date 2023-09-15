@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 class DisplayFrame extends StatefulWidget {
-  final Map<String, dynamic> item;
+  final String? body;
+  final bool? bodyHasFrame;
+  final double? fontSize;
   final List<Widget>? widgets;
   final void Function(String audio)? playMusic;
   const DisplayFrame(
-      {super.key, required this.item, this.widgets, this.playMusic});
+      {super.key, this.widgets, this.playMusic, this.body, this.bodyHasFrame, this.fontSize});
 
   @override
   State<DisplayFrame> createState() => _DisplayFrameState();
@@ -16,10 +18,10 @@ class _DisplayFrameState extends State<DisplayFrame> {
 
   @override
   Widget build(BuildContext context) {
-    final String body = widget.item['body'] ?? "";
+    final String body = widget.body ?? "";
     return Container(
       alignment: Alignment.center,
-      decoration: widget.item['body_hasFrame'] ?? true
+      decoration: widget.bodyHasFrame ?? true
           ? BoxDecoration(
               borderRadius: BorderRadius.circular(8.0),
               border: Border.all(width: 0.2, color: Colors.black),
@@ -35,7 +37,7 @@ class _DisplayFrameState extends State<DisplayFrame> {
             )
           : null,
       child: (body == "") &&
-              (widget.item['body_hasFrame'] ?? true) // body_type = vazio
+              (widget.bodyHasFrame ?? true) // body_type = vazio
           ? const SizedBox(
               height: 300.0,
               width: 400.0,
@@ -57,7 +59,7 @@ class _DisplayFrameState extends State<DisplayFrame> {
                                   icon: const Icon(Icons.play_arrow),
                                   onPressed: () async {
                                     if (widget.playMusic != null) {
-                                      widget.playMusic!(widget.item['body']);
+                                      widget.playMusic!(widget.body ?? "");
                                     }
                                     setState(() {
                                       isPlaying = true;
@@ -74,10 +76,9 @@ class _DisplayFrameState extends State<DisplayFrame> {
                   ),
                 )
               : body.contains('.png') // body_type = image
-                  ? widget.item['body_hasFrame'] ?? true
+                  ? widget.bodyHasFrame ?? true
                       ? Image.asset(
                           body, //assets/arvore2.png
-                          //height: 300.0,
                           width: 400.0,
                           alignment: Alignment.center,
                         )
@@ -85,12 +86,12 @@ class _DisplayFrameState extends State<DisplayFrame> {
                           body, //assets/arvore2.png
                           alignment: Alignment.bottomCenter,
                         )
-                  : widget.item['body_hasFrame'] ?? true // body_type = texto
+                  : widget.bodyHasFrame ?? true // body_type = texto
                       ? Text(
                           body,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 100.0,
+                          style: TextStyle(
+                            fontSize: widget.fontSize ?? 100,
                             color: Colors.black,
                             fontWeight: FontWeight.w500,
                           ),
@@ -99,8 +100,8 @@ class _DisplayFrameState extends State<DisplayFrame> {
                           ? Text(
                               body,
                               textAlign: TextAlign.justify,
-                              style: const TextStyle(
-                                  fontSize: 15.0,
+                              style: TextStyle(
+                                  fontSize: widget.fontSize ?? 15.0,
                                   color: Colors.black,
                                   decorationColor: Colors.black),
                             )

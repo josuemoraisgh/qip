@@ -73,9 +73,11 @@ class _TelasPageState extends State<TelasPage> {
 
   @override
   Widget build(BuildContext context) {
-    controller.answerAux.value = List.generate(
-        telas[widget.id]!['answerLenght'],
-        (index) => ValueNotifier<String>(""));
+    if (telas[widget.id]!['answerLenght'] != 0) {
+      controller.answerAux.value = List.generate(
+          telas[widget.id]!['answerLenght'],
+          (index) => ValueNotifier<String>(""));
+    }
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final double tam = typeSpace(constraints.maxWidth);

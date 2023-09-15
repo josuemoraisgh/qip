@@ -1,6 +1,7 @@
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ia_triagem/src/modelView/options_style/display_frame.dart';
 
 import '../../modelView/options_style/send_email.dart';
 import '../../modelView/options_style/single_selection_list.dart';
@@ -20,13 +21,13 @@ void addListenerComposto(
   int i1,
   int i2,
 ) {
-  if (controller.answerAux.value[i1].value != 'other') {
-    if (controller.answerAux.value[i2].value == '') {
-      controller.answerAux.value[i2].value = 'Sucess';
-    }
-  } else {
+  if (controller.answerAux.value[i1].value == 'other') {
     if (controller.answerAux.value[i2].value == 'Sucess') {
       controller.answerAux.value[i2].value = '';
+    }
+  } else {
+    if (controller.answerAux.value[i2].value == '') {
+      controller.answerAux.value[i2].value = 'Sucess';
     }
   }
   state.currentState!.didChange(controller.answerAux.value);
@@ -35,7 +36,6 @@ void addListenerComposto(
 Map<int, Map<String, dynamic>> telas = {
   1: {
     'hasProx': true,
-    'isSendAnswer': false,
     'header': "Questionário Interativo Psicopatológico (QIP)",
     'answerLenght': 1,
     'itens': (
@@ -111,7 +111,6 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   2: {
     'hasProx': true,
-    'isSendAnswer': true,
     'header': 'Questionário Sociodemográfico',
     'answerLenght': 19,
     'itens': (
@@ -444,7 +443,6 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   3: {
     'hasProx': true,
-    'isSendAnswer': true,
     'header': 'Responda !!',
     'answerLenght': 3,
     'itens': (
@@ -454,18 +452,17 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         [
           SingleSelectionList(
             answer: controller.answerAux.value[0]
-              ..addListener(
-                  () => addListenerComposto(controller, state, 0, 1)),
+              ..addListener(() => addListenerComposto(controller, state, 0, 1)),
             title:
                 'Você possui algum diagnóstico em relação ao seu estado de saúde mental, laudado por um profissional da saúde?',
             optionsColumnsSize: 2,
             hasPrefiroNaoDizer: false,
-            options: const ["Não" , "Talvez"],
+            options: const ["Não"],
             otherLabel: "Sim",
             otherItem: SingleSelectionList(
               answer: controller.answerAux.value[1]
-              ..addListener(
-                  () => addListenerComposto(controller, state, 1, 2)),
+                ..addListener(
+                    () => addListenerComposto(controller, state, 1, 2)),
               title:
                   "\nCaso afirmativo, selecione o diagnóstico\n correspondente. *",
               icon: Icons.admin_panel_settings,
@@ -506,119 +503,147 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  4: const {
+  4: {
     'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
-    'header': 'Informações',
-    'delay': 3,
-    'itens':
-        'A partir de agora serão apresentadas telas com as instruções das tarefas que você irá responder.\n\nCertifique-se que esteja em um ambiente silencioso, sem estímulos de distração.\n\nEm algumas telas, sons serão reproduzidos; portanto, é fundamental usar fones de ouvido ou ligar os alto-falantes do seu dispositivo.',
-  },
-  5: const {
-    'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
     'header': 'Atenção!!',
     'delay': 3,
-    'itens': 'Olhe atentamente para a figura apresentada na proxima tela.',
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:
+                'A partir de agora serão apresentadas telas com as instruções das tarefas que você irá responder.\n\nCertifique-se que esteja em um ambiente silencioso, sem estímulos de distração.\n\nEm algumas telas, sons serão reproduzidos; portanto, é fundamental usar fones de ouvido ou ligar os alto-falantes do seu dispositivo.',
+            bodyHasFrame: false,
+          ),
+        ]
   },
-  6: const {
-    'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
-    'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/arvore_free.png', // body_type: image
-      },
-    ], // options_type: text
-  },
-  7: const {
+  5: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header': 'O que você viu na tela anterior?',
-    'itens': [
-      {
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 1,
-        'options': [
-          "Jesus Cristo",
-          "Coração",
-          "Dragão cuspindo fogo",
-          "Árvore",
-          "Não vi nada",
-          "Outra coisa"
-        ],
-      },
-    ], // options_type: text
-  },
-  8: const {
-    'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
-    'header': 'Atenção!!',
-    'delay': 3,
-    'itens': 'Olhe atentamente para a figura apresentada na proxima tela.',
-  },
-  9: const {
-    'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
-    'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': '', // body_type: image
-      },
-    ], // options_type: text
-  },
-  10: const {
-    'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header': 'O que você viu na tela anterior?',
-    'itens': [
-      {
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 1,
-        'options': [
-          "Jesus Cristo",
-          "Coração",
-          "Dragão cuspindo fogo",
-          "Árvore",
-          "Não vi nada",
-          "Outra coisa"
-        ],
-      },
-    ],
-  },
-  11: const {
-    'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
     'header': 'Informações',
     'delay': 3,
-    'itens':
-        "Nas próximas telas, serão apresentadas algumas sequências de números, após visualizá-las você deverá marcar a resposta que corresponde à sequência correta.",
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: 'Olhe atentamente para a figura apresentada na proxima tela.',
+            bodyHasFrame: false,
+          ),
+        ]
   },
-  12: const {
+  6: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
+    'header': 'Observe',
+    'delay': 3,
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: 'assets/arvore_free.png',
+            bodyHasFrame: true,
+          ),
+        ]
+  },
+  7: {
+    'hasProx': true,
+    'header': 'Responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'O que você viu na tela anterior?',
+            icon: Icons.transgender,
+            hasPrefiroNaoDizer: true,
+            options: const [
+              "Jesus Cristo",
+              "Coração",
+              "Dragão cuspindo fogo",
+              "Árvore",
+              "Não vi nada",
+              "Outra coisa",
+            ],
+            optionsColumnsSize: 2,
+          ),
+        ]
+  },
+  8: {
+    'hasProx': true,
+    'header': 'Atenção!!',
+    'delay': 3,
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: 'Olhe atentamente para a figura apresentada na proxima tela.',
+            bodyHasFrame: false,
+          ),
+        ]
+  },
+  9: {
+    'hasProx': false,
+    'header': 'Observe',
+    'delay': 3,
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: '',
+            bodyHasFrame: true,
+          ),
+        ]
+  },
+  10: {
+    'hasProx': true,
+    'header': 'Responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'O que você viu na tela anterior?',
+            icon: Icons.transgender,
+            hasPrefiroNaoDizer: true,
+            options: const [
+              "Jesus Cristo",
+              "Coração",
+              "Dragão cuspindo fogo",
+              "Árvore",
+              "Não vi nada",
+              "Outra coisa",
+            ],
+            optionsColumnsSize: 2,
+          ),
+        ]
+  },
+  11: {
+    'hasProx': true,
+    'header': 'Informações',
+    'delay': 3,
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: "Nas próximas telas, serão apresentadas algumas sequências de números, após visualizá-las você deverá marcar a resposta que corresponde à sequência correta.",
+            bodyHasFrame: false,
+          ),
+        ]
+  },
+  12: {
+    'hasProx': true,
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': '2 - 7',
-      },
-    ], // options_type: text
-  },
+    'answerLenght': 1,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: '2 - 7',
+            bodyHasFrame: true,
+          ),          
+        ]
+  },  
   13: const {
     'hasProx': true,
     'isSendAnswer': true,

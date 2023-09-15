@@ -40,119 +40,109 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
   @override
   void initState() {
     super.initState();
+    answerAux = ValueNotifier<String>(
+        widget.options.contains(widget.answer.value) ||
+                widget.answer.value == ""
+            ? widget.answer.value
+            : 'other');
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: widget.answer,
-      builder: (context, answer, _) {
-        answerAux = ValueNotifier<String>(
-          answer.isEmpty
-              ? ""
-              : widget.options.contains(answer)
-                  ? answer
-                  : 'other',
-        );
-        return Form(
-          key: _formKey,
-          onChanged: () {
-            if ((_formKey.currentState!.validate()) &&
-                widget.options.contains(answerAux.value)) {
-              widget.answer.value = answerAux.value;
-              //widget.answerFunc(aux);
-            } else {
-              widget.answer.value = '';
-              //widget.answerFunc('');
-            }
-            _formKey.currentState!.save();
-          },
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              if (widget.title != null)
-                Row(
-                  children: [
-                    if (widget.icon != null)
-                      Icon(widget.icon!, color: Colors.black54),
-                    const SizedBox(width: 15),
-                    Expanded(
-                      child: Text(
-                        widget.title!,
-                        textAlign: TextAlign.justify,
-                        style: const TextStyle(
-                            fontSize: fontSize,
-                            color: Colors.black,
-                            decorationColor: Colors.black),
-                      ),
-                    ),
-                  ],
+    return Form(
+      key: _formKey,
+      onChanged: () {
+        if (_formKey.currentState!.validate()) {
+          widget.answer.value = answerAux.value;
+        } else {
+          widget.answer.value = '';
+        }
+        _formKey.currentState!.save();
+      },
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          if (widget.title != null)
+            Row(
+              children: [
+                if (widget.icon != null)
+                  Icon(widget.icon!, color: Colors.black54),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Text(
+                    widget.title!,
+                    textAlign: TextAlign.justify,
+                    style: const TextStyle(
+                        fontSize: fontSize,
+                        color: Colors.black,
+                        decorationColor: Colors.black),
+                  ),
                 ),
-              if (widget.title != null) const SizedBox(height: 15),
-              FormField<ValueNotifier<String>>(
-                initialValue: answerAux,
-                autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
-                validator: (ValueNotifier<String>? value) {
-                  if (value == null) {
-                    return 'Por favor escolha um item';
-                  } else {
-                    if (value.value.isEmpty) {
-                      return 'Por favor escolha um item';
-                    }
-                  }
-                  return (null);
-                },
-                builder: (FormFieldState<ValueNotifier<String>> state) =>
-                    MontaAlternativas(
-                  optionsColumnsSize: widget.optionsColumnsSize,
-                  length: widget.options.length,
-                  builder: (int id) => Expanded(
+              ],
+            ),
+          if (widget.title != null) const SizedBox(height: 15),
+          FormField<ValueNotifier<String>>(
+            initialValue: answerAux,
+            autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
+            validator: (ValueNotifier<String>? value) {
+              if (value == null) {
+                return 'Por favor escolha um item';
+              } else {
+                if (value.value.isEmpty) {
+                  return 'Por favor escolha um item';
+                }
+              }
+              return (null);
+            },
+            builder: (FormFieldState<ValueNotifier<String>> state) =>
+                MontaAlternativas(
+              optionsColumnsSize: widget.optionsColumnsSize,
+              length: widget.options.length,
+              builder: (int id) => Expanded(
+                child: CustomButton(
+                  title: widget.options[id],
+                  value: widget.options[id],
+                  color: widget.colors?[id],
+                  groupValue: answerAux,
+                  onChanged: (_) {
+                    state.didChange(answerAux);
+                  },
+                ),
+              ),
+              childList: <Widget>[
+                if (widget.hasPrefiroNaoDizer)
+                  Expanded(
                     child: CustomButton(
-                      title: widget.options[id],
-                      value: widget.options[id],
-                      color: widget.colors?[id],
+                        title: "Prefiro não dizer",
+                        value: "Prefiro não dizer",
+                        groupValue: answerAux,
+                        onChanged: (_) {
+                          state.didChange(answerAux);
+                        }),
+                  ),
+                if (widget.otherItem != null)
+                  Expanded(
+                    child: CustomButton(
+                      title: widget.otherLabel == null
+                          ? "Outro (Qual?)"
+                          : widget.otherLabel!,
+                      value: "other",
                       groupValue: answerAux,
                       onChanged: (_) {
                         state.didChange(answerAux);
                       },
                     ),
                   ),
-                  childList: <Widget>[
-                    if (widget.hasPrefiroNaoDizer)
-                      Expanded(
-                        child: CustomButton(
-                            title: "Prefiro não dizer",
-                            value: "Prefiro não dizer",
-                            groupValue: answerAux,
-                            onChanged: (_) {
-                              state.didChange(answerAux);
-                            }),
-                      ),
-                    if (widget.otherItem != null)
-                      Expanded(
-                        child: CustomButton(
-                          title: widget.otherLabel == null
-                              ? "Outro (Qual?)"
-                              : widget.otherLabel!,
-                          value: "other",
-                          groupValue: answerAux,
-                          onChanged: (_) {
-                            state.didChange(answerAux);
-                          },
-                        ),
-                      ),
-                    if ((answerAux.value == "other") && (widget.otherItem != null))
-                      Expanded(
-                        child: widget.otherItem!,
-                      ),
-                  ],
-                ),
-              ),
-            ],
+                if ((answerAux.value == "other") && (widget.otherItem != null))
+                  Expanded(
+                    child: widget.otherItem!,
+                  ),
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
