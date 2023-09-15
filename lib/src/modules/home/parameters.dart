@@ -200,7 +200,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 ..addListener(() =>
                     state.currentState!.didChange(controller.answerAux.value)),
               labelText: "Qual o seu gênero?",
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.name,
               inputFormatters: [
                 FilteringTextInputFormatter.singleLineFormatter
               ],
@@ -242,6 +242,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               answer: controller.answerAux.value[7]
                 ..addListener(() =>
                     state.currentState!.didChange(controller.answerAux.value)),
+              keyboardType: TextInputType.name,
               labelText: "Qual a sua Cor ou Raça ?",
               inputFormatters: [
                 FilteringTextInputFormatter.singleLineFormatter
@@ -273,6 +274,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 ..addListener(() =>
                     state.currentState!.didChange(controller.answerAux.value)),
               labelText: "Quantos irmãos voçê tem?",
+              keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
                 if (value == null) {
@@ -289,7 +291,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[10]
-              ..addListener(() => addListenerComposto(controller, state, 10, 11)),
+              ..addListener(
+                  () => addListenerComposto(controller, state, 10, 11)),
             title: "Qual o seu estado civil?",
             icon: Icons.diversity_2,
             hasPrefiroNaoDizer: false,
@@ -306,6 +309,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 ..addListener(() =>
                     state.currentState!.didChange(controller.answerAux.value)),
               labelText: "Qual estado civil ?",
+              keyboardType: TextInputType.none,
               inputFormatters: [
                 FilteringTextInputFormatter.singleLineFormatter
               ],
@@ -324,7 +328,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[12]
-              ..addListener(() => addListenerComposto(controller, state, 12, 13)),
+              ..addListener(
+                  () => addListenerComposto(controller, state, 12, 13)),
             title: "Possui filhos(as)?",
             icon: Icons.group_add,
             hasPrefiroNaoDizer: false,
@@ -336,9 +341,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 ..addListener(() =>
                     state.currentState!.didChange(controller.answerAux.value)),
               labelText: "Quantos filhos voçê tem?",
-              inputFormatters: [
-                FilteringTextInputFormatter.singleLineFormatter
-              ],
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
                 if (value == null) {
                   return 'Quantidade invalida!! Corrija por favor';
@@ -367,7 +371,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[15]
-              ..addListener(() => addListenerComposto(controller, state, 15, 16)),
+              ..addListener(
+                  () => addListenerComposto(controller, state, 15, 16)),
             title: "Religião *",
             icon: Icons.church,
             hasPrefiroNaoDizer: false,
@@ -379,6 +384,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   ..addListener(() => state.currentState!
                       .didChange(controller.answerAux.value)),
                 labelText: "Qual é a Religião?",
+                keyboardType: TextInputType.name,
                 inputFormatters: [
                   FilteringTextInputFormatter.singleLineFormatter
                 ],

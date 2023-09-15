@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../ajustes.dart';
 import 'parameters.dart';
 import 'telas_controller.dart';
 
@@ -81,20 +82,21 @@ class _TelasPageState extends State<TelasPage> {
         return Container(
           padding: EdgeInsets.only(left: tam, top: 10, right: tam, bottom: 10),
           width: constraints.maxWidth,
-          color: Colors.lightGreen.shade100,
+          color: groundColor,
           //child: SingleChildScrollView(
           child: Center(
             child: Column(
               children: <Widget>[
                 Card(
-                  color: Colors.green,
+                  color: headerColor, //Colors.green,
                   elevation: 8,
                   margin: const EdgeInsets.all(0.0),
                   shape: const OutlineInputBorder(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20)),
-                      borderSide: BorderSide(color: Colors.green)),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20)),
+                    borderSide: borderSideValue,
+                  ),
                   child: Container(
                     width: constraints.maxWidth - 2 * tam - 50,
                     padding: EdgeInsets.only(
@@ -186,12 +188,14 @@ class _TelasPageState extends State<TelasPage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.only(
-                          left: 0, top: 10, right: 10, bottom: 0),
+                          left: 20, top: 10, right: 10, bottom: 0),
                       alignment: Alignment.bottomRight,
                       child: Text(
-                        widget.id.toString(),
+                        "Pagina: ${widget.id.toString()}",
                         style: const TextStyle(
+                          color: Colors.black,
                           fontSize: 15,
+                          decoration: TextDecoration.none, //Retira o sublinhado
                         ),
                       ),
                     ),
@@ -220,13 +224,37 @@ class _TelasPageState extends State<TelasPage> {
       builder: (BuildContext context, List<ValueNotifier<String>> resp,
               Widget? child) =>
           ElevatedButton(
-        style: ButtonStyle(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: headerColor,
+          disabledBackgroundColor: groundColor,
+
+          foregroundColor: Colors.white,
+          disabledForegroundColor: Colors.blueGrey,
+
+          shadowColor: Colors.black, //specify the button's elevation color
+          elevation: 8.0, //buttons Material shadow
+          textStyle: const TextStyle(
+              fontFamily: 'roboto'), //specify the button's text TextStyle
+
+          fixedSize: const Size(180, 30),
+          side: borderSideValue,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(35.0)),
+          enabledMouseCursor: MouseCursor.defer,
+          disabledMouseCursor: MouseCursor.uncontrolled,
+          visualDensity: const VisualDensity(horizontal: 1.0, vertical: 1.0),
+          tapTargetSize: MaterialTapTargetSize.padded,
+          animationDuration: const Duration(milliseconds: 100),
+          enableFeedback: true, //to set the feedback to true or false
+          alignment: Alignment.bottomCenter, //set the button's child Alignment
+        ),
+        /*ButtonStyle(
           fixedSize: MaterialStateProperty.all<Size>(const Size(170, 40)),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18.0),
                   side: const BorderSide(color: Colors.white))),
-        ),
+        ),*/
         onPressed: resp.isEmpty
             ? null
             : () {
@@ -241,10 +269,10 @@ class _TelasPageState extends State<TelasPage> {
                 }
                 Modular.to.popAndPushNamed("/", arguments: widget.id + 1);
               },
-        child: const Row(
+        child:  Row(
           children: [
             Padding(
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 left: 10,
                 top: 5,
                 right: 10,
@@ -254,13 +282,20 @@ class _TelasPageState extends State<TelasPage> {
                 "Próxima",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w300,
-                  fontSize: 25.0,
+                  fontSize: 25,
+                  height: 1.0,
+                  //color: Colors.white,
+                  shadows: resp.isEmpty ? null : <Shadow>[
+                    const Shadow(
+                      offset: Offset(2.0, 2.0),
+                      blurRadius: 1.0,
+                      color: Color.fromARGB(255, 0, 0, 0),
+                    ),
+                  ],
                 ),
               ),
             ),
-            Icon(Icons.arrow_forward),
+            const Icon(Icons.arrow_forward),
           ],
         ),
       ),

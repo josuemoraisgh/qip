@@ -52,7 +52,7 @@ class _SingleSelectionListState extends State<SingleSelectionList> {
               ? ""
               : widget.options.contains(answer)
                   ? answer
-                  : (widget.otherLabel ?? "Outro (Qual?)"),
+                  : 'other',
         );
         return Form(
           key: _formKey,
