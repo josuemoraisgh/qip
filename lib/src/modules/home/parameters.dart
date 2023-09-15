@@ -554,8 +554,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title: 'O que você viu na tela anterior?',
-            icon: Icons.transgender,
-            hasPrefiroNaoDizer: true,
+            icon: Icons.question_answer,
+            hasPrefiroNaoDizer: false,
             options: const [
               "Jesus Cristo",
               "Coração",
@@ -606,8 +606,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title: 'O que você viu na tela anterior?',
-            icon: Icons.transgender,
-            hasPrefiroNaoDizer: true,
+            icon: Icons.timelapse,
+            hasPrefiroNaoDizer: false,
             options: const [
               "Jesus Cristo",
               "Coração",
@@ -627,13 +627,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(
-            body: "Nas próximas telas, serão apresentadas algumas sequências de números, após visualizá-las você deverá marcar a resposta que corresponde à sequência correta.",
+            body:
+                "Nas próximas telas, serão apresentadas algumas sequências de números, após visualizá-las você deverá marcar a resposta que corresponde à sequência correta.",
             bodyHasFrame: false,
           ),
         ]
   },
   12: {
-    'hasProx': true,
+    'hasProx': false,
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
     'answerLenght': 1,
@@ -641,368 +642,536 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const DisplayFrame(
             body: '2 - 7',
             bodyHasFrame: true,
-          ),          
+          ),
         ]
-  },  
-  13: const {
-    'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Qual foi a sequência correta dos números apresentados na tela anterior?',
-    'itens': [
-      {
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 3,
-        'options': ["1 - 5", "4 - 7", "2 - 7", "2 - 8", "9 - 4", "7 - 2"],
-      },
-    ],
   },
-  14: const {
+  13: {
+    'hasProx': true,
+    'header': 'Responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Qual foi a sequência correta dos números apresentados na tela anterior?',
+            icon: Icons.timeline,
+            hasPrefiroNaoDizer: false,
+            options: const [
+              "1 - 5",
+              "4 - 7",
+              "2 - 7",
+              "2 - 8",
+              "9 - 4",
+              "7 - 2"
+            ],
+            optionsColumnsSize: 3,
+          ),
+        ]
+  },
+  14: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': '5 - 6 - 4',
-      },
-    ], // options_type: text
+    'answerLenght': 1,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: '5 - 6 - 4',
+            bodyHasFrame: true,
+          ),
+        ]
   },
-  15: const {
+  15: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Qual foi a sequência correta dos números apresentados na tela anterior?', //Titulo do card
-    'itens': [
-      {
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 3,
-        'options': [
-          "5 - 7 - 1",
-          "1 - 3 - 4",
-          "5 - 6 - 3",
-          "4 - 6 - 5",
-          "5 - 4 - 6",
-          "5 - 6 - 4"
-        ],
-      },
-    ], // options_type: text || image
+    'header': 'Responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Qual foi a sequência correta dos números apresentados na tela anterior?',
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
+              "5 - 7 - 1",
+              "1 - 3 - 4",
+              "5 - 6 - 3",
+              "4 - 6 - 5",
+              "5 - 4 - 6",
+              "5 - 6 - 4"
+            ],
+            optionsColumnsSize: 3,
+          ),
+        ]
   },
-  16: const {
+  16: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': '6 - 4 - 3 - 9',
-      },
-    ], // options_type: text
+    'answerLenght': 1,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: '6 - 4 - 3 - 9',
+            bodyHasFrame: true,
+          ),
+        ]
   },
-  17: const {
+  17: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Qual foi a sequência correta dos números apresentados na tela anterior?',
-    'itens': [
-      {
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 3,
-        'options': [
-          "6 - 4 - 9 - 3",
-          "4 - 8 - 9 - 1",
-          "6 - 4 - 3 - 9",
-          "5 - 4 - 3 - 8",
-          "1 - 5 - 2 - 9",
-          "6 - 4 - 3 - 7"
-        ], // options_type: text || image
-      },
-    ],
+    'header': 'Responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Qual foi a sequência correta dos números apresentados na tela anterior?',
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
+              "6 - 4 - 9 - 3",
+              "4 - 8 - 9 - 1",
+              "6 - 4 - 3 - 9",
+              "5 - 4 - 3 - 8",
+              "1 - 5 - 2 - 9",
+              "6 - 4 - 3 - 7"
+            ],
+            optionsColumnsSize: 3,
+          ),
+        ]
   },
-  18: const {
+  18: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': '4 - 2 - 7 - 3 - 1',
-      },
-    ], // options_type: text
+    'answerLenght': 1,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: '4 - 2 - 7 - 3 - 1',
+            bodyHasFrame: true,
+          ),
+        ]
   },
-  19: const {
+  19: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Qual foi a sequência correta dos números apresentados na tela anterior?',
-    'itens': [
-      {
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
-          "2 - 1 - 4 - 7 - 9",
-          "4 - 3 - 9 - 8",
-          "4 - 2 - 6 - 3 - 1",
-          "7 - 5 - 1 - 4 - 2 ",
-          "4 - 2 - 7 - 3 - 1",
-          "6 - 3 - 1 - 5 - 9"
-        ], // options_type: text || image
-      },
-    ],
+    'header': 'Responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Qual foi a sequência correta dos números apresentados na tela anterior?',
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
+              "2 - 1 - 4 - 7 - 9",
+              "4 - 3 - 9 - 8",
+              "4 - 2 - 6 - 3 - 1",
+              "7 - 5 - 1 - 4 - 2 ",
+              "4 - 2 - 7 - 3 - 1",
+              "6 - 3 - 1 - 5 - 9"
+            ],
+            optionsColumnsSize: 2,
+          ),
+        ]
   },
-  20: const {
+  20: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': '6 - 1 - 9 - 4 - 7 - 3',
-      },
-    ], // options_type: text
+    'answerLenght': 1,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: '6 - 1 - 9 - 4 - 7 - 3',
+            bodyHasFrame: true,
+          ),
+        ]
   },
-  21: const {
+  21: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Qual foi a sequência correta dos números apresentados na tela anterior?',
-    'itens': [
-      {
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
-          "6 - 1 - 4 - 7 - 3 - 9",
-          "2 - 1 - 8 - 3 - 9 - 5",
-          "6 - 1 - 9 - 4 - 7 - 3",
-          "6 - 4 - 5 - 8 - 3 - 7",
-          "2 - 8 - 6 - 4 - 7 - 3",
-          "6 - 1 - 9 - 4 - 5 - 2"
-        ], // options_type: text || image
-      },
-    ],
+    'header': 'Responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Qual foi a sequência correta dos números apresentados na tela anterior?',
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
+              "6 - 1 - 4 - 7 - 3 - 9",
+              "2 - 1 - 8 - 3 - 9 - 5",
+              "6 - 1 - 9 - 4 - 7 - 3",
+              "6 - 4 - 5 - 8 - 3 - 7",
+              "2 - 8 - 6 - 4 - 7 - 3",
+              "6 - 1 - 9 - 4 - 5 - 2"
+            ],
+            optionsColumnsSize: 2,
+          ),
+        ]
   },
-  22: const {
+  22: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': '5 - 9 - 1 - 7 - 4 - 2 - 8',
-      },
-    ],
+    'answerLenght': 1,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: '5 - 9 - 1 - 7 - 4 - 2 - 8',
+            bodyHasFrame: true,
+          ),
+        ]
   },
-  23: const {
+  23: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Qual foi a sequência correta dos números apresentados na tela anterior?',
-    'itens': [
-      {
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
-          "5 - 8 - 1 - 7 - 4 - 3 - 8",
-          "5 - 9 - 1 - 7 - 4 - 8",
-          "8 - 9 - 0 - 7 - 3 - 1",
-          "5 - 9 - 1 - 7 - 4 - 2 - 8",
-          "5 - 2 - 3 - 7 - 4 - 9 - 8",
-          "5 - 9 - 1 - 7 - 8 - 0 - 9"
-        ],
-      },
-    ],
+    'header': 'Responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Qual foi a sequência correta dos números apresentados na tela anterior?',
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
+              "5 - 8 - 1 - 7 - 4 - 3 - 8",
+              "5 - 9 - 1 - 7 - 4 - 8",
+              "8 - 9 - 0 - 7 - 3 - 1",
+              "5 - 9 - 1 - 7 - 4 - 2 - 8",
+              "5 - 2 - 3 - 7 - 4 - 9 - 8",
+              "5 - 9 - 1 - 7 - 8 - 0 - 9"
+            ],
+            optionsColumnsSize: 2,
+          ),
+        ]
   },
-  24: const {
+  24: {
     'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
     'header': 'Informações',
     'delay': 3,
-    'itens':
-        "Por favor, identifique expressões e intenções das pessoas levando em consideração apenas a região dos olhos. Para cada imagem, selecione a palavra que melhor descreve os sentimentos, pensamentos ou impressões que a pessoa em questão está transmitindo.",
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:
+                "Por favor, identifique expressões e intenções das pessoas levando em consideração apenas a região dos olhos. Para cada imagem, selecione a palavra que melhor descreve os sentimentos, pensamentos ou impressões que a pessoa em questão está transmitindo.",
+            bodyHasFrame: false,
+          ),          
+        ]
   },
-  25: const {
+  25: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Dentre as quatro alternativas de cada imagem. Selecione a palavra que melhor a descreve', //Titulo do card
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho1.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
-          'Inquieto(a)',
-          'Pensativo(a)',
-          'Irritado(a)',
-          'Desconfiado(a)'
-        ],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho2.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
+    'header': 'Dentre as quatro alternativas de cada imagem. Selecione a palavra que melhor a descreve',
+    'answerLenght': 14,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    )=> [
+          const DisplayFrame(
+            body:'assets/olho1.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
           'Nervoso(a)',
           'Deprimido(a)',
           'Irritado(a)',
           'Divertido(a)'
         ],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho3.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
+            optionsColumnsSize: 2,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),                     
+          const DisplayFrame(
+            body:'assets/olho2.png',                
+            bodyHasFrame: true,
+          ), 
+          const SizedBox(height: 10.0),                    
+          SingleSelectionList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
+          'Nervoso(a)',
+          'Deprimido(a)',
+          'Irritado(a)',
+          'Divertido(a)'
+        ],
+            optionsColumnsSize: 2,
+          ),          
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body:'assets/olho3.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[2]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
           'Envergonhado(a)',
           'Divertido(a)',
           'Interessado(a)',
           'Deprimido(a)'
         ],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho4.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': ['Arrogante', 'Decidido(a)', 'Apavorado(a)', 'Chateado(a)'],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho5.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': ['Amável', 'Decidido(a)', 'Simpático(a)', 'Deprimido(a)'],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho6.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
+            optionsColumnsSize: 2,
+          ),      
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body:'assets/olho4.png',               
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[3]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const ['Arrogante', 'Decidido(a)', 'Apavorado(a)', 'Chateado(a)'],
+            optionsColumnsSize: 2,
+          ),      
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body:'assets/olho5.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[4]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const ['Amável', 'Decidido(a)', 'Simpático(a)', 'Deprimido(a)'],
+            optionsColumnsSize: 2,
+          ),      
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body:'assets/olho6.png',               
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[5]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
           'Tímido(a)',
           'Perturbado(a)',
           'Desanimado(a)',
           'Pensativo(a)'
         ],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho7.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
+            optionsColumnsSize: 2,
+          ),      
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body:'assets/olho7.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[6]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
           'Impaciente ',
           'Desanimado(a)',
           'Sedutor(a)',
           'Aliviado(a)'
         ],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho8.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': ['Grato(a)', 'Sonhador(a)', 'Desanimado(a)', 'Chocado(a)'],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho9.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
+            optionsColumnsSize: 2,
+          ),      
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body: 'assets/olho8.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[7]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const  ['Grato(a)', 'Sonhador(a)', 'Desanimado(a)', 'Chocado(a)'],
+            optionsColumnsSize: 2,
+          ),      
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body:'assets/olho9.png',               
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[8]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const  [
           'Satisfeito(a)',
           'Preocupado(a)',
           'Afetuoso(a)',
           'Indiferente'
         ],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho10.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': ['Amável', 'Arrependido(a)', 'Zangado(a)', 'Simpático(a)'],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho11.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
+            optionsColumnsSize: 2,
+          ),      
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body:'assets/olho10.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[9]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const ['Amável', 'Arrependido(a)', 'Zangado(a)', 'Simpático(a)'],
+            optionsColumnsSize: 2,
+          ),      
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body:'assets/olho11.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[10]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const [
           'Desconfortável',
           'Entediado(a)',
           'Confiante',
           'Impaciente'
         ],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho12.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': [
-          'Arrependido(a)',
-          'Nervoso(a)',
-          'Divertido(a)',
-          'Envergonhado(a)'
-        ],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho13.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': ['Amigável', 'Entretido(a)', 'Desconfiado(a)', 'Sedutor(a)'],
-        'has_divider': true,
-      },
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/olho14.png',
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': ['Preocupado(a)', 'Cauteloso(a)', 'Hostil', 'Divertido(a)']
-      },
-    ]
-  },
+            optionsColumnsSize: 2,
+          ),      
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),           
+          const DisplayFrame(
+            body:'assets/olho12.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[11]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const ['Arrependido(a)','Nervoso(a)','Divertido(a)','Envergonhado(a)'],
+            optionsColumnsSize: 2,
+          ),     
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),                
+          const DisplayFrame(
+            body:'assets/olho13.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[12]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const ['Amigável', 'Entretido(a)', 'Desconfiado(a)', 'Sedutor(a)'],
+            optionsColumnsSize: 2,
+          ), 
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),     
+          const DisplayFrame(
+            body:'assets/olho14.png',                
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),          
+          SingleSelectionList(
+            answer: controller.answerAux.value[13]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            hasPrefiroNaoDizer: false,
+            options: const ['Preocupado(a)', 'Cauteloso(a)', 'Hostil', 'Divertido(a)'],
+            optionsColumnsSize: 2,
+          ),            
+        ]
+  },  
   26: const {
     'hasProx': true,
     'isSendAnswer': true,
