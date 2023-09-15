@@ -134,7 +134,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               return null;
             },
             icon: Icons.lock_clock,
-            keyboardType: TextInputType.datetime,
+            keyboardType: TextInputType.number,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
               HoraInputFormatter()
@@ -158,7 +158,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               return null;
             },
             icon: Icons.date_range,
-            keyboardType: TextInputType.datetime,
+            keyboardType: TextInputType.number,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
               DataInputFormatter()
@@ -445,56 +445,66 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   3: {
     'hasProx': true,
     'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Você possui algum diagnóstico em relação ao seu estado de saúde mental, laudado por um profissional da saúde?',
-    'itens': [
-      {
-        'radioIsVisible': false,
-        'options_columns_size': 2,
-        'options': const ["Não"],
-        'otherLabel': "Sim",
-        'otherItem': {
-          'title':
-              "\nCaso afirmativo, selecione o diagnóstico\n correspondente. *",
-          'icon': Icons.admin_panel_settings,
-          'hasPrefiroNaoDizer': false,
-          'options': const [
-            "Transtorno do Espectro Autista",
-            "Transtornos Depressivos",
-            "Transtorno Ciclotímico",
-            "Transtornos de Ansiedade",
-            "Transtorno de Estresse Pós-traumático",
-            "Transtornos Alimentares",
-            "Transtorno Bipolar",
-            "Transtorno Obsessivo-compulsivo",
-            "Transtorno de Déficit de Atenção/Hiperatividade",
-            "Transtorno da Personalidade Borderline",
-            "Transtorno do Espectro da Esquizofrenia e Outros Transtornos Psicóticos",
-          ],
-          'otherLabel': "Outro tipo de transtorno",
-          'otherItem': {
-            'options_style': 'textForm', //multiSelect,textForm,multiSelect
-            'labelText': [
-              'Digite a denominação desse outro tipo de transtorno'
-            ],
-            'inputFormatters': [
-              [FilteringTextInputFormatter.singleLineFormatter]
-            ],
-            'validator': [
-              (value) {
-                if (value == null) {
-                  return 'Digite a denominação desse outro tipo de transtorno';
-                } else if (value.length < 4) {
-                  return 'Digite a denominação desse outro tipo de transtorno';
-                }
-                return null;
-              }
-            ],
-          },
-        },
-      },
-    ],
+    'header': 'Responda !!',
+    'answerLenght': 3,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(
+                  () => addListenerComposto(controller, state, 0, 1)),
+            title:
+                'Você possui algum diagnóstico em relação ao seu estado de saúde mental, laudado por um profissional da saúde?',
+            optionsColumnsSize: 2,
+            hasPrefiroNaoDizer: false,
+            options: const ["Não" , "Talvez"],
+            otherLabel: "Sim",
+            otherItem: SingleSelectionList(
+              answer: controller.answerAux.value[1]
+              ..addListener(
+                  () => addListenerComposto(controller, state, 1, 2)),
+              title:
+                  "\nCaso afirmativo, selecione o diagnóstico\n correspondente. *",
+              icon: Icons.admin_panel_settings,
+              hasPrefiroNaoDizer: false,
+              options: const [
+                "Transtorno do Espectro Autista",
+                "Transtornos Depressivos",
+                "Transtorno Ciclotímico",
+                "Transtornos de Ansiedade",
+                "Transtorno de Estresse Pós-traumático",
+                "Transtornos Alimentares",
+                "Transtorno Bipolar",
+                "Transtorno Obsessivo-compulsivo",
+                "Transtorno de Déficit de Atenção/Hiperatividade",
+                "Transtorno da Personalidade Borderline",
+                "Transtorno do Espectro da Esquizofrenia e Outros Transtornos Psicóticos",
+              ],
+              otherLabel: "Outro tipo de transtorno",
+              otherItem: TextFormList(
+                answer: controller.answerAux.value[2]
+                  ..addListener(() => state.currentState!
+                      .didChange(controller.answerAux.value)),
+                labelText:
+                    'Digite a denominação desse outro tipo de transtorno',
+                inputFormatters: [
+                  FilteringTextInputFormatter.singleLineFormatter
+                ],
+                validator: (value) {
+                  if (value == null) {
+                    return 'Digite a denominação desse outro tipo de transtorno';
+                  } else if (value.length < 4) {
+                    return 'Digite a denominação desse outro tipo de transtorno';
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ),
+        ],
   },
   4: const {
     'hasProx': true,

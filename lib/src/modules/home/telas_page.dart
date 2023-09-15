@@ -86,6 +86,7 @@ class _TelasPageState extends State<TelasPage> {
           //child: SingleChildScrollView(
           child: Center(
             child: Column(
+              //mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Card(
                   color: headerColor, //Colors.green,
@@ -124,11 +125,10 @@ class _TelasPageState extends State<TelasPage> {
                         : null,
                   ),
                 ),
-                Expanded(
+                Flexible(
                   child: Card(
                     color: Colors.white,
                     elevation: 8,
-                    margin: const EdgeInsets.all(0.0),
                     shape: const OutlineInputBorder(
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(20),
@@ -139,7 +139,6 @@ class _TelasPageState extends State<TelasPage> {
                     child: Container(
                       padding: const EdgeInsets.only(
                           left: 20, top: 10, right: 20, bottom: 20),
-                      //width: constraints.maxWidth,
                       child: Form(
                         key: _formKey,
                         onChanged: () {
@@ -173,7 +172,7 @@ class _TelasPageState extends State<TelasPage> {
                             List<Widget> itens = telas[widget.id]!['itens']!(
                                 controller, formFieldkey);
                             return ListView.builder(
-                              //shrinkWrap: true,
+                              shrinkWrap: true,
                               itemCount: itens.length,
                               itemBuilder: (BuildContext context, int index) =>
                                   itens[index],
@@ -269,7 +268,7 @@ class _TelasPageState extends State<TelasPage> {
                 }
                 Modular.to.popAndPushNamed("/", arguments: widget.id + 1);
               },
-        child:  Row(
+        child: Row(
           children: [
             Padding(
               padding: const EdgeInsets.only(
@@ -285,13 +284,15 @@ class _TelasPageState extends State<TelasPage> {
                   fontSize: 25,
                   height: 1.0,
                   //color: Colors.white,
-                  shadows: resp.isEmpty ? null : <Shadow>[
-                    const Shadow(
-                      offset: Offset(2.0, 2.0),
-                      blurRadius: 1.0,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                    ),
-                  ],
+                  shadows: resp.isEmpty
+                      ? null
+                      : <Shadow>[
+                          const Shadow(
+                            offset: Offset(2.0, 2.0),
+                            blurRadius: 1.0,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                        ],
                 ),
               ),
             ),
