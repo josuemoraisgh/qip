@@ -6,22 +6,24 @@ import '../base_widget/custom_button.dart';
 class MultiSelectionList extends StatefulWidget {
   //final void Function(String) answerFunc;
   final ValueNotifier<String> answer;
-  final int? answerId;
-  final String? description;
-  final Icon? icon;
-  final List<String> itens;
+  final String? title;
+  final IconData? icon;
+  final List<String> options;
   final int? optionsColumnsSize;
   final String? Function(List<ValueNotifier<String>>?)? validator;
+  final int maxSizeAnswer;
+  final int mimSizeAnswer;
   const MultiSelectionList({
     super.key,
     required this.answer,
     //required this.answerFunc,
-    this.description,
+    this.title,
     this.icon,
-    required this.itens,
+    required this.options,
     this.validator,
     this.optionsColumnsSize,
-    required this.answerId,
+    required this.maxSizeAnswer,
+    required this.mimSizeAnswer,
   });
 
   @override
@@ -35,15 +37,14 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
   @override
   void initState() {
     super.initState();
-
     _formKey = GlobalKey<FormState>();
-
     var aux = widget.answer.value.split(";");
-    if (aux.length != widget.itens.length) {
-      answerAux = List.filled(widget.itens.length, ValueNotifier<String>(""));
+    if (aux.length != widget.options.length) {
+      answerAux = List.generate(
+          widget.options.length, (index) => ValueNotifier<String>(""));
     } else {
       answerAux = List.generate(
-          widget.itens.length, (index) => ValueNotifier<String>(aux[index]));
+          widget.options.length, (index) => ValueNotifier<String>(aux[index]));
     }
   }
 
@@ -65,17 +66,30 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
       child: FormField<List<ValueNotifier<String>>>(
         initialValue: answerAux,
         autovalidateMode: AutovalidateMode.always, //.onUserInteraction,
-        validator: widget.validator,
+        validator: widget.validator ??
+            (List<ValueNotifier<String>>? value) {
+              if (value == null) {
+                return 'Por favor escolha um item';
+              } else {
+                final count = value.where((item) => item.value != "").length;
+                if (count < widget.mimSizeAnswer) {
+                  return 'Por favor escolha um item';
+                } else if (count > widget.maxSizeAnswer) {
+                  return 'Por favor escolha um item';
+                }
+              }
+              return (null);
+            },
         builder: (FormFieldState<List<ValueNotifier<String>>> state) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if (widget.description != null)
+            if (widget.title != null)
               Row(
                 children: [
-                  if (widget.icon != null) widget.icon!,
+                  if (widget.icon != null) Icon(widget.icon!),
                   const SizedBox(width: 15),
                   Text(
-                    widget.description!,
+                    widget.title!,
                     textAlign: TextAlign.start,
                     style: const TextStyle(
                         fontSize: 15,
@@ -84,16 +98,16 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
                   ),
                 ],
               ),
-            if (widget.description != null) const SizedBox(height: 15),
+            if (widget.title != null) const SizedBox(height: 15),
             MontaAlternativas(
-              length: widget.itens.length,
+              length: widget.options.length,
               optionsColumnsSize: widget.optionsColumnsSize,
               builder: (int i) => Expanded(
-                child: !widget.itens[i].contains('.png') &&
-                        !widget.itens[i].contains('.mp3')
+                child: !widget.options[i].contains('.png') &&
+                        !widget.options[i].contains('.mp3')
                     ? CustomButton(
-                        title: widget.itens[i],
-                        value: widget.itens[i],
+                        title: widget.options[i],
+                        value: widget.options[i],
                         groupValue: answerAux[i],
                         onChanged: (_) {
                           state.didChange(answerAux);
@@ -102,14 +116,14 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
                     : TextButton(
                         child: Opacity(
                           opacity: answerAux[i].value != "" ? 1 : 0.3,
-                          child: Image.asset(widget.itens[i]),
+                          child: Image.asset(widget.options[i]),
                         ),
                         onPressed: () {
                           setState(() {
                             if (answerAux[i].value != "") {
                               answerAux[i].value = "";
                             } else {
-                              answerAux[i].value = widget.itens[i];
+                              answerAux[i].value = widget.options[i];
                             }
                             state.didChange(answerAux);
                           });

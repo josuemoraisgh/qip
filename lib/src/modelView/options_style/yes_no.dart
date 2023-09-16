@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import '../base_widget/custom_button.dart';
 
 class TypeYesNo extends StatefulWidget {
-  final int id;
   final ValueNotifier<String> answer;
   final List<String> options;
   const TypeYesNo(
-      {Key? key, required this.id, required this.answer, required this.options})
+      {Key? key, required this.answer, required this.options})
       : super(key: key);
 
   @override
@@ -22,7 +21,8 @@ class _TypeYesNoState extends State<TypeYesNo> {
     super.initState();
     var aux = widget.answer.value.split(";");
     if (aux.length != widget.options.length) {
-      answerAux = List.filled(widget.options.length, ValueNotifier<String>(""));
+      answerAux = List.generate(
+          widget.options.length, (index) => ValueNotifier<String>(""));
     } else {
       answerAux = List.generate(
           widget.options.length, (index) => ValueNotifier<String>(aux[index]));

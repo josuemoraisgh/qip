@@ -189,7 +189,7 @@ class _TelasPageState extends State<TelasPage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.only(
-                          left: 20, top: 10, right: 10, bottom: 0),
+                          left: 20, top: 0, right: 10, bottom: 0),
                       alignment: Alignment.bottomRight,
                       child: Text(
                         "Pagina: ${widget.id.toString()}",
@@ -204,7 +204,7 @@ class _TelasPageState extends State<TelasPage> {
                     if (telas[widget.id]!['hasProx'])
                       Container(
                         padding: const EdgeInsets.only(
-                            left: 0, top: 10, right: 10, bottom: 0),
+                            left: 0, top: 0, right: 10, bottom: 0),
                         alignment: Alignment.bottomRight,
                         child: _proximaButton(),
                       ),

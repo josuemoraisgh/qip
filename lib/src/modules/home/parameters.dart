@@ -2,10 +2,12 @@ import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ia_triagem/src/modelView/options_style/display_frame.dart';
+import 'package:ia_triagem/src/modelView/options_style/multi_selection_list.dart';
 
 import '../../modelView/options_style/send_email.dart';
 import '../../modelView/options_style/single_selection_list.dart';
 import '../../modelView/options_style/text_form_list.dart';
+import '../../modelView/options_style/yes_no.dart';
 import 'telas_controller.dart';
 
 void addListenerSimples(
@@ -889,22 +891,24 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             body:
                 "Por favor, identifique expressões e intenções das pessoas levando em consideração apenas a região dos olhos. Para cada imagem, selecione a palavra que melhor descreve os sentimentos, pensamentos ou impressões que a pessoa em questão está transmitindo.",
             bodyHasFrame: false,
-          ),          
+          ),
         ]
   },
   25: {
     'hasProx': true,
-    'header': 'Dentre as quatro alternativas de cada imagem. Selecione a palavra que melhor a descreve',
+    'header':
+        'Dentre as quatro alternativas de cada imagem. Selecione a palavra que melhor a descreve',
     'answerLenght': 14,
     'itens': (
       TelasController controller,
       GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
-    )=> [
+    ) =>
+        [
           const DisplayFrame(
-            body:'assets/olho1.png',                
+            body: 'assets/olho1.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[0]
               ..addListener(() =>
@@ -912,21 +916,21 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
             options: const [
-          'Nervoso(a)',
-          'Deprimido(a)',
-          'Irritado(a)',
-          'Divertido(a)'
-        ],
+              'Nervoso(a)',
+              'Deprimido(a)',
+              'Irritado(a)',
+              'Divertido(a)'
+            ],
             optionsColumnsSize: 2,
           ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),                     
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho2.png',                
+            body: 'assets/olho2.png',
             bodyHasFrame: true,
-          ), 
-          const SizedBox(height: 10.0),                    
+          ),
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[1]
               ..addListener(() =>
@@ -934,21 +938,21 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
             options: const [
-          'Nervoso(a)',
-          'Deprimido(a)',
-          'Irritado(a)',
-          'Divertido(a)'
-        ],
+              'Nervoso(a)',
+              'Deprimido(a)',
+              'Irritado(a)',
+              'Divertido(a)'
+            ],
             optionsColumnsSize: 2,
-          ),          
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho3.png',                
+            body: 'assets/olho3.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[2]
               ..addListener(() =>
@@ -956,55 +960,65 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
             options: const [
-          'Envergonhado(a)',
-          'Divertido(a)',
-          'Interessado(a)',
-          'Deprimido(a)'
-        ],
+              'Envergonhado(a)',
+              'Divertido(a)',
+              'Interessado(a)',
+              'Deprimido(a)'
+            ],
             optionsColumnsSize: 2,
-          ),      
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho4.png',               
+            body: 'assets/olho4.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[3]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
-            options: const ['Arrogante', 'Decidido(a)', 'Apavorado(a)', 'Chateado(a)'],
+            options: const [
+              'Arrogante',
+              'Decidido(a)',
+              'Apavorado(a)',
+              'Chateado(a)'
+            ],
             optionsColumnsSize: 2,
-          ),      
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho5.png',                
+            body: 'assets/olho5.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[4]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
-            options: const ['Amável', 'Decidido(a)', 'Simpático(a)', 'Deprimido(a)'],
+            options: const [
+              'Amável',
+              'Decidido(a)',
+              'Simpático(a)',
+              'Deprimido(a)'
+            ],
             optionsColumnsSize: 2,
-          ),      
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho6.png',               
+            body: 'assets/olho6.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[5]
               ..addListener(() =>
@@ -1012,21 +1026,21 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
             options: const [
-          'Tímido(a)',
-          'Perturbado(a)',
-          'Desanimado(a)',
-          'Pensativo(a)'
-        ],
+              'Tímido(a)',
+              'Perturbado(a)',
+              'Desanimado(a)',
+              'Pensativo(a)'
+            ],
             optionsColumnsSize: 2,
-          ),      
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho7.png',                
+            body: 'assets/olho7.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[6]
               ..addListener(() =>
@@ -1034,77 +1048,87 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
             options: const [
-          'Impaciente ',
-          'Desanimado(a)',
-          'Sedutor(a)',
-          'Aliviado(a)'
-        ],
+              'Impaciente ',
+              'Desanimado(a)',
+              'Sedutor(a)',
+              'Aliviado(a)'
+            ],
             optionsColumnsSize: 2,
-          ),      
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body: 'assets/olho8.png',                
+            body: 'assets/olho8.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[7]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
-            options: const  ['Grato(a)', 'Sonhador(a)', 'Desanimado(a)', 'Chocado(a)'],
+            options: const [
+              'Grato(a)',
+              'Sonhador(a)',
+              'Desanimado(a)',
+              'Chocado(a)'
+            ],
             optionsColumnsSize: 2,
-          ),      
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho9.png',               
+            body: 'assets/olho9.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[8]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
-            options: const  [
-          'Satisfeito(a)',
-          'Preocupado(a)',
-          'Afetuoso(a)',
-          'Indiferente'
-        ],
+            options: const [
+              'Satisfeito(a)',
+              'Preocupado(a)',
+              'Afetuoso(a)',
+              'Indiferente'
+            ],
             optionsColumnsSize: 2,
-          ),      
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho10.png',                
+            body: 'assets/olho10.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[9]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
-            options: const ['Amável', 'Arrependido(a)', 'Zangado(a)', 'Simpático(a)'],
+            options: const [
+              'Amável',
+              'Arrependido(a)',
+              'Zangado(a)',
+              'Simpático(a)'
+            ],
             optionsColumnsSize: 2,
-          ),      
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho11.png',                
+            body: 'assets/olho11.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[10]
               ..addListener(() =>
@@ -1112,119 +1136,161 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
             options: const [
-          'Desconfortável',
-          'Entediado(a)',
-          'Confiante',
-          'Impaciente'
-        ],
+              'Desconfortável',
+              'Entediado(a)',
+              'Confiante',
+              'Impaciente'
+            ],
             optionsColumnsSize: 2,
-          ),      
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),           
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho12.png',                
+            body: 'assets/olho12.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[11]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
-            options: const ['Arrependido(a)','Nervoso(a)','Divertido(a)','Envergonhado(a)'],
+            options: const [
+              'Arrependido(a)',
+              'Nervoso(a)',
+              'Divertido(a)',
+              'Envergonhado(a)'
+            ],
             optionsColumnsSize: 2,
-          ),     
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),                
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho13.png',                
+            body: 'assets/olho13.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[12]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
-            options: const ['Amigável', 'Entretido(a)', 'Desconfiado(a)', 'Sedutor(a)'],
+            options: const [
+              'Amigável',
+              'Entretido(a)',
+              'Desconfiado(a)',
+              'Sedutor(a)'
+            ],
             optionsColumnsSize: 2,
-          ), 
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
-          const SizedBox(height: 10.0),     
+          const SizedBox(height: 10.0),
           const DisplayFrame(
-            body:'assets/olho14.png',                
+            body: 'assets/olho14.png',
             bodyHasFrame: true,
           ),
-          const SizedBox(height: 10.0),          
+          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[13]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
-            options: const ['Preocupado(a)', 'Cauteloso(a)', 'Hostil', 'Divertido(a)'],
+            options: const [
+              'Preocupado(a)',
+              'Cauteloso(a)',
+              'Hostil',
+              'Divertido(a)'
+            ],
             optionsColumnsSize: 2,
-          ),            
+          ),
         ]
-  },  
-  26: const {
-    'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
-    'header': 'Responda as questões abaixo:',
-    'options': [
-      'Tem sentido muito medo de perder o controle ou enlouquecer?',
-      'Para impedir o ganho de peso, há uso de laxantes, diuréticos ou outros medicamentos; jejum, vômitos autoinduzidos, ou exercício físico em excesso?',
-      'Sente medo intenso de ganhar peso ou de engordar, ao ponto de não comer?',
-      'Há ingestão persistente de substâncias não nutritivas tais como doces e/ou chocolates, durante um período mínimo de um mês?',
-      'Você se irrita fácil, de forma que seu humor muda facilmente durante o dia?',
-      'Já teve ataques ou crises de medo intenso nos quais se sentiu muito mal?',
-    ],
   },
-  27: const {
+  26: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Qual das imagens abaixo completa a sequência a seguir?', //Titulo do card
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/intel_1.png',
-        'mim_size_awnser': 1,
-        'max_size_awnser': 1,
-        'options_style':
-            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 3,
-        'options': [
-          'assets/intel_1a.png',
-          'assets/intel_1b.png',
-          'assets/intel_1c.png',
-          'assets/intel_1d.png',
-          'assets/intel_1e.png',
-          'assets/intel_1f.png'
+    'header': 'Responda as questões abaixo:',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Tem sentido muito medo de perder o controle ou enlouquecer?',
+              'Para impedir o ganho de peso, há uso de laxantes, diuréticos ou outros medicamentos; jejum, vômitos autoinduzidos, ou exercício físico em excesso?',
+              'Sente medo intenso de ganhar peso ou de engordar, ao ponto de não comer?',
+              'Há ingestão persistente de substâncias não nutritivas tais como doces e/ou chocolates, durante um período mínimo de um mês?',
+              'Você se irrita fácil, de forma que seu humor muda facilmente durante o dia?',
+              'Já teve ataques ou crises de medo intenso nos quais se sentiu muito mal?',
+            ],
+          ),
+        ]
+  },
+  27: {
+    'hasProx': true,
+    'header': 'Qual das imagens abaixo completa a sequência a seguir?',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body: 'assets/intel_1.png',
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),
+          MultiSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.more_time,
+            options: const [
+              'assets/intel_1a.png',
+              'assets/intel_1b.png',
+              'assets/intel_1c.png',
+              'assets/intel_1d.png',
+              'assets/intel_1e.png',
+              'assets/intel_1f.png'
+            ],
+            optionsColumnsSize: 3,
+            maxSizeAnswer: 1,
+            mimSizeAnswer: 1,
+          ),
         ],
-      },
-    ],
   },
-  28: const {
+  28: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
     'header': 'Responda as questões abaixo:',
-    'options': [
-      'Ultimamente tem arrancado o próprio cabelo de forma recorrente, resultando em perda de cabelo?',
-      'Observou grande perda de interesse ou prazer em todas ou quase todas as atividades na maior parte do dia; sente-se triste, vazio, sem esperança?',
-      'As situações sociais, tais como falar em público, quase sempre provocam medo ou ansiedade?',
-      'Percebo que sou uma pessoa especial e único/a? Espero que um dia as pessoas possam reconhecer meu valor e a diferença que faço na vida delas.'
-          'Tende a se enxergar como alguém socialmente incapaz, sem atrativos pessoais ou inferior aos outros?',
-      'Possui dificuldade em iniciar projetos ou fazer as coisas sozinho (por falta de autoconfiança, em vez de falta de motivação ou energia)?',
-    ],
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Ultimamente tem arrancado o próprio cabelo de forma recorrente, resultando em perda de cabelo?',
+              'Observou grande perda de interesse ou prazer em todas ou quase todas as atividades na maior parte do dia; sente-se triste, vazio, sem esperança?',
+              'As situações sociais, tais como falar em público, quase sempre provocam medo ou ansiedade?',
+              'Percebo que sou uma pessoa especial e único/a? Espero que um dia as pessoas possam reconhecer meu valor e a diferença que faço na vida delas.',
+              'Tende a se enxergar como alguém socialmente incapaz, sem atrativos pessoais ou inferior aos outros?',
+              'Possui dificuldade em iniciar projetos ou fazer as coisas sozinho (por falta de autoconfiança, em vez de falta de motivação ou energia)?',
+            ],
+          ),
+        ]
   },
   29: const {
     'hasProx': true,
@@ -1294,20 +1360,30 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  31: const {
+  31: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
     'header': 'Responda as questões abaixo:',
-    'options': [
-      'Sente algo estranho dentro do seu corpo, e/ou movimentos, como se levasse um empurrão?',
-      'Sente como se alguém lhe tocasse, beliscassem, batessem ou beijassem seu corpo?',
-      'Sente movimentos no corpo, como se levasse um empurrão?',
-      'Possui a sensação de falta de controle durante a alimentação; não consegue parar de comer ou controlar a quantidade que está ingerindo?',
-      'Sente-se descansado e preparado para mais um dia, mesmo com apenas 3 horas de sono?',
-      'Você com frequência tem dificuldade em manter-se concentrado durante a realização de tarefas ouatividades?',
-      'Muitas vezes responde precipitadamente antes que as perguntas tenham sido completadas.',
-    ],
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Sente algo estranho dentro do seu corpo, e/ou movimentos, como se levasse um empurrão?',
+              'Sente como se alguém lhe tocasse, beliscassem, batessem ou beijassem seu corpo?',
+              'Sente movimentos no corpo, como se levasse um empurrão?',
+              'Possui a sensação de falta de controle durante a alimentação; não consegue parar de comer ou controlar a quantidade que está ingerindo?',
+              'Sente-se descansado e preparado para mais um dia, mesmo com apenas 3 horas de sono?',
+              'Você com frequência tem dificuldade em manter-se concentrado durante a realização de tarefas ouatividades?',
+              'Muitas vezes responde precipitadamente antes que as perguntas tenham sido completadas.',
+            ],
+          ),
+        ]
   },
   32: const {
     'hasProx': true,
@@ -1425,20 +1501,30 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ], // options_type: text
   },
-  41: const {
+  41: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
     'header': 'Responda as questões abaixo:',
-    'options': [
-      'Diariamente, há momentos em que você sente como o se chão oscilasse?',
-      'Durante o dia há vários momentos em que você se sente irritadao e impaciente?',
-      'Diariamente, há momentos em que você se sente muito feliz, irradiante?',
-      'Durante o dia há vários momentos em que você se sente triste e/ou melancólico?',
-      'Tem notado muita preocupação com um ou mais defeitos ou falhas percebidas na aparência física que não são observáveis ou que parecem leves para os outros.',
-      'Você com frequência mexe de forma irrequieta as mãos e os pés ou remexe-se na cadeira quando está sentado?',
-      'Exibe dificuldade em concordar com as ideias de outras pessoas, demonstrando inflexibilidade e rigidez tanto em relação a si mesmo quanto aos outros.',
-    ],
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Diariamente, há momentos em que você sente como o se chão oscilasse?',
+              'Durante o dia há vários momentos em que você se sente irritadao e impaciente?',
+              'Diariamente, há momentos em que você se sente muito feliz, irradiante?',
+              'Durante o dia há vários momentos em que você se sente triste e/ou melancólico?',
+              'Tem notado muita preocupação com um ou mais defeitos ou falhas percebidas na aparência física que não são observáveis ou que parecem leves para os outros.',
+              'Você com frequência mexe de forma irrequieta as mãos e os pés ou remexe-se na cadeira quando está sentado?',
+              'Exibe dificuldade em concordar com as ideias de outras pessoas, demonstrando inflexibilidade e rigidez tanto em relação a si mesmo quanto aos outros.',
+            ],
+          ),
+        ]
   },
   42: const {
     'hasProx': true,
@@ -1496,19 +1582,29 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  44: const {
+  44: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
-    'header': "Responda as questões abaixo:",
-    'options': [
-      'Percebe-se impulsivo e de forma abusiva; p. ex., gastos exagerados, sexo com desconhecidos, abuso de substâncias, dirigir de forma perigosa/irresponsável e/ou atos repetitivos de autolesão?',
-      'Tem dificuldade em terminar o que começa?',
-      'Quando você conta uma história que aconteceu, na maioria das vezes você exagera e dramatiza alguns detalhes?',
-      'Já testemunhou e/ou ainda é exposto (a) de forma repetida ou extrema a detalhes aversivos do evento traumático?',
-      'Você apresenta explosões de raiva recorrente, manifestadas por meio da linguagem (como insultos dirigidos a outras pessoas) ou através de ações (como agressão física)?',
-      'Você está tendo insônia praticamente todos os dias?',
-    ],
+    'header': 'Responda as questões abaixo:',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Percebe-se impulsivo e de forma abusiva; p. ex., gastos exagerados, sexo com desconhecidos, abuso de substâncias, dirigir de forma perigosa/irresponsável e/ou atos repetitivos de autolesão?',
+              'Tem dificuldade em terminar o que começa?',
+              'Quando você conta uma história que aconteceu, na maioria das vezes você exagera e dramatiza alguns detalhes?',
+              'Já testemunhou e/ou ainda é exposto (a) de forma repetida ou extrema a detalhes aversivos do evento traumático?',
+              'Você apresenta explosões de raiva recorrente, manifestadas por meio da linguagem (como insultos dirigidos a outras pessoas) ou através de ações (como agressão física)?',
+              'Você está tendo insônia praticamente todos os dias?',
+            ],
+          ),
+        ]
   },
   45: const {
     'hasProx': true,
@@ -1600,19 +1696,29 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  50: const {
+  50: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
-    'header': "Responda as questões abaixo:",
-    'options': [
-      'Você tem sentido mais fadiga ou perda de energia quase todos os dias?',
-      'Você vivenciou algum evento traumático?',
-      'Você tem escutado Zumbido no ouvido?',
-      'Você tem dificuldades em jogar fora objetos usados ou sem valor, mesmo quando não têm valor sentimental. Ultimamente guarda muitas coisas, papeis, recibos, com a ideia de que poderá precisar algum dia?',
-      'Você apresenta comportamentos repetitivos (p. ex., lavar as mãos, organizar, verificar) ou atos mentais (p. ex., orar, contar ou repetir palavras em silêncio).',
-      'Você tem visto algo estranho como figuras, sombras, fogo, fantasmas, demônios, pessoas estranhas ou algo do tipo, no seu dia a dia?',
-    ],
+    'header': 'Responda as questões abaixo:',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Você tem sentido mais fadiga ou perda de energia quase todos os dias?',
+              'Você vivenciou algum evento traumático?',
+              'Você tem escutado Zumbido no ouvido?',
+              'Você tem dificuldades em jogar fora objetos usados ou sem valor, mesmo quando não têm valor sentimental. Ultimamente guarda muitas coisas, papeis, recibos, com a ideia de que poderá precisar algum dia?',
+              'Você apresenta comportamentos repetitivos (p. ex., lavar as mãos, organizar, verificar) ou atos mentais (p. ex., orar, contar ou repetir palavras em silêncio).',
+              'Você tem visto algo estranho como figuras, sombras, fogo, fantasmas, demônios, pessoas estranhas ou algo do tipo, no seu dia a dia?',
+            ],
+          ),
+        ]
   },
   51: const {
     'hasProx': true,
@@ -1635,19 +1741,29 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  52: const {
+  52: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
-    'header': "Responda as questões abaixo:",
-    'options': [
-      'Nos últimos meses, você tem ouvido vozes de pessoas estranhas?',
-      'As vozes são seu próprio pensamento em voz alta?',
-      'Alguém tem desejado envenená-lo?',
-      'Você tem dificuldade para relaxar? Está sempre ocupado?',
-      'Você vem apresentando sensações de falta de ar ou sufocamento?',
-      'Você está vivenciando um estado de luto prolongado e persistente, que se estende por um período superior a 12 meses, caracterizado por uma intensa saudade, preocupação e apatia em relação ao futuro?',
-    ],
+    'header': 'Responda as questões abaixo:',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Nos últimos meses, você tem ouvido vozes de pessoas estranhas?',
+              'As vozes são seu próprio pensamento em voz alta?',
+              'Alguém tem desejado envenená-lo?',
+              'Você tem dificuldade para relaxar? Está sempre ocupado?',
+              'Você vem apresentando sensações de falta de ar ou sufocamento?',
+              'Você está vivenciando um estado de luto prolongado e persistente, que se estende por um período superior a 12 meses, caracterizado por uma intensa saudade, preocupação e apatia em relação ao futuro?',
+            ],
+          ),
+        ]
   },
   53: const {
     'hasProx': true,
@@ -1674,19 +1790,29 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  54: const {
+  54: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
-    'header': "Responda as questões abaixo:",
-    'options': [
-      'Você tem-se irritado com mais facilidade que antes?',
-      'Nos últimos meses você sente dificuldades de parar de se preocupar?',
-      'Você pensa muitas coisas ao mesmo tempo?',
-      'Você sente dificuldade em se concentrar?',
-      'Evita realizar atividades profissionais ou estudantis que impliquem contato interpessoal, pois tem muito medo de críticas, desaprovação ou rejeição?',
-      'Você não acha que tem fraquezas e muito menos evita ambientes, pois consegue tudo o que quer?',
-    ],
+    'header': 'Responda as questões abaixo:',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Você tem-se irritado com mais facilidade que antes?',
+              'Nos últimos meses você sente dificuldades de parar de se preocupar?',
+              'Você pensa muitas coisas ao mesmo tempo?',
+              'Você sente dificuldade em se concentrar?',
+              'Evita realizar atividades profissionais ou estudantis que impliquem contato interpessoal, pois tem muito medo de críticas, desaprovação ou rejeição?',
+              'Você não acha que tem fraquezas e muito menos evita ambientes, pois consegue tudo o que quer?',
+            ],
+          ),
+        ]
   },
   55: const {
     'hasProx': true,
@@ -1740,20 +1866,30 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  58: const {
+  58: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
-    'header': "Responda as questões abaixo:",
-    'options': [
-      'Você acredita que precisa fazer as coisas de forma perfeita, caso contrário não será aceito (a)? ',
-      'Você acredita que as pessoas estão julgando suas atitudes e comportamentos, mesmo que não estejam dizendo?',
-      'Você tem ideias negativas, como pensar em morrer?',
-      'Você se sente inadequado (a) inquieto (a) e conversa de forma excessiva?',
-      'Você costuma adiar ou evitar fazer as coisas até o último minuto? Possui o perfil de procrastinar?',
-      'Tem relutado em delegar tarefas ou de trabalhar com outras pessoas, pois precisa estar no controle de tudo.',
-      'Você percebe que se esforça de forma intensa para evitar ser abandonado (a)?',
-    ],
+    'header': 'Responda as questões abaixo:',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Você acredita que precisa fazer as coisas de forma perfeita, caso contrário não será aceito (a)? ',
+              'Você acredita que as pessoas estão julgando suas atitudes e comportamentos, mesmo que não estejam dizendo?',
+              'Você tem ideias negativas, como pensar em morrer?',
+              'Você se sente inadequado (a) inquieto (a) e conversa de forma excessiva?',
+              'Você costuma adiar ou evitar fazer as coisas até o último minuto? Possui o perfil de procrastinar?',
+              'Tem relutado em delegar tarefas ou de trabalhar com outras pessoas, pois precisa estar no controle de tudo.',
+              'Você percebe que se esforça de forma intensa para evitar ser abandonado (a)?',
+            ],
+          ),
+        ]
   },
   59: const {
     'hasProx': true,
@@ -2138,21 +2274,31 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  70: const {
+  70: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'yes_no',
-    'header': "Responda as questões abaixo:",
-    'options': [
-      'Você se preocupa com a internet (pensa sobre atividades virtuais anteriores ou fica antecipando quando ocorrerá a próxima conexão)?',
-      'Você sente necessidade de usar a internet por períodos cada vez maiores para se sentir satisfeito?',
-      'Você já se esforçou repetidas vezes para controlar, diminuir ou parar de usar a internet, mas fracassou?',
-      'Você fica inquieto, mal-humorado, deprimido ou irritável quando tenta diminuir, parar de usar a internet ou quando o uso é restringido?',
-      'Você fica online mais tempo do que pretendia originalmente?',
-      'Você já prejudicou ou correu o risco de perder um relacionamento significativo, emprego ou oportunidade educacional ou profissional por causa de internet?',
-      'Você já mentiu para familiares, terapeutas ou outras pessoas para esconder a extensão do seu envolvimento com a internet?',
-      'Você usa a internet como uma maneira de fugir de problemas ou de aliviar um humor desagradável (por exemplo, sentimento de impotência, solidão, culpa, tristeza, ansiedade, depressão)?',
-    ],
+    'header': 'Responda as questões abaixo:',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Você se preocupa com a internet (pensa sobre atividades virtuais anteriores ou fica antecipando quando ocorrerá a próxima conexão)?',
+              'Você sente necessidade de usar a internet por períodos cada vez maiores para se sentir satisfeito?',
+              'Você já se esforçou repetidas vezes para controlar, diminuir ou parar de usar a internet, mas fracassou?',
+              'Você fica inquieto, mal-humorado, deprimido ou irritável quando tenta diminuir, parar de usar a internet ou quando o uso é restringido?',
+              'Você fica online mais tempo do que pretendia originalmente?',
+              'Você já prejudicou ou correu o risco de perder um relacionamento significativo, emprego ou oportunidade educacional ou profissional por causa de internet?',
+              'Você já mentiu para familiares, terapeutas ou outras pessoas para esconder a extensão do seu envolvimento com a internet?',
+              'Você usa a internet como uma maneira de fugir de problemas ou de aliviar um humor desagradável (por exemplo, sentimento de impotência, solidão, culpa, tristeza, ansiedade, depressão)?',
+            ],
+          ),
+        ]
   },
   71: const {
     'hasProx': true,
@@ -2251,17 +2397,6 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  /*
-  73: const {
-    'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
-    'header': 'Falta Fazer',
-    'delay': 3,
-    'itens':
-        'Marque a cor que você mais gosta e pinte os retângulos e os círculos das figuras abaixo.\n\nFaça da forma que mais te agrada.',
-  },
-*/
   73: const {
     'hasProx': true,
     'isSendAnswer': true,

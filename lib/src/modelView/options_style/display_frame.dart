@@ -7,7 +7,12 @@ class DisplayFrame extends StatefulWidget {
   final List<Widget>? widgets;
   final void Function(String audio)? playMusic;
   const DisplayFrame(
-      {super.key, this.widgets, this.playMusic, this.body, this.bodyHasFrame, this.fontSize});
+      {super.key,
+      this.widgets,
+      this.playMusic,
+      this.body,
+      this.bodyHasFrame,
+      this.fontSize});
 
   @override
   State<DisplayFrame> createState() => _DisplayFrameState();
@@ -36,8 +41,7 @@ class _DisplayFrameState extends State<DisplayFrame> {
               ],
             )
           : null,
-      child: (body == "") &&
-              (widget.bodyHasFrame ?? true) // body_type = vazio
+      child: (body == "") && (widget.bodyHasFrame ?? true) // body_type = vazio
           ? const SizedBox(
               height: 300.0,
               width: 400.0,
@@ -77,10 +81,14 @@ class _DisplayFrameState extends State<DisplayFrame> {
                 )
               : body.contains('.png') // body_type = image
                   ? widget.bodyHasFrame ?? true
-                      ? Image.asset(
-                          body, //assets/arvore2.png
-                          width: 400.0,
-                          alignment: Alignment.center,
+                      ? Padding(
+                          padding: const EdgeInsets.only(
+                              left: 5, top: 5, right: 5, bottom: 5),
+                          child: Image.asset(
+                            body, //assets/arvore2.png
+                            //width: 400.0,
+                            alignment: Alignment.center,
+                          ),
                         )
                       : Image.asset(
                           body, //assets/arvore2.png
