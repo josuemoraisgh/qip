@@ -1292,54 +1292,127 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  29: const {
+  29: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header': 'Complete as sequências a seguir:',
-    'itens': [
-      {
-        'options_style':
-            'textForm', // multiSelect,singleSelect,multiSelect,textForm
-        'title': ['2, 4, 8, 16, ?'],
-        'labelText': ["Seguência *"],
-        'icons': [Icons.confirmation_num],
-        'has_divider': true,
-      },
-      {
-        'options_style':
-            'textForm', // multiSelect,singleSelect,multiSelect,textForm
-        'title': ['1, 3, 9, ?'],
-        'labelText': ["Seguência *"],
-        'icons': [Icons.confirmation_num],
-        'has_divider': true,
-      },
-      {
-        'options_style':
-            'textForm', // multiSelect,singleSelect,multiSelect,textForm
-        'title': ['3, 7, 11, 15, ? '],
-        'labelText': ["Seguência *"],
-        'icons': [Icons.confirmation_num],
-        'has_divider': true,
-      },
-      {
-        'options_style':
-            'textForm', // multiSelect,singleSelect,multiSelect,textForm
-        'title': ['32, 16, 8, ? '],
-        'labelText': ["Seguência *"],
-        'icons': [Icons.confirmation_num],
-      },
-    ],
+    'answerLenght': 4,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TextFormList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.confirmation_num,
+            title: '2, 4, 8, 16, ?',
+            labelText: "Seguência *",
+            optionsColumnsSize: 1,
+            validator: (value) {
+              if (value == null) {
+                return 'Horário Inválido!!';
+              } else if (value.isEmpty) {
+                return 'Horário Inválido!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.confirmation_num,
+            title: '1, 3, 9, ?',
+            labelText: "Seguência *",
+            optionsColumnsSize: 1,
+            validator: (value) {
+              if (value == null) {
+                return 'Horário Inválido!!';
+              } else if (value.isEmpty) {
+                return 'Horário Inválido!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[2]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.confirmation_num,
+            title: '3, 7, 11, 15, ? ',
+            labelText: "Seguência *",
+            optionsColumnsSize: 1,
+            validator: (value) {
+              if (value == null) {
+                return 'Horário Inválido!!';
+              } else if (value.isEmpty) {
+                return 'Horário Inválido!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[3]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.confirmation_num,
+            title: '32, 16, 8, ? ',
+            labelText: "Seguência *",
+            optionsColumnsSize: 1,
+            validator: (value) {
+              if (value == null) {
+                return 'Horário Inválido!!';
+              } else if (value.isEmpty) {
+                return 'Horário Inválido!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+        ],
   },
-  30: const {
+  30: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header': 'Observe as palavras a seguir:',
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'body': """
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: """
 
     1) MUITOS    2) OCEANO    3) PEIXES    4) E
 
@@ -1347,18 +1420,17 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
 
 Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:
 """,
-        'options_style': 'singleSelect', //multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 1,
-        'options': [
-          '1 - 4 - 6 - 2 - 5 - 3 - 7',
-          '6 - 2 - 4 - 7 - 5 - 1 - 3',
-          '5 - 1 - 3 - 4 - 6 - 7 - 2',
-          '6 - 2 - 5 - 1 - 3 - 4 - 7',
-          '7 - 4 - 3 - 5 - 1 - 2 - 6 '
-        ],
-      },
-    ],
+            hasPrefiroNaoDizer: false,
+            options: const [
+              '1 - 4 - 6 - 2 - 5 - 3 - 7',
+              '6 - 2 - 4 - 7 - 5 - 1 - 3',
+              '5 - 1 - 3 - 4 - 6 - 7 - 2',
+              '6 - 2 - 5 - 1 - 3 - 4 - 7',
+              '7 - 4 - 3 - 5 - 1 - 2 - 6 '
+            ],
+            optionsColumnsSize: 2,
+          ),
+        ]
   },
   31: {
     'hasProx': true,
@@ -1385,122 +1457,173 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  32: const {
+  32: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header':
         'Preencha o campo a seguir com o nome da cidade e estado onde você está agora.',
-    'itens': [
-      {
-        'icons': [Icons.location_city, Icons.location_history],
-        'options_columns_size': 1,
-        'options_style':
-            'textForm', // multiSelect,singleSelect,multiSelect,textForm
-        'labelText': ['CIDADE:', 'ESTADO:'],
-      },
-    ]
+    'answerLenght': 2,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TextFormList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.location_city,
+            labelText: 'CIDADE:',
+            optionsColumnsSize: 1,
+            validator: (value) {
+              if (value == null) {
+                return 'Cidade Inválido!!';
+              } else if (value.isEmpty) {
+                return 'Cidade Inválido!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            icon: Icons.location_history,
+            labelText: 'ESTADO:',
+            optionsColumnsSize: 1,
+            validator: (value) {
+              if (value == null) {
+                return 'Estado Inválido!!';
+              } else if (value.isEmpty) {
+                return 'Estado Inválido!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+        ],
   },
-  33: const {
+  33: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header': "Selecione qual o período do dia atual.",
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'options_columns_size': 1,
-        'radioIsVisible': false,
-        'options': [
-          'Manhã: 6:00 às 11:59 horas',
-          'Tarde: 12:00 às 17:59 horas',
-          'Noite: 18:00 às 23:59 horas',
-          'Madrugada: 00:00 às 05:59 horas',
+    'header': 'Responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Selecione qual o período do dia atual ?',
+            icon: Icons.timer_outlined,
+            hasPrefiroNaoDizer: false,
+            options: const [
+              'Manhã: 6:00 às 11:59 horas',
+              'Tarde: 12:00 às 17:59 horas',
+              'Noite: 18:00 às 23:59 horas',
+              'Madrugada: 00:00 às 05:59 horas',
+            ],
+            optionsColumnsSize: 1,
+          ),
         ]
-      },
-    ],
   },
-  34: const {
+  34: {
     'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
-    'header': 'Informações',
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens':
-        "Seis (6) imagens serão apresentadas. Fique atendo! Em um certo momento do teste, elas serão escondidas em uma figura e você deverá encontrá-las.",
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:
+                'Seis (6) imagens serão apresentadas. Fique atendo! Em um certo momento do teste, elas serão escondidas em uma figura e você deverá encontrá-las.',
+            bodyHasFrame: false,
+          ),
+        ]
   },
-  35: const {
+  35: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/CORREDOR.png', // body_type: image
-      },
-    ], // options_type: text
-  },
-  36: const {
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:'assets/CORREDOR.png',                
+            bodyHasFrame: true,
+          ),
+        ]
+  },  
+  36: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/PAPAI NOEL.png', // body_type: image
-      },
-    ], // options_type: text
-  },
-  37: const {
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:'assets/PAPAI NOEL.png',                
+            bodyHasFrame: true,
+          ),
+        ]
+  },  
+  37: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/circo.png', // body_type: image
-      },
-    ], // options_type: text
-  },
-  38: const {
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:'assets/circo.png',                
+            bodyHasFrame: true,
+          ),
+        ]
+  }, 
+  38: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/mascara.png', // body_type: image
-      },
-    ], // options_type: text
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:'assets/mascara.png',                
+            bodyHasFrame: true,
+          ),
+        ]
   },
-  39: const {
+  39: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/NUMERO8.png', // body_type: image
-      },
-    ], // options_type: text
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:'assets/NUMERO8.png',                
+            bodyHasFrame: true,
+          ),
+        ]
   },
-  40: const {
+  40: {
     'hasProx': false,
-    'isSendAnswer': false,
-    'style': 'form',
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/reciclagem.png', // body_type: image
-      },
-    ], // options_type: text
-  },
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:'assets/reciclagem.png',                
+            bodyHasFrame: true,
+          ),
+        ]
+  },   
   41: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',

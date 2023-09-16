@@ -38,6 +38,13 @@ class _TextFormListState extends State<TextFormList> {
   void initState() {
     super.initState();
     textController.text = widget.answer.value;
+    textController.addListener(
+      () {
+        if (textController.value.selection.isValid) {
+          widget.answer.value = textController.text;
+        }
+      },
+    );
     focusNode.addListener(
       () {
         widget.answer.value = textController.text;
