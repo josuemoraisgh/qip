@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../ajustes.dart';
@@ -32,7 +33,16 @@ class _TelasPageState extends State<TelasPage> {
     super.initState();
     controller = widget.controller ?? Modular.get<TelasController>();
     if (telas[widget.id]!['delay'] != null) {
-      Future.delayed(Duration(seconds: telas[widget.id]!['delay']!))
+      SchedulerBinding.instance.addPostFrameCallback( //So executa depois que tudo ja estiver desenhado
+        (_) {
+          delay(telas[widget.id]!['delay']!);
+        },
+      );
+    }
+  }
+
+  void delay(int time) async {
+      Future.delayed(Duration(seconds: time))
           .then((value) {
         setState(() {
           if (telas[widget.id]!['hasProx']) {
@@ -42,7 +52,6 @@ class _TelasPageState extends State<TelasPage> {
           }
         });
       });
-    }
   }
 
   void playMusic(String fileName) async {

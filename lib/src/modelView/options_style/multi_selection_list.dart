@@ -87,14 +87,16 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
               Row(
                 children: [
                   if (widget.icon != null) Icon(widget.icon!),
-                  const SizedBox(width: 15),
-                  Text(
-                    widget.title!,
-                    textAlign: TextAlign.start,
-                    style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.black,
-                        decorationColor: Colors.black),
+                  if (widget.icon != null) const SizedBox(width: 15),
+                  Expanded(
+                    child: Text(
+                      widget.title!,
+                      textAlign: TextAlign.justify,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.black,
+                          decorationColor: Colors.black),
+                    ),
                   ),
                 ],
               ),

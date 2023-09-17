@@ -5,12 +5,10 @@ class FindImages extends StatefulWidget {
   final String imagem;
   //final Function(String)? answerFunc;
   final ValueNotifier<String> answer;
-  final int? answerId;
   const FindImages({
     Key? key,
     required this.answer,
     //this.answerFunc,
-    this.answerId,
     required this.imagem,
   }) : super(key: key);
 
@@ -19,19 +17,22 @@ class FindImages extends StatefulWidget {
 }
 
 class _FindImagesState extends State<FindImages> {
-  late List<Offset> pointSelected;
+  List<Offset> pointSelected = [];
 
   @override
   void initState() {
     super.initState();
-    var aux = widget.answer.value.split(";");
-    pointSelected = List.generate(
-      aux.length,
-      (index) {
-        var aux2 = aux[index].split(" ");
-        return Offset(double.parse(aux2[0]), double.parse(aux2[1]));
-      },
-    );
+    if (widget.answer.value != "") {
+      var aux = widget.answer.value.split(";");
+      pointSelected = List.generate(
+        aux.length,
+        (index) {
+          var aux2 = aux[index].split(",");
+          return Offset(double.parse(aux2[0]),
+              aux.length <= 1 ? 0.0 : double.parse(aux2[1]));
+        },
+      );
+    }
   }
 
   @override
@@ -68,7 +69,7 @@ class _FindImagesState extends State<FindImages> {
               }
               if (pointSelected.isNotEmpty) {
                 widget.answer.value =
-                    pointSelected.toString().replaceAll('Offset', '');
+                    pointSelected.map((e) => "${e.dx},${e.dy}").join(";");
               } else {
                 widget.answer.value = '';
               }
@@ -76,9 +77,13 @@ class _FindImagesState extends State<FindImages> {
             },
             child: Stack(
               children: <Widget>[
-                Image.asset(
-                  widget.imagem, //assets/arvore2.png
-                  alignment: Alignment.center,
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 5, top: 5, right: 5, bottom: 5),
+                  child: Image.asset(
+                    widget.imagem, //assets/arvore2.png
+                    alignment: Alignment.center,
+                  ),
                 ),
                 CustomPaint(
                   painter: OpenPainter(pointSelected: pointSelected),

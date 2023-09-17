@@ -46,8 +46,12 @@ class CustomButton extends StatelessWidget {
             ),
           ),
           onPressed: () {
-            groupValue.value = value;
-            if(onChanged != null) onChanged!(value);
+            if(groupValue.value == value) {
+              groupValue.value = "";
+            } else {
+              groupValue.value = value;
+            }
+            if(onChanged != null) onChanged!(groupValue.value);
           },
         ),
       ),);

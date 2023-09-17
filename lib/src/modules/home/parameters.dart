@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:ia_triagem/src/modelView/options_style/display_frame.dart';
 import 'package:ia_triagem/src/modelView/options_style/multi_selection_list.dart';
 
+import '../../modelView/options_style/find_images.dart';
 import '../../modelView/options_style/send_email.dart';
 import '../../modelView/options_style/single_selection_list.dart';
 import '../../modelView/options_style/text_form_list.dart';
@@ -1525,8 +1526,7 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
             answer: controller.answerAux.value[0]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
-            title:
-                'Selecione qual o período do dia atual ?',
+            title: 'Selecione qual o período do dia atual ?',
             icon: Icons.timer_outlined,
             hasPrefiroNaoDizer: false,
             options: const [
@@ -1559,11 +1559,11 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(
-            body:'assets/CORREDOR.png',                
+            body: 'assets/CORREDOR.png',
             bodyHasFrame: true,
           ),
         ]
-  },  
+  },
   36: {
     'hasProx': false,
     'header': 'Atenção!!',
@@ -1571,11 +1571,11 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(
-            body:'assets/PAPAI NOEL.png',                
+            body: 'assets/PAPAI NOEL.png',
             bodyHasFrame: true,
           ),
         ]
-  },  
+  },
   37: {
     'hasProx': false,
     'header': 'Atenção!!',
@@ -1583,11 +1583,11 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(
-            body:'assets/circo.png',                
+            body: 'assets/circo.png',
             bodyHasFrame: true,
           ),
         ]
-  }, 
+  },
   38: {
     'hasProx': false,
     'header': 'Atenção!!',
@@ -1595,7 +1595,7 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(
-            body:'assets/mascara.png',                
+            body: 'assets/mascara.png',
             bodyHasFrame: true,
           ),
         ]
@@ -1607,7 +1607,7 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(
-            body:'assets/NUMERO8.png',                
+            body: 'assets/NUMERO8.png',
             bodyHasFrame: true,
           ),
         ]
@@ -1619,11 +1619,11 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(
-            body:'assets/reciclagem.png',                
+            body: 'assets/reciclagem.png',
             bodyHasFrame: true,
           ),
         ]
-  },   
+  },
   41: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
@@ -1649,61 +1649,69 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  42: const {
+  42: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header': 'Encontre os objetos!',
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'body':
-            'Seis (6) imagens foram apresentadas em algum momento do teste. Vamos encontrá-los? Clique nas figuras que você lembrou. Não é obrigado(a) a encontrar todas as imagens. Faça o seu melhor!\n',
-      },
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'options_style': 'findImages',
-        'options': [
-          'assets/seisimagens.png',
-        ]
-      },
-    ],
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body:
+                'Seis (6) imagens foram apresentadas em algum momento do teste. Vamos encontrá-los? Clique nas figuras que você lembrou. Não é obrigado(a) a encontrar todas as imagens. Faça o seu melhor!\n',
+            bodyHasFrame: false,
+          ),
+          const SizedBox(height: 10.0),
+          FindImages(
+              answer: controller.answerAux.value[0]
+                ..addListener(() =>
+                    state.currentState!.didChange(controller.answerAux.value)),
+              imagem: 'assets/seisimagens.png'),
+        ],
   },
-  43: const {
+  43: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header': 'Avalie e responda !!',
-    'itens': [
-      {
-        'body': "assets/questao32.png",
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-      },
-      {
-        'body':
-            "Se possível, durante alguns minutos, imaginar ou tomar conhecimento de alguém ou algo através de uma abertura no tempo e espaço, qual das ações a seguir você escolheria? Selecione até duas opções que melhor se adequem a você.\n",
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'max_size_awnser': 2,
-        'mim_size_awnser': 2,
-        'options_columns_size': 1,
-        'options_style': 'multiSelect', // singleSelect,multiSelect,textForm
-        'options': [
-          'Ver alguém que já morreu',
-          'Ver uma pessoa nua',
-          'Voltar na minha infância e recomeçar tudo',
-          'Voltar na minha adolescência e recomeçar tudo',
-          'Saber se meu namorado (a) ou esposo (a) está me traindo',
-          'Saber como poderia ser o futuro da minha família e ajudá-los',
-          'Desaparecer no tempo e espaço, ao entrar pela fenda',
-          'Saber quem é minha alma gêmea',
-          'Ver meu futuro profissional',
-          'Saber como faço para não pensar coisas bizarras',
-          'Saber se ficarei rico(a)',
-          'Saber quem está me perseguindo na rua',
-          'Não gostaria de ver ou saber de nada',
-        ]
-      },
-    ],
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body: "assets/questao32.png",
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),
+          MultiSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                "\nSe possível, durante alguns minutos, imaginar ou tomar conhecimento de alguém ou algo através de uma abertura no tempo e espaço, qual das ações a seguir você escolheria? Selecione até duas opções que melhor se adequem a você.\n",
+            //icon: Icons.more_time,
+            options: const [
+              'Ver alguém que já morreu',
+              'Ver uma pessoa nua',
+              'Voltar na minha infância e recomeçar tudo',
+              'Voltar na minha adolescência e recomeçar tudo',
+              'Saber se meu namorado (a) ou esposo (a) está me traindo',
+              'Saber como poderia ser o futuro da minha família e ajudá-los',
+              'Desaparecer no tempo e espaço, ao entrar pela fenda',
+              'Saber quem é minha alma gêmea',
+              'Ver meu futuro profissional',
+              'Saber como faço para não pensar coisas bizarras',
+              'Saber se ficarei rico(a)',
+              'Saber quem está me perseguindo na rua',
+              'Não gostaria de ver ou saber de nada',
+            ],
+            optionsColumnsSize: 1,
+            maxSizeAnswer: 2,
+            mimSizeAnswer: 2,
+          ),
+        ],
   },
   44: {
     'hasProx': true,
@@ -1729,25 +1737,28 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  45: const {
-    'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
+  45: {
+    'hasProx': false,
     'header': 'Atenção !!',
     'delay': 3,
-    'itens': 'Atente-se ao som que será reproduzido na próxima tela.',
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: 'Atente-se ao som que será reproduzido na próxima tela.',
+            bodyHasFrame: false,
+          ),
+        ]
   },
-  46: const {
-    'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header': '',
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': "assets/audios/aguacorrente-edited_v2.mp3", // body_type: audio
-      },
-    ],
+  46: {
+    'hasProx': false,
+    'header': 'Pressione o play para escutar !!',
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body: "assets/audios/aguacorrente-edited_v2.mp3",
+            bodyHasFrame: true,
+          ),
+        ]
   },
   47: const {
     'hasProx': true,
@@ -1937,13 +1948,18 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  55: const {
-    'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
-    'header': 'Atenção !!',
+  55: {
+    'hasProx': false,
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens': "Na próxima tela será reproduzida algumas palavras. Fique atento.",
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:
+                "Na próxima tela será reproduzida algumas palavras. Fique atento.",
+            bodyHasFrame: false,
+          ),
+        ]
   },
   56: const {
     'hasProx': true,
@@ -2129,14 +2145,18 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  61: const {
-    'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
-    'header': 'Atenção !!',
+  61: {
+    'hasProx': false,
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens':
-        "Nas próximas 4 telas serão exibidas diversas expressões de diferentes sentimentos. Em cada tela, marque no mínimo 2 e no máximo 6 expressões que melhor correspondem como você tem se sentido nos últimos meses.",
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:
+                "Nas próximas 4 telas serão exibidas diversas expressões de diferentes sentimentos. Em cada tela, marque no mínimo 2 e no máximo 6 expressões que melhor correspondem como você tem se sentido nos últimos meses.",
+            bodyHasFrame: false,
+          ),
+        ]
   },
   62: const {
     'hasProx': true,
@@ -2353,14 +2373,18 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  67: const {
-    'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
-    'header': 'Atenção !!',
+  67: {
+    'hasProx': false,
+    'header': 'Atenção!!',
     'delay': 3,
-    'itens':
-        "Na próxima tela será reproduzida uma lista de 10 pares de palavras relacionadas logicamente entre si (p. ex., alto-baixo). Depois, você será solicitado para preencher a palavra faltante.\n\nFique atento, você terá que memorizar todos os pares.\n\nQuando estiver pronto é so clicar em próximo...",
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:
+                "Na próxima tela será reproduzida uma lista de 10 pares de palavras relacionadas logicamente entre si (p. ex., alto-baixo). Depois, você será solicitado para preencher a palavra faltante.\n\nFique atento, você terá que memorizar todos os pares.\n\nQuando estiver pronto é so clicar em próximo...",
+            bodyHasFrame: false,
+          ),
+        ]
   },
   68: const {
     'hasProx': true,
@@ -2374,7 +2398,7 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  69: {
+  69: const {
     'hasProx': true,
     'isSendAnswer': true,
     'type': 'form',
@@ -2602,13 +2626,17 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
       },
     ],
   },
-  76: const {
-    'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
+  76: {
+    'hasProx': false,
     'header': 'Parabéns!!!!',
     'delay': 3,
-    'itens':
-        "Você terminou o questionário, agradeçemos muito pela sua disponibilidade.\n\nOBS.: Você ja pode fechar esta página.",
+    'answerLenght': 0,
+    'itens': (_, __) => [
+          const DisplayFrame(
+            body:
+                "Você terminou o questionário, agradeçemos muito pela sua disponibilidade.\n\nOBS.: Você ja pode fechar esta página.",
+            bodyHasFrame: false,
+          ),
+        ]
   },
 };

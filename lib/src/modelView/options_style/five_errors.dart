@@ -93,7 +93,6 @@ class _FiveErrorsState extends State<FiveErrors> {
                     : FindImages(
                         key: const ValueKey<int>(1),
                         imagem: widget.imagemClean,
-                        answerId: widget.answerId ?? 0,
                         answer: widget.answer,
                         //answerFunc: widget.answerFunc,
                       )),
