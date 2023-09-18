@@ -2481,7 +2481,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   69: {
     'hasProx': true,
     'header': 'Complete com o par correspondente escutado anteriormente',
-    'answerLenght': 19,
+    'answerLenght': 9,
     'itens': (
       TelasController controller,
       GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
@@ -2496,7 +2496,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length != 2)) {
+              } else if ((value.isEmpty) || (value.length < 2)) {
                 return 'Dados Incorretos!!';
               }
               return null;
@@ -2518,7 +2518,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length != 2)) {
+              } else if ((value.isEmpty) || (value.length < 2)) {
                 return 'Dados Incorretos!!';
               }
               return null;
@@ -2532,7 +2532,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[1]
+            answer: controller.answerAux.value[2]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
@@ -2540,7 +2540,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length != 2)) {
+              } else if ((value.isEmpty) || (value.length < 2)) {
                 return 'Dados Incorretos!!';
               }
               return null;
@@ -2554,7 +2554,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[1]
+            answer: controller.answerAux.value[3]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
@@ -2562,7 +2562,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length != 2)) {
+              } else if ((value.isEmpty) || (value.length < 2)) {
                 return 'Dados Incorretos!!';
               }
               return null;
@@ -2576,7 +2576,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[1]
+            answer: controller.answerAux.value[4]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
@@ -2584,7 +2584,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length != 2)) {
+              } else if ((value.isEmpty) || (value.length < 2)) {
                 return 'Dados Incorretos!!';
               }
               return null;
@@ -2598,7 +2598,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[1]
+            answer: controller.answerAux.value[5]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
@@ -2606,7 +2606,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length != 2)) {
+              } else if ((value.isEmpty) || (value.length < 2)) {
                 return 'Dados Incorretos!!';
               }
               return null;
@@ -2620,7 +2620,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[1]
+            answer: controller.answerAux.value[6]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
@@ -2628,7 +2628,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length != 2)) {
+              } else if ((value.isEmpty) || (value.length < 2)) {
                 return 'Dados Incorretos!!';
               }
               return null;
@@ -2642,7 +2642,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[1]
+            answer: controller.answerAux.value[7]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
@@ -2650,7 +2650,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length != 2)) {
+              } else if ((value.isEmpty) || (value.length < 2)) {
                 return 'Dados Incorretos!!';
               }
               return null;
@@ -2664,7 +2664,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[1]
+            answer: controller.answerAux.value[8]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
@@ -2672,7 +2672,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length != 2)) {
+              } else if ((value.isEmpty) || (value.length < 2)) {
                 return 'Dados Incorretos!!';
               }
               return null;
@@ -2719,13 +2719,6 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
       GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
     ) =>
         [
-          const DisplayFrame(
-            body: 'assets/questao48.png',
-            bodyHasFrame: true,
-          ),
-          const SizedBox(height: 10.0),
-          const Divider(),
-          const SizedBox(height: 10.0),
           SingleSelectionList(
             answer: controller.answerAux.value[0]
               ..addListener(() =>
