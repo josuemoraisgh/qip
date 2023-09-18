@@ -31,7 +31,12 @@ jobs:
           git config --global user.email josuemorais@gmail.com
           git config --global user.name josuemoraisgh
           git status
-          git remote add origin https://${{secrets.token}}@github.com/josuemoraisgh/qip.git
+          //git remote add origin https://${{secrets.token}}@github.com/josuemoraisgh/qip.git
+          //git checkout -b gh-pages
+          //git add --all
+          //git commit -m "update"
+          //git push origin gh-pages -f
+          git remote add origin https://${{secrets.token}}@github.com/iapsicopatologia/qip.git
           git checkout -b gh-pages
           git add --all
           git commit -m "update"
