@@ -54,11 +54,9 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
       key: _formKey,
       onChanged: () {
         if (_formKey.currentState!.validate()) {
-          widget.answer.value = answerAux.join(';');
-          //if(widget.answerFunc != null) widget.answerFunc!(answerAux.join(';'));
+          widget.answer.value = answerAux.map((e) => e.value).join(';');
         } else {
           widget.answer.value = '';
-          //if(widget.answerFunc != null) widget.answerFunc!('');
         }
         _formKey.currentState!.save();
       },
@@ -125,7 +123,9 @@ class _MultiSelectionListState extends State<MultiSelectionList> {
                             if (answerAux[i].value != "") {
                               answerAux[i].value = "";
                             } else {
-                              answerAux[i].value = widget.options[i];
+                              answerAux[i].value = widget.options[i]
+                                  .replaceAll('assets/emoji_', '')
+                                  .replaceAll('.png', '');
                             }
                             state.didChange(answerAux);
                           });

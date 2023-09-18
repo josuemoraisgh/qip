@@ -1,10 +1,14 @@
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:ia_triagem/src/modelView/options_style/display_frame.dart';
 import 'package:ia_triagem/src/modelView/options_style/multi_selection_list.dart';
 
+import '../../modelView/options_style/arvore_circulos.dart';
+import '../../modelView/options_style/dots_line.dart';
 import '../../modelView/options_style/find_images.dart';
+import '../../modelView/options_style/five_errors.dart';
 import '../../modelView/options_style/send_email.dart';
 import '../../modelView/options_style/single_selection_list.dart';
 import '../../modelView/options_style/text_form_list.dart';
@@ -1413,14 +1417,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             answer: controller.answerAux.value[0]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
-            title: """
-
-    1) MUITOS    2) OCEANO    3) PEIXES    4) E
-
-                5) TEM      6) O      7) PLANTAS 
-
-Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:
-""",
+            title:
+                "\n        1) MUITOS    2) OCEANO    3) PEIXES    4) E\n\n                   5) TEM      6) O      7) PLANTAS\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
             hasPrefiroNaoDizer: false,
             options: const [
               '1 - 4 - 6 - 2 - 5 - 3 - 7',
@@ -1506,7 +1504,7 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
               }
               return null;
             },
-            keyboardType: TextInputType.number,
+            keyboardType: TextInputType.name,
             inputFormatters: [
               FilteringTextInputFormatter.singleLineFormatter,
             ],
@@ -1708,8 +1706,8 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
               'Não gostaria de ver ou saber de nada',
             ],
             optionsColumnsSize: 1,
-            maxSizeAnswer: 2,
             mimSizeAnswer: 2,
+            maxSizeAnswer: 2,
           ),
         ],
   },
@@ -1753,82 +1751,110 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
     'hasProx': false,
     'header': 'Pressione o play para escutar !!',
     'answerLenght': 0,
-    'itens': (_, __) => [
-          const DisplayFrame(
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          DisplayFrame(
+            id: 46,
             body: "assets/audios/aguacorrente-edited_v2.mp3",
             bodyHasFrame: true,
+            playMusic: controller.playMusic,
           ),
         ]
   },
-  47: const {
+  47: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header': 'Qual das opções corresponde ao som escutado?',
-    'itens': [
-      {
-        'options_columns_size': 2,
-        'radioIsVisible': false,
-        'options': [
-          "Pássaros",
-          "Barulho de água",
-          "Aspirador de pó",
-          "Choro de criança",
-          "Telefone tocando",
-          "Sem som"
-        ],
-      },
-    ],
-  },
-  48: const {
-    'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Observe a imagem e selecione qual alternativa corresponde ao que você vê.',
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        //'body_type':
-        'body': "assets/Ebbinghaus.png", // body_type: image
-        'radioIsVisible': false,
-        'options_columns_size': 1,
-        'options': [
-          'A Reta A é maior que a Reta B',
-          'A Reta A é menor que a Reta B',
-          'Retas A e B, são do mesmo tamanho',
-        ],
-      },
-    ],
-  },
-  49: const {
-    'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header': 'Responda !!',
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'options_columns_size': 2,
-        'radioIsVisible': false,
-        'body':
-            'Serão exibidos diversos pontos e ao clicar sobre estes pontos, você poderá compor imagens, uma vez que os pontos serão conectados por linhas retas. Escolha uma das sugestões fornecidas, selecionando a opção e inicie o processo de desenho. O tempo disponível é flexível, permitindo que você retorne ou apague conforme necessário.\n',
-        'options': [
-          'Avião',
-          'Borboleta',
-          'Casa',
-          'Estrela',
-          'Quadrado',
-          'Não quero em fazer',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'Qual das opções corresponde ao som escutado?',
+            hasPrefiroNaoDizer: false,
+            options: const [
+              "Pássaros",
+              "Barulho de água",
+              "Aspirador de pó",
+              "Choro de criança",
+              "Telefone tocando",
+              "Sem som"
+            ],
+            optionsColumnsSize: 2,
+          ),
+        ]
+  },
+  48: {
+    'hasProx': true,
+    'header': 'Observe e responda',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body: "assets/Ebbinghaus.png",
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Selecione qual alternativa corresponde ao que você vê na imagem acima.',
+            icon: Icons.more_time,
+            options: const [
+              'A Reta A é maior que a Reta B',
+              'A Reta A é menor que a Reta B',
+              'Retas A e B, são do mesmo tamanho',
+            ],
+            optionsColumnsSize: 1,
+            hasPrefiroNaoDizer: false,
+          ),
         ],
-        'has_divider': false,
-      },
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'options_style': 'dotLine',
-        'options': ' ', // Quando for dotLine colar uma string com espaço
-      },
-    ],
+  },
+  49: {
+    'hasProx': true,
+    'header': 'Desenhe !!',
+    'answerLenght': 2,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Serão exibidos diversos pontos e ao clicar sobre estes pontos, você poderá compor imagens, uma vez que os pontos serão conectados por linhas retas. Escolha uma das sugestões fornecidas, selecionando a opção e inicie o processo de desenho. O tempo disponível é flexível, permitindo que você retorne ou apague conforme necessário.',
+            options: const [
+              'Avião',
+              'Borboleta',
+              'Casa',
+              'Estrela',
+              'Quadrado',
+              'Não quero em fazer',
+            ],
+            optionsColumnsSize: 1,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          DotsLine(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+          ),
+        ],
   },
   50: {
     'hasProx': true,
@@ -1854,26 +1880,34 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  51: const {
+  51: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
+    'leading': {
+      'selectedIcon': Icons.comment_sharp,
+      'deselectedIcon': Icons.comments_disabled,
+    },
     'header': 'Jogo dos 5 (cinco) erros',
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'body':
-            'Serão apresentadas duas imagens em paralelo: uma considerada \'verdadeira\' e a outra \'falsa\'. Na segunda figura, há 5 alterações que você deve identificar, apontando as discrepâncias por meio de cliques nos locais correspondentes.\n',
-      },
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'options_style': 'fiveErrors',
-        'options': [
-          'assets/five_errors1.jpg',
-          'assets/five_errors2.jpg',
-        ]
-      },
-    ],
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body:
+                'No botão que aparece na barra de aplicação acima é possível mudar entre duas imagens: uma considerada \'verdadeira\' e a outra \'falsa\'. Entre elas, há 5 alterações que você deve identificar, apontando as discrepâncias por meio de cliques nos locais correspondentes na imagem falsa.',
+            bodyHasFrame: false,
+          ),
+          const SizedBox(height: 10.0),
+          FiveErrors(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            imagemFull: 'assets/five_errors1.jpg',
+            imagemClean: 'assets/five_errors2.jpg',
+            isImagemFull: controller.isImagemFull,
+          ),
+        ],
   },
   52: {
     'hasProx': true,
@@ -1899,30 +1933,39 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  53: const {
+  53: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header': "Qual das imagens abaixo completa a sequência a seguir?",
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/intel_2.png',
-        'mim_size_awnser': 1,
-        'max_size_awnser': 1,
-        'options_style':
-            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 3,
-        'options': [
-          'assets/intel_2a.png',
-          'assets/intel_2b.png',
-          'assets/intel_2c.png',
-          'assets/intel_2d.png',
-          'assets/intel_2e.png',
-          'assets/intel_2f.png'
+    'header': 'Avalie e responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body: 'assets/intel_2.png',
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),
+          MultiSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: "Qual das imagens abaixo completa a sequência a seguir?",
+            //icon: Icons.more_time,
+            options: const [
+              'assets/intel_2a.png',
+              'assets/intel_2b.png',
+              'assets/intel_2c.png',
+              'assets/intel_2d.png',
+              'assets/intel_2e.png',
+              'assets/intel_2f.png'
+            ],
+            optionsColumnsSize: 3,
+            mimSizeAnswer: 1,
+            maxSizeAnswer: 1,
+          ),
         ],
-      },
-    ],
   },
   54: {
     'hasProx': true,
@@ -1961,49 +2004,58 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  56: const {
-    'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/audios/quatro_palavras.mp3',
-        'options_columns_size': 1,
-      },
-    ],
-  },
-  57: const {
-    'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header':
-        'Selecione 1 ou 2 imagens que poderia representar você ou seu jeito de ser.',
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'body': '', // body_type: audio
-        'mim_size_awnser': 1,
-        'max_size_awnser': 2,
-        'options_style':
-            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 3,
-        'options': [
-          'assets/questao45leao.png',
-          'assets/questao45coquetel.png',
-          'assets/questao45humburgue.png',
-          'assets/questao45gato.png',
-          'assets/questao45carro.png',
-          'assets/questao45cachorro.png',
-          'assets/questao45passaro.png',
-          'assets/questao45cerveja.png',
-          'assets/questao45cocacola.png',
-          'assets/questao45cafe.png',
-          'assets/questao45bombons.png',
-          'assets/questao45casa.png',
+  56: {
+    'hasProx': false,
+    'header': 'Pressione o play para escutar !!',
+    'answerLenght': 0,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          DisplayFrame(
+            id: 56,
+            body: 'assets/audios/quatro_palavras.mp3',
+            bodyHasFrame: true,
+            playMusic: controller.playMusic,
+          ),
         ]
-      },
-    ],
+  },
+  57: {
+    'hasProx': true,
+    'header': 'Avalie e responda !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          MultiSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                'Selecione 1 ou 2 imagens que poderia representar você ou seu jeito de ser.',
+            //icon: Icons.more_time,
+            options: const [
+              'assets/questao45leao.png',
+              'assets/questao45coquetel.png',
+              'assets/questao45humburgue.png',
+              'assets/questao45gato.png',
+              'assets/questao45carro.png',
+              'assets/questao45cachorro.png',
+              'assets/questao45passaro.png',
+              'assets/questao45cerveja.png',
+              'assets/questao45cocacola.png',
+              'assets/questao45cafe.png',
+              'assets/questao45bombons.png',
+              'assets/questao45casa.png',
+            ],
+            optionsColumnsSize: 3,
+            mimSizeAnswer: 1,
+            maxSizeAnswer: 2,
+          ),
+        ],
   },
   58: {
     'hasProx': true,
@@ -2030,120 +2082,125 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  59: const {
+  59: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header': 'Responda de acordo com o som escutado anteriormente!!',
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'body': 'Qual das opções corresponde ao som escutado?\n',
-        'options_columns_size': 1,
-        'radioIsVisible': false,
-        'options': [
-          "Rua - Madeira - Paz - Pastel",
-          "Lua - Cadeira - Raiz - Chapéu",
-          "Rua - Cadeira - Paz - Chapéu",
-          "Lua - Cadeira - Paz - Pastel",
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'Qual das opções corresponde ao som escutado?\n',
+            icon: Icons.more_time,
+            options: const [
+              "Rua - Madeira - Paz - Pastel",
+              "Lua - Cadeira - Raiz - Chapéu",
+              "Rua - Cadeira - Paz - Chapéu",
+              "Lua - Cadeira - Paz - Pastel",
+            ],
+            optionsColumnsSize: 1,
+            hasPrefiroNaoDizer: false,
+          ),
         ],
-      },
-    ],
   },
-  60: const {
+  60: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header':
-        'Dentre as opções abaixo marque a expressão que melhor corresponde a emoção básica descrita.',
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/questao48.png',
-        'title': 'a) Nojo:',
-        'options_columns_size': 6,
-        'radioIsVisible': false,
-        'options': [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
+        'Marque a expressão que melhor corresponde a emoção básica descrita.',
+    'answerLenght': 6,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body: 'assets/questao48.png',
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'a) Nojo:',
+            icon: Icons.more_time,
+            options: const ["1", "2", "3", "4", "5", "6"],
+            optionsColumnsSize: 6,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'b) Tristeza:',
+            icon: Icons.more_time,
+            options: const ["1", "2", "3", "4", "5", "6"],
+            optionsColumnsSize: 6,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[2]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'c) Medo:',
+            icon: Icons.more_time,
+            options: const ["1", "2", "3", "4", "5", "6"],
+            optionsColumnsSize: 6,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[3]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'd) Raiva:',
+            icon: Icons.more_time,
+            options: const ["1", "2", "3", "4", "5", "6"],
+            optionsColumnsSize: 6,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[4]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'e) Alegria:',
+            icon: Icons.more_time,
+            options: const ["1", "2", "3", "4", "5", "6"],
+            optionsColumnsSize: 6,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[5]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: 'f) Surpresa:',
+            icon: Icons.more_time,
+            options: const ["1", "2", "3", "4", "5", "6"],
+            optionsColumnsSize: 6,
+            hasPrefiroNaoDizer: false,
+          ),
         ],
-        'has_divider': true,
-      },
-      {
-        'title': 'b)	Tristeza:',
-        'options_columns_size': 6,
-        'radioIsVisible': false,
-        'options': [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-        ],
-        'has_divider': true,
-      },
-      {
-        'title': 'c)	Medo:',
-        'options_columns_size': 6,
-        'radioIsVisible': false,
-        'options': [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-        ],
-        'has_divider': true,
-      },
-      {
-        'title': 'd)	Raiva:',
-        'options_columns_size': 6,
-        'radioIsVisible': false,
-        'options': [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-        ],
-        'has_divider': true,
-      },
-      {
-        'title': 'e)	Alegria:',
-        'options_columns_size': 6,
-        'radioIsVisible': false,
-        'options': [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-        ],
-        'has_divider': true,
-      },
-      {
-        'title': 'f)	Surpresa:',
-        'options_columns_size': 6,
-        'radioIsVisible': false,
-        'options': [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-        ],
-        'has_divider': true,
-      },
-    ],
   },
   61: {
     'hasProx': false,
@@ -2158,220 +2215,238 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  62: const {
+  62: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header':
-        'Selecione 1 a 3 imagens que poderia representar você ou seu jeito de ser.',
-    'itens': [
-      {
-        'mim_size_awnser': 1,
-        'max_size_awnser': 3,
-        'options_style':
-            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 3,
-        'options': [
-          'assets/emoji_sempre_atrasado.png',
-          'assets/emoji_poderoso.png',
-          'assets/emoji_otimista.png',
-          'assets/emoji_em_panico.png',
-          'assets/emoji_indeciso.png',
-          'assets/emoji_triste.png',
-          'assets/emoji_entediado.png',
-          'assets/emoji_pessimista.png',
-          'assets/emoji_reflexivo.png',
-          'assets/emoji_confiante.png',
-          'assets/emoji_forte.png',
-          'assets/emoji_nojo.png',
-        ]
-      },
-    ],
+        'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          MultiSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            //icon: Icons.more_time,
+            options: const [
+              'assets/emoji_sempre_atrasado.png',
+              'assets/emoji_poderoso.png',
+              'assets/emoji_otimista.png',
+              'assets/emoji_em_panico.png',
+              'assets/emoji_indeciso.png',
+              'assets/emoji_triste.png',
+              'assets/emoji_entediado.png',
+              'assets/emoji_pessimista.png',
+              'assets/emoji_reflexivo.png',
+              'assets/emoji_confiante.png',
+              'assets/emoji_forte.png',
+              'assets/emoji_nojo.png',
+            ],
+            optionsColumnsSize: 3,
+            mimSizeAnswer: 1,
+            maxSizeAnswer: 3,
+          ),
+        ],
   },
-  63: const {
+  63: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header':
-        'Selecione 1 a 3 imagens que poderia representar você ou seu jeito de ser.',
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'body': '', // body_type: audio
-        'mim_size_awnser': 1,
-        'max_size_awnser': 3,
-        'options_style':
-            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 3,
-        'options': [
-          'assets/emoji_esperancoso.png',
-          'assets/emoji_pura_alegria.png',
-          'assets/emoji_burro.png',
-          'assets/emoji_surpreso.png',
-          'assets/emoji_feliz.png',
-          'assets/emoji_velho.png',
-          'assets/emoji_frustrado.png',
-          'assets/emoji_ansioso.png',
-          'assets/emoji_emocionado.png',
-          'assets/emoji_em_paz.png',
-          'assets/emoji_inteligente.png',
-          'assets/emoji_preocupado.png',
-        ]
-      },
-    ],
+        'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          MultiSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            //icon: Icons.more_time,
+            options: const [
+              'assets/emoji_esperancoso.png',
+              'assets/emoji_pura_alegria.png',
+              'assets/emoji_burro.png',
+              'assets/emoji_surpreso.png',
+              'assets/emoji_feliz.png',
+              'assets/emoji_velho.png',
+              'assets/emoji_frustrado.png',
+              'assets/emoji_ansioso.png',
+              'assets/emoji_emocionado.png',
+              'assets/emoji_em_paz.png',
+              'assets/emoji_inteligente.png',
+              'assets/emoji_preocupado.png',
+            ],
+            optionsColumnsSize: 3,
+            mimSizeAnswer: 1,
+            maxSizeAnswer: 3,
+          ),
+        ],
   },
-  64: const {
+  64: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header':
-        'Selecione 1 a 3 imagens que poderia representar você ou seu jeito de ser.',
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'body': '', // body_type: audio
-        'mim_size_awnser': 1,
-        'max_size_awnser': 3,
-        'options_style':
-            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 3,
-        'options': [
-          'assets/emoji_apaixonado.png',
-          'assets/emoji_desesperado.png',
-          'assets/emoji_envergonhado.png',
-          'assets/emoji_abencoado.png',
-          'assets/emoji_impulsivo.png',
-          'assets/emoji_amado.png',
-          'assets/emoji_confuso.png',
-          'assets/emoji_sem_forcas.png',
-          'assets/emoji_sonolento.png',
-          'assets/emoji_gordo.png',
-          'assets/emoji_sem_paciencia.png',
-          'assets/emoji_com_ciumes.png',
-        ]
-      },
-    ],
+        'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          MultiSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            //icon: Icons.more_time,
+            options: const [
+              'assets/emoji_apaixonado.png',
+              'assets/emoji_desesperado.png',
+              'assets/emoji_envergonhado.png',
+              'assets/emoji_abencoado.png',
+              'assets/emoji_impulsivo.png',
+              'assets/emoji_amado.png',
+              'assets/emoji_confuso.png',
+              'assets/emoji_sem_forcas.png',
+              'assets/emoji_sonolento.png',
+              'assets/emoji_gordo.png',
+              'assets/emoji_sem_paciencia.png',
+              'assets/emoji_com_ciumes.png',
+            ],
+            optionsColumnsSize: 3,
+            mimSizeAnswer: 1,
+            maxSizeAnswer: 3,
+          ),
+        ],
   },
-  65: const {
+  65: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header':
-        'Selecione 1 a 3 imagens que poderia representar você ou seu jeito de ser.',
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'body': '', // body_type: audio
-        'mim_size_awnser': 1,
-        'max_size_awnser': 3,
-        'options_style':
-            'multiSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 3,
-        'options': [
-          'assets/emoji_com_raiva.png',
-          'assets/emoji_silenciado.png',
-          'assets/emoji_desanimado.png',
-          'assets/emoji_com_gratidao.png',
-          'assets/emoji_fraude.png',
-          'assets/emoji_agressivo.png',
-          'assets/emoji_desequilibrado.png',
-          'assets/emoji_comendo_muito.png',
-          'assets/emoji_fumando_muito.png',
-          'assets/emoji_jesus.png',
-          'assets/emoji_bebendo_muito.png',
-          'assets/emoji_animado.png',
-        ]
-      },
-    ],
+        'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          MultiSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            //icon: Icons.more_time,
+            options: const [
+              'assets/emoji_com_raiva.png',
+              'assets/emoji_silenciado.png',
+              'assets/emoji_desanimado.png',
+              'assets/emoji_com_gratidao.png',
+              'assets/emoji_fraude.png',
+              'assets/emoji_agressivo.png',
+              'assets/emoji_desequilibrado.png',
+              'assets/emoji_comendo_muito.png',
+              'assets/emoji_fumando_muito.png',
+              'assets/emoji_jesus.png',
+              'assets/emoji_bebendo_muito.png',
+              'assets/emoji_animado.png',
+            ],
+            optionsColumnsSize: 3,
+            mimSizeAnswer: 1,
+            maxSizeAnswer: 3,
+          ),
+        ],
   },
-  66: const {
+  66: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header': 'Avalie e responda !!',
-    'itens': [
-      {
-        'body':
-            "Selecione as palavras que você mais gosta e, ao mesmo tempo, lhe descreveria. A quantidade é ilimitada, pode escolher quantas palavras quiser, desde que elas fazem sentido na sua vida.",
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'max_size_awnser': 65,
-        'mim_size_awnser': 1,
-        'options_columns_size': 2,
-        'options_style': 'multiSelect', // singleSelect,multiSelect,textForm
-        'options': [
-          'ABANDONO',
-          'ACOMETIDO(A)',
-          'AFEIÇÃO',
-          'AMIUDAR',
-          'ANTIPATIA',
-          'APATIA',
-          'APEGO',
-          'APREENSÃO',
-          'ARQUEJO',
-          'ATONIA',
-          'AUTENTICIDADE',
-          'AUTOCÍDIO',
-          'AUTOESTIMA',
-          'BELEZA',
-          'BONDADE',
-          'COMPLACÊNCIA',
-          'COMPULSÃO',
-          'CORAGEM',
-          'DECÊNCIA',
-          'DESAFETO',
-          'DESÂNIMO',
-          'DESARMONIA',
-          'DESTEMOR',
-          'DIGNIDADE',
-          'ELEGÂNCIA',
-          'EMPATIA',
-          'ENGODO',
-          'ESPERANÇA',
-          'ESTIMA',
-          'ESTREITEZA',
-          'EUFORIA',
-          'FORTÚNIO',
-          'FRACASSO',
-          'FRAQUEZA',
-          'FUGAZ',
-          'GENTILEZA',
-          'GRATIDÃO',
-          'HARMONIA',
-          'HUMILDADE',
-          'IMPAVIDEZ',
-          'IMPOTÊNCIA',
-          'IMPULSIVIDADE',
-          'INAPETÊNCIA',
-          'INDIFERENÇA',
-          'INDULGÊNCIA',
-          'INQUIETUDE',
-          'INTELIGÊNCIA',
-          'LETARGIA',
-          'MÁGOA',
-          'MANIA',
-          'MAQUIAVÉLICO',
-          'MELANCOLIA',
-          'MORTE',
-          'NOSTALGIA',
-          'OBCECAÇÃO',
-          'OBSESSÃO',
-          'PERECÍVEL',
-          'PERSISTÊNCIA',
-          'PREOCUPAÇÃO',
-          'PROSTRAÇÃO',
-          'PRUDÊNCIA',
-          'RUMINAÇÃO',
-          'RAIVA',
-          'RANCOR',
-          'SATISFAÇÃO',
-          'SIGILO',
-          'SOLIDÃO',
-          'SUICÍDIO',
-          'TENACIDADE',
-          'VIRTUDE',
-        ]
-      },
-    ],
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          MultiSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title:
+                "Selecione as palavras que você mais gosta e, ao mesmo tempo, lhe descreveria. A quantidade é ilimitada, pode escolher quantas palavras quiser, desde que elas fazem sentido na sua vida.",
+            options: const [
+              'ABANDONO',
+              'ACOMETIDO(A)',
+              'AFEIÇÃO',
+              'AMIUDAR',
+              'ANTIPATIA',
+              'APATIA',
+              'APEGO',
+              'APREENSÃO',
+              'ARQUEJO',
+              'ATONIA',
+              'AUTENTICIDADE',
+              'AUTOCÍDIO',
+              'AUTOESTIMA',
+              'BELEZA',
+              'BONDADE',
+              'COMPLACÊNCIA',
+              'COMPULSÃO',
+              'CORAGEM',
+              'DECÊNCIA',
+              'DESAFETO',
+              'DESÂNIMO',
+              'DESARMONIA',
+              'DESTEMOR',
+              'DIGNIDADE',
+              'ELEGÂNCIA',
+              'EMPATIA',
+              'ENGODO',
+              'ESPERANÇA',
+              'ESTIMA',
+              'ESTREITEZA',
+              'EUFORIA',
+              'FORTÚNIO',
+              'FRACASSO',
+              'FRAQUEZA',
+              'FUGAZ',
+              'GENTILEZA',
+              'GRATIDÃO',
+              'HARMONIA',
+              'HUMILDADE',
+              'IMPAVIDEZ',
+              'IMPOTÊNCIA',
+              'IMPULSIVIDADE',
+              'INAPETÊNCIA',
+              'INDIFERENÇA',
+              'INDULGÊNCIA',
+              'INQUIETUDE',
+              'INTELIGÊNCIA',
+              'LETARGIA',
+              'MÁGOA',
+              'MANIA',
+              'MAQUIAVÉLICO',
+              'MELANCOLIA',
+              'MORTE',
+              'NOSTALGIA',
+              'OBCECAÇÃO',
+              'OBSESSÃO',
+              'PERECÍVEL',
+              'PERSISTÊNCIA',
+              'PREOCUPAÇÃO',
+              'PROSTRAÇÃO',
+              'PRUDÊNCIA',
+              'RUMINAÇÃO',
+              'RAIVA',
+              'RANCOR',
+              'SATISFAÇÃO',
+              'SIGILO',
+              'SOLIDÃO',
+              'SUICÍDIO',
+              'TENACIDADE',
+              'VIRTUDE',
+            ],
+            optionsColumnsSize: 2,
+            mimSizeAnswer: 1,
+            maxSizeAnswer: 65,
+          ),
+        ],
   },
   67: {
     'hasProx': false,
@@ -2386,17 +2461,22 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  68: const {
-    'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'itens': [
-      {
-        'body_hasFrame': true, //Imprime um quadro em volta do body
-        'body': 'assets/audios/dez_palavras.mp3',
-        'options_columns_size': 1,
-      },
-    ],
+  68: {
+    'hasProx': false,
+    'header': 'Pressione o play para escutar !!',
+    'answerLenght': 0,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          DisplayFrame(
+            id: 68,
+            body: 'assets/audios/dez_palavras.mp3',
+            bodyHasFrame: true,
+            playMusic: controller.playMusic,
+          ),
+        ]
   },
   69: const {
     'hasProx': true,
@@ -2447,189 +2527,255 @@ Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque 
           ),
         ]
   },
-  71: const {
+  71: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header': 'Com que frequência você pausa e consome estas substâncias?',
-    'itens': [
-      {
-        'title': '1) Cafeina:',
-        'options_columns_size': 1,
-        'radioIsVisible': true,
-        'options': [
-          'Nunca ',
-          'Uma vez por mês ou menos (raramente)',
-          'Duas a quatro vezes ao mês (às vezes)',
-          'Duas a três vezes por semana',
-          'Na maioria dos dias ou sempre',
+    'answerLenght': 5,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body: 'assets/questao48.png',
+            bodyHasFrame: true,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: '1) Cafeina:',
+            icon: Icons.more_time,
+            options: const [
+              'Nunca ',
+              'Uma vez por mês ou menos (raramente)',
+              'Duas a quatro vezes ao mês (às vezes)',
+              'Duas a três vezes por semana',
+              'Na maioria dos dias ou sempre',
+            ],
+            optionsColumnsSize: 1,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: '2)	Álcool:',
+            icon: Icons.more_time,
+            options: const [
+              'Nunca ',
+              'Uma vez por mês ou menos (raramente)',
+              'Duas a quatro vezes ao mês (às vezes)',
+              'Duas a três vezes por semana',
+              'Na maioria dos dias ou sempre',
+            ],
+            optionsColumnsSize: 1,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[2]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: '3)	Tabaco:',
+            icon: Icons.more_time,
+            options: const [
+              'Nunca ',
+              'Uma vez por mês ou menos (raramente)',
+              'Duas a quatro vezes ao mês (às vezes)',
+              'Duas a três vezes por semana',
+              'Na maioria dos dias ou sempre',
+            ],
+            optionsColumnsSize: 1,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[3]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: '4)	Maconha:',
+            icon: Icons.more_time,
+            options: const [
+              'Nunca ',
+              'Uma vez por mês ou menos (raramente)',
+              'Duas a quatro vezes ao mês (às vezes)',
+              'Duas a três vezes por semana',
+              'Na maioria dos dias ou sempre',
+            ],
+            optionsColumnsSize: 1,
+            hasPrefiroNaoDizer: false,
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          SingleSelectionList(
+            answer: controller.answerAux.value[4]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            title: '5)	Cocaína/crack:',
+            icon: Icons.more_time,
+            options: const [
+              'Nunca ',
+              'Uma vez por mês ou menos (raramente)',
+              'Duas a quatro vezes ao mês (às vezes)',
+              'Duas a três vezes por semana',
+              'Na maioria dos dias ou sempre',
+            ],
+            optionsColumnsSize: 1,
+            hasPrefiroNaoDizer: false,
+          ),
         ],
-        'has_divider': true,
-      },
-      {
-        'title': '2)	Álcool:',
-        'radioIsVisible': true,
-        'options_columns_size': 1,
-        'options': [
-          'Nunca ',
-          'Uma vez por mês ou menos (raramente)',
-          'Duas a quatro vezes ao mês (às vezes)',
-          'Duas a três vezes por semana',
-          'Na maioria dos dias ou sempre',
-        ],
-        'has_divider': true,
-      },
-      {
-        'title': '3)	Tabaco:',
-        'radioIsVisible': true,
-        'options_columns_size': 1,
-        'options': [
-          'Nunca ',
-          'Uma vez por mês ou menos (raramente)',
-          'Duas a quatro vezes ao mês (às vezes)',
-          'Duas a três vezes por semana',
-          'Na maioria dos dias ou sempre',
-        ],
-        'has_divider': true,
-      },
-      {
-        'title': '4)	Maconha:',
-        'radioIsVisible': true,
-        'options_columns_size': 1,
-        'options': [
-          'Nunca ',
-          'Uma vez por mês ou menos (raramente)',
-          'Duas a quatro vezes ao mês (às vezes)',
-          'Duas a três vezes por semana',
-          'Na maioria dos dias ou sempre',
-        ],
-        'has_divider': true,
-      },
-      {
-        'title': '5)	Cocaína/crack:',
-        'radioIsVisible': true,
-        'options_columns_size': 1,
-        'options': [
-          'Nunca ',
-          'Uma vez por mês ou menos (raramente)',
-          'Duas a quatro vezes ao mês (às vezes)',
-          'Duas a três vezes por semana',
-          'Na maioria dos dias ou sempre',
-        ],
-      },
-    ],
   },
-  72: const {
+  72: {
     'hasProx': true,
-    'isSendAnswer': false,
-    'style': 'form',
     'header': 'Escolha !!',
-    'delay': 3,
-    'itens': [
-      {
-        'body_hasFrame': false, //Imprime um quadro em volta do body
-        'body':
-            'Daltonismo é o termo usado para denominar a falta de sensibilidade ocular que algumas pessoas possuem na percepção de determinadas cores. Você tem Daltonismo? Já foi diagnosticado por um profissional especializado? Se sim, você pode optar por não realizar este teste; no entanto, se preferir tentar, isso não resultará em desvantagem. Basta clicar em \'SIM\' para prosseguir com a atividade.\n',
-      },
-      {
-        'options_style':
-            'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'radioIsVisible': false,
-        'options_columns_size': 3,
-        'options': [
-          'Sim',
-          'Não',
-          'Pular',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(
+                () {
+                  state.currentState!.didChange(controller.answerAux.value);
+                  if (controller.answerAux.value[0].value == 'Pular') {
+                    Modular.to.popAndPushNamed("/", arguments: 74);
+                  }
+                },
+              ),
+            title:
+                'Daltonismo é o termo usado para denominar a falta de sensibilidade ocular que algumas pessoas possuem na percepção de determinadas cores. Você tem Daltonismo? Já foi diagnosticado por um profissional especializado? Se sim, você pode optar por não realizar este teste; no entanto, se preferir tentar, isso não resultará em desvantagem. Basta clicar em \'SIM\' para prosseguir com a atividade.\n',
+            icon: Icons.more_time,
+            options: const [
+              'Sim',
+              'Não',
+              'Pular',
+            ],
+            optionsColumnsSize: 3,
+            hasPrefiroNaoDizer: false,
+          ),
         ]
-      },
-    ],
   },
-  73: const {
+  73: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
-    'header': 'Encontre os objetos!',
-    'itens': [
-      {
-        'body_hasFrame': false,
-        'body':
-            'Marque a cor que você mais gosta e pinte os retângulos e os círculos das figuras abaixo.\n\nFaça da forma que mais te agrada.\n',
-        'options_style': 'arvoreCiculos',
-        'options_columns_size': 3,
-        'options': [
-          'Azul',
-          'Verde',
-          'Laranja',
-          'Amarelo',
-          'Vermelho',
-          'Rosa',
-          'Marrom',
-          'Preto',
-          'Branco',
-        ],
-        'colors': [
-          Colors.blue,
-          Colors.green,
-          Colors.orange,
-          Colors.yellow,
-          Colors.red,
-          Colors.pink,
-          Colors.grey,
-          Colors.black,
-          Colors.white24,
-        ],
-        'imagem': 'assets/arvore_circulos.png',
-      },
-    ],
+    'header': 'Vamos colorir !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body:
+                'Marque a cor que você mais gosta e pinte os retângulos e os círculos das figuras abaixo.\n\nFaça da forma que mais te agrada.\n',
+            bodyHasFrame: false,
+          ),
+          ArvoreCiculos(
+            answer: controller.answerAux.value[0]
+              ..addListener(
+                () => state.currentState!.didChange(controller.answerAux.value),
+              ),
+            imagem: 'assets/arvore_circulos.png',
+            itens: const [
+              'Azul',
+              'Verde',
+              'Laranja',
+              'Amarelo',
+              'Vermelho',
+              'Rosa',
+              'Marrom',
+              'Preto',
+              'Branco',
+            ],
+            optionsColumnsSize: 3,
+            colors: const [
+              Colors.blue,
+              Colors.green,
+              Colors.orange,
+              Colors.yellow,
+              Colors.red,
+              Colors.pink,
+              Colors.grey,
+              Colors.black,
+              Colors.white24,
+            ],
+          ),
+        ]
   },
-  74: const {
+  74: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header': 'Selecione qual dia da semana é hoje:',
-    'itens': [
-      {
-        'options_style':
-            'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 2,
-        'options': [
-          'Segunda-feira',
-          'Terça-feira',
-          'Quarta-feira',
-          'Quinta-feira',
-          'Sexta-feira',
-          'Sábado',
-          'Domingo',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(
+                () => state.currentState!.didChange(controller.answerAux.value),
+              ),
+            icon: Icons.more_time,
+            options: const [
+              'Segunda-feira',
+              'Terça-feira',
+              'Quarta-feira',
+              'Quinta-feira',
+              'Sexta-feira',
+              'Sábado',
+              'Domingo',
+            ],
+            optionsColumnsSize: 2,
+            hasPrefiroNaoDizer: false,
+          ),
         ]
-      },
-    ],
   },
-  75: const {
+  75: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'style': 'form',
     'header':
         'Quanto tempo, aproximadamente, você acha que investiu para fazer este teste?',
-    'itens': [
-      {
-        'options_style':
-            'singleSelect', //singleSelect,multiSelect,textForm,multiSelect
-        'options_columns_size': 2,
-        'options': [
-          '5 minutos',
-          '15 minutos',
-          '30 minutos',
-          '40 minutos',
-          '60 minutos',
-          'Mais que 1 hora',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          SingleSelectionList(
+            answer: controller.answerAux.value[0]
+              ..addListener(
+                () => state.currentState!.didChange(controller.answerAux.value),
+              ),
+            icon: Icons.more_time,
+            options: const [
+              '5 minutos',
+              '15 minutos',
+              '30 minutos',
+              '40 minutos',
+              '60 minutos',
+              'Mais que 1 hora',
+            ],
+            optionsColumnsSize: 2,
+            hasPrefiroNaoDizer: false,
+          ),
         ]
-      },
-    ],
   },
   76: {
     'hasProx': false,
     'header': 'Parabéns!!!!',
-    'delay': 3,
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(

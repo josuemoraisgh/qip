@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 
 class DisplayFrame extends StatefulWidget {
+  final int? id;
   final String? body;
   final bool? bodyHasFrame;
   final double? fontSize;
   final List<Widget>? widgets;
-  final void Function(String audio)? playMusic;
-  const DisplayFrame(
-      {super.key,
-      this.widgets,
-      this.playMusic,
-      this.body,
-      this.bodyHasFrame,
-      this.fontSize});
+  final void Function({required int id, required String fileName})? playMusic;
+  const DisplayFrame({
+    super.key,
+    this.id,
+    this.widgets,
+    this.playMusic,
+    this.body,
+    this.bodyHasFrame,
+    this.fontSize,
+  });
 
   @override
   State<DisplayFrame> createState() => _DisplayFrameState();
@@ -20,6 +23,11 @@ class DisplayFrame extends StatefulWidget {
 
 class _DisplayFrameState extends State<DisplayFrame> {
   bool isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +71,9 @@ class _DisplayFrameState extends State<DisplayFrame> {
                                   icon: const Icon(Icons.play_arrow),
                                   onPressed: () async {
                                     if (widget.playMusic != null) {
-                                      widget.playMusic!(widget.body ?? "");
+                                      widget.playMusic!(
+                                          id: widget.id!,
+                                          fileName: widget.body ?? "");
                                     }
                                     setState(() {
                                       isPlaying = true;

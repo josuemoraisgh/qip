@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:just_audio/just_audio.dart';
 import '../../ajustes.dart';
 import 'parameters.dart';
 import 'telas_controller.dart';
@@ -26,57 +25,24 @@ class _TelasPageState extends State<TelasPage> {
   final _formKey = GlobalKey<FormState>();
   final formFieldkey = GlobalKey<FormFieldState<List<ValueNotifier<String>>>>();
   final answerNotifier = ValueNotifier<List<ValueNotifier<String>>>([]);
-  var player = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
     controller = widget.controller ?? Modular.get<TelasController>();
     if (telas[widget.id]!['delay'] != null) {
-      SchedulerBinding.instance.addPostFrameCallback( //So executa depois que tudo ja estiver desenhado
+      SchedulerBinding.instance.addPostFrameCallback(
+        //So executa depois que tudo ja estiver desenhado
         (_) {
-          delay(telas[widget.id]!['delay']!);
+          controller.delay(
+            id: widget.id,
+            hasProx: telas[widget.id]!['hasProx'],
+            time: telas[widget.id]!['delay']!,
+            setState: setState,
+            answerNotifier: answerNotifier,
+          );
         },
       );
-    }
-  }
-
-  void delay(int time) async {
-      Future.delayed(Duration(seconds: time))
-          .then((value) {
-        setState(() {
-          if (telas[widget.id]!['hasProx']) {
-            answerNotifier.value = [ValueNotifier<String>('Sucess')];
-          } else {
-            Modular.to.popAndPushNamed("/", arguments: widget.id + 1);
-          }
-        });
-      });
-  }
-
-  void playMusic(String fileName) async {
-    if (fileName != '.mp3') {
-      try {
-        await player.setAudioSource(
-          AudioSource.uri(Uri.parse("asset:///$fileName")),
-          initialPosition: Duration.zero,
-          preload: true,
-        );
-        //await player.setAsset(path); //load audio from assets
-        player.play().then((value) {
-          setState(() {
-            Modular.to.popAndPushNamed("/", arguments: widget.id + 1);
-          });
-        });
-      } catch (e) {
-        debugPrint("Error loading audio source: $e");
-      }
-    } else {
-      Future.delayed(const Duration(seconds: 3)).then((value) {
-        setState(() {
-          Modular.to.popAndPushNamed("/", arguments: widget.id + 1);
-        });
-      });
     }
   }
 
@@ -116,24 +82,49 @@ class _TelasPageState extends State<TelasPage> {
                         top: (telas[widget.id]?['header'] != null ? 0 : 10),
                         right: 20,
                         bottom: (telas[widget.id]?['header'] != null ? 5 : 10)),
-                    child: telas[widget.id]?['header'] != null
-                        ? Text(
-                            telas[widget.id]!['header'],
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 26,
-                              height: 1.5,
-                              color: Colors.white,
-                              shadows: <Shadow>[
-                                Shadow(
-                                  offset: Offset(2.0, 2.0),
-                                  blurRadius: 1.0,
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                ),
-                              ],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (telas[widget.id]?['leading'] != null)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 0, top: 10, right: 20, bottom: 0),
+                            child: IconButton(
+                              icon: Icon(
+                                controller.isImagemFull.value == true
+                                    ? telas[widget.id]!['leading']
+                                        ['selectedIcon']
+                                    : telas[widget.id]!['leading']
+                                        ['deselectedIcon'],
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                controller.isImagemFull.value =
+                                    !controller.isImagemFull.value;
+                              },
                             ),
-                          )
-                        : null,
+                          ),
+                        if (telas[widget.id]?['header'] != null)
+                          Flexible(
+                            child: Text(
+                              telas[widget.id]!['header'],
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 26,
+                                height: 1.5,
+                                color: Colors.white,
+                                shadows: <Shadow>[
+                                  Shadow(
+                                    offset: Offset(2.0, 2.0),
+                                    blurRadius: 1.0,
+                                    color: Color.fromARGB(255, 0, 0, 0),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 Flexible(
@@ -222,7 +213,6 @@ class _TelasPageState extends State<TelasPage> {
               ],
             ),
           ),
-          //),
         );
       },
     );

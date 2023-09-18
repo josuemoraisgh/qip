@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 class DotsLine extends StatefulWidget {
   final ValueNotifier<String> answer;
   //final Function(String)? answerFunc;
-  final int? answerId;
-  const DotsLine({super.key, this.answerId, required this.answer});
+
+  const DotsLine({super.key, required this.answer});
 
   @override
   State<DotsLine> createState() => _DotsLineState();
@@ -30,17 +30,21 @@ class _DotsLineState extends State<DotsLine> {
         pointScreem += [Offset(x * mult + bias, y * mult + bias)];
       }
     }
-    var aux = widget.answer.value.split(";");
-    pointSelected = List.generate(
-      aux.length,
-      (index) {
-        var aux2 = aux[index].split(" ");
-        return (
-          Offset(double.parse(aux2[0]), double.parse(aux2[1])),
-          Offset(double.parse(aux2[2]), double.parse(aux2[3]))
-        );
-      },
-    );
+    if (widget.answer.value != "") {
+      var aux = widget.answer.value.split(";");
+      pointSelected = List.generate(
+        aux.length,
+        (index) {
+          var aux2 = aux[index].split("-");
+          var aux21 = aux2[0].split(",");
+          var aux22 = aux2[1].split(",");          
+          return (
+            Offset(double.parse(aux21[0]), double.parse(aux21[1])),
+            Offset(double.parse(aux22[0]), double.parse(aux22[1]))
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -130,7 +134,7 @@ class _DotsLineState extends State<DotsLine> {
                   }
                   if (pointSelected.isNotEmpty) {
                     widget.answer.value =
-                        pointSelected.toString().replaceAll('Offset', '');
+                      pointSelected.map((e) => "${e.$1.dx},${e.$1.dy}-${e.$2.dx},${e.$2.dy}").join(";");
                   } else {
                     widget.answer.value = '';
                   }

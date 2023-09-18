@@ -63,7 +63,7 @@ class _FindImagesState extends State<FindImages> {
                       orElse: () => Offset.zero) !=
                   Offset.zero) {
                 pointSelected.removeWhere((element) =>
-                    distance(element, details.localPosition) <= 11);
+                    distance(element, details.localPosition) <= 11);                    
               } else {
                 pointSelected.add(details.localPosition);
               }
@@ -73,7 +73,6 @@ class _FindImagesState extends State<FindImages> {
               } else {
                 widget.answer.value = '';
               }
-              setState(() {});
             },
             child: Stack(
               children: <Widget>[
