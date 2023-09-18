@@ -2478,28 +2478,211 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  69: const {
+  69: {
     'hasProx': true,
-    'isSendAnswer': true,
-    'type': 'form',
-    'header': "Complete com o par correspondente escutado anteriormente",
-    'itens': [
-      {
-        'options_style': 'textForm',
-        'options_columns_size': 1,
-        'options': [
-          'chuva -',
-          'criança -',
-          '- verão',
-          'mostro -',
-          '- água',
-          'dinheiro -',
-          '- pequeno',
-          'livro -',
-          '- móvel',
+    'header': 'Complete com o par correspondente escutado anteriormente',
+    'answerLenght': 19,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TextFormList(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: 'chuva -',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length != 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: 'criança -',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length != 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: '- verão',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length != 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: 'mostro -',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length != 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),    
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: '- água',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length != 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: 'dinheiro -',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length != 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: '- pequeno',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length != 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: 'livro -',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length != 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[1]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: '- móvel',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length != 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
         ],
-      },
-    ],
   },
   70: {
     'hasProx': true,

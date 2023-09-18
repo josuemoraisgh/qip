@@ -95,7 +95,7 @@ class _TextFormListState extends State<TextFormList> {
                     : Row(
                         children: widget.options?[0] == "-"
                             ? <Widget>[
-                                Flexible(flex: 20, child: _montaEdit()),
+                                Flexible(flex: 25, child: _montaEdit()),
                                 const Flexible(
                                     flex: 3, child: SizedBox(width: 5)),
                                 Flexible(flex: 10, child: _montaTexto()),
@@ -104,7 +104,7 @@ class _TextFormListState extends State<TextFormList> {
                                 Flexible(flex: 10, child: _montaTexto()),
                                 const Flexible(
                                     flex: 3, child: SizedBox(width: 5)),
-                                Expanded(flex: 20, child: _montaEdit()),
+                                Expanded(flex: 25, child: _montaEdit()),
                               ],
                       ),
               ],
@@ -124,7 +124,7 @@ class _TextFormListState extends State<TextFormList> {
     return Container(
       alignment: Alignment.center,
       height: 50,
-      width: 100,
+      //width: 100,
       decoration: myContainerDecoration(),
       child: Text(
         widget.options ?? "",
