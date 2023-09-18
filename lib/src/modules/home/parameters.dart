@@ -1418,7 +1418,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title:
-                "\n        1) MUITOS    2) OCEANO    3) PEIXES    4) E\n\n                   5) TEM      6) O      7) PLANTAS\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
+                "\n      1) MUITOS    2) OCEANO    3) PEIXES    4) E\n\n                 5) TEM      6) O      7) PLANTAS\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
             hasPrefiroNaoDizer: false,
             options: const [
               '1 - 4 - 6 - 2 - 5 - 3 - 7',

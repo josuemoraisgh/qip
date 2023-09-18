@@ -31,7 +31,7 @@ class _TelasPageState extends State<TelasPage> {
     super.initState();
     controller = widget.controller ?? Modular.get<TelasController>();
     if (telas[widget.id]!['delay'] != null) {
-      SchedulerBinding.instance.addPostFrameCallback(
+      SchedulerBinding.instance.endOfFrame.then(
         //So executa depois que tudo ja estiver desenhado
         (_) {
           controller.delay(

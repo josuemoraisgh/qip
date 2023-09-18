@@ -32,17 +32,21 @@ class TelasController {
   void playMusic({required int id, required String fileName}) async {
     if (fileName != '.mp3') {
       try {
-        await player.setAudioSource(
-          AudioSource.uri(Uri.parse("asset:///$fileName")),
-          initialPosition: Duration.zero,
-          preload: true,
-        );
-        //await player.setAsset(path); //load audio from assets
-        player.play().then(
-          (value) {
-            Modular.to.popAndPushNamed("/", arguments: id + 1);
-          },
-        );
+        player
+            .setAudioSource(
+              AudioSource.uri(Uri.parse("asset:///$fileName")),
+              initialPosition: Duration.zero,
+              preload: true,
+            )
+            .whenComplete(
+              () =>
+                  //await player.setAsset(path); //load audio from assets
+                  player.play().whenComplete(
+                () {
+                  Modular.to.popAndPushNamed("/", arguments: id + 1);
+                },
+              ),
+            );
       } catch (e) {
         debugPrint("Error loading audio source: $e");
       }
