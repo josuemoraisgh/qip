@@ -921,10 +921,10 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             icon: Icons.more_time,
             hasPrefiroNaoDizer: false,
             options: const [
-              'Nervoso(a)',
-              'Deprimido(a)',
+              'Inquieto(a)',
+              'Pensativo(a)',
               'Irritado(a)',
-              'Divertido(a)'
+              'Desconfiado(a)'
             ],
             optionsColumnsSize: 2,
           ),
