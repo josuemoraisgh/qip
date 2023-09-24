@@ -759,7 +759,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               "1 - 5 - 2 - 9",
               "6 - 4 - 3 - 7"
             ],
-            optionsColumnsSize: 3,
+            optionsColumnsSize: 2,
           ),
         ]
   },
@@ -841,7 +841,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               "2 - 8 - 6 - 4 - 7 - 3",
               "6 - 1 - 9 - 4 - 5 - 2"
             ],
-            optionsColumnsSize: 2,
+            optionsColumnsSize: 1,
           ),
         ]
   },
@@ -882,7 +882,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               "5 - 2 - 3 - 7 - 4 - 9 - 8",
               "5 - 9 - 1 - 7 - 8 - 0 - 9"
             ],
-            optionsColumnsSize: 2,
+            optionsColumnsSize: 1,
           ),
         ]
   },
@@ -1418,7 +1418,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title:
-                "\n      1) MUITOS    2) OCEANO    3) PEIXES    4) E\n\n                 5) TEM      6) O      7) PLANTAS\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
+                "\n1) MUITOS\n2) OCEANO\n3) PEIXES\n4) E\n5) TEM\n6) O\n7) PLANTAS\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
             hasPrefiroNaoDizer: false,
             options: const [
               '1 - 4 - 6 - 2 - 5 - 3 - 7',
@@ -1427,7 +1427,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               '6 - 2 - 5 - 1 - 3 - 4 - 7',
               '7 - 4 - 3 - 5 - 1 - 2 - 6 '
             ],
-            optionsColumnsSize: 2,
+            optionsColumnsSize: 1,
           ),
         ]
   },
@@ -2571,7 +2571,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             inputFormatters: [
               FilteringTextInputFormatter.singleLineFormatter,
             ],
-          ),    
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
           const SizedBox(height: 10.0),

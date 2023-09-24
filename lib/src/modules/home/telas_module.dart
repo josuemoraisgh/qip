@@ -13,13 +13,13 @@ class TelasModule extends Module {
   List<Bind<Object>> get binds => [
         Bind.lazySingleton<TelasController>((i) => TelasController()),
         Bind.lazySingleton<Dio>((i) => Dio()),
-        Bind.lazySingleton<AssistidoRemoteStorageInterface>((i) =>
-            AssistidoRemoteStorageRepository(provider: i<Dio>())),
+        Bind.lazySingleton<AssistidoRemoteStorageInterface>(
+            (i) => AssistidoRemoteStorageRepository(provider: i<Dio>())),
       ];
 
   @override
   final List<ModularRoute> routes = [
     //ChildRoute("/", child: (__,_) => const SplashPage()),
-    ChildRoute("/", child: (_, args) => TelasPage(id: args.data ?? 1)),
+    ChildRoute("/", child: (_, args) => TelasPage(id: args.data ?? 56)),
   ];
 }
