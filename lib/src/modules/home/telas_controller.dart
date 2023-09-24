@@ -9,7 +9,6 @@ class TelasController {
   List<String> answer = [];
   final answerAux = ValueNotifier<List<ValueNotifier<String>>>([]);
   final emailAux = ValueNotifier<String>("");
-  final player = AudioPlayer();
   final isImagemFull = ValueNotifier<bool>(true);
 
   void delay(
@@ -30,6 +29,7 @@ class TelasController {
   }
 
   void playMusic({required int id, required String fileName}) async {
+    AudioPlayer player = AudioPlayer();
     if (fileName != '.mp3') {
       try {
         player
