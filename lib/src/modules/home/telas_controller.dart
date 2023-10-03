@@ -9,6 +9,7 @@ class TelasController {
   List<String> answer = [];
   final answerAux = ValueNotifier<List<ValueNotifier<String>>>([]);
   final emailAux = ValueNotifier<String>("");
+  final isLoadingPage = ValueNotifier<bool>(true);
   final player = AudioPlayer();
   final isImagemFull = ValueNotifier<bool>(true);
 

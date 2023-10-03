@@ -6,6 +6,7 @@ class DisplayFrame extends StatefulWidget {
   final bool? bodyHasFrame;
   final double? fontSize;
   final List<Widget>? widgets;
+  final void Function()? isLoading;
   final void Function({required int id, required String fileName})? playMusic;
   const DisplayFrame({
     super.key,
@@ -15,6 +16,7 @@ class DisplayFrame extends StatefulWidget {
     this.body,
     this.bodyHasFrame,
     this.fontSize,
+    this.isLoading,
   });
 
   @override
@@ -98,11 +100,27 @@ class _DisplayFrameState extends State<DisplayFrame> {
                             body, //assets/arvore2.png
                             //width: 400.0,
                             alignment: Alignment.center,
+                            frameBuilder: (BuildContext context, Widget child,
+                                int? frame, bool wasSynchronouslyLoaded) {
+                              if (frame != null) {
+                                if (widget.isLoading != null) widget.isLoading!();
+                                return child;
+                              }
+                              return const CircularProgressIndicator();
+                            },
                           ),
                         )
                       : Image.asset(
                           body, //assets/arvore2.png
                           alignment: Alignment.bottomCenter,
+                          frameBuilder: (BuildContext context, Widget child,
+                              int? frame, bool wasSynchronouslyLoaded) {
+                            if (frame != null) {
+                              if (widget.isLoading != null) widget.isLoading!();
+                              return child;
+                            }
+                            return const CircularProgressIndicator();
+                          },
                         )
                   : widget.bodyHasFrame ?? true // body_type = texto
                       ? Text(

@@ -37,7 +37,7 @@ class _DotsLineState extends State<DotsLine> {
         (index) {
           var aux2 = aux[index].split("-");
           var aux21 = aux2[0].split(",");
-          var aux22 = aux2[1].split(",");          
+          var aux22 = aux2[1].split(",");
           return (
             Offset(double.parse(aux21[0]), double.parse(aux21[1])),
             Offset(double.parse(aux22[0]), double.parse(aux22[1]))
@@ -52,6 +52,7 @@ class _DotsLineState extends State<DotsLine> {
     return Column(
       children: [
         AppBar(
+          automaticallyImplyLeading: false,
           leading: null,
           actions: <Widget>[
             IconButton(
@@ -133,8 +134,10 @@ class _DotsLineState extends State<DotsLine> {
                     }
                   }
                   if (pointSelected.isNotEmpty) {
-                    widget.answer.value =
-                      pointSelected.map((e) => "${e.$1.dx},${e.$1.dy}-${e.$2.dx},${e.$2.dy}").join(";");
+                    widget.answer.value = pointSelected
+                        .map((e) =>
+                            "${e.$1.dx},${e.$1.dy}-${e.$2.dx},${e.$2.dy}")
+                        .join(";");
                   } else {
                     widget.answer.value = '';
                   }

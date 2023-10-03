@@ -279,7 +279,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               answer: controller.answerAux.value[9]
                 ..addListener(() =>
                     state.currentState!.didChange(controller.answerAux.value)),
-              labelText: "Quantos irmãos voçê tem?",
+              labelText: "Quantos irmãos você tem?",
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
@@ -315,7 +315,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 ..addListener(() =>
                     state.currentState!.didChange(controller.answerAux.value)),
               labelText: "Qual estado civil ?",
-              keyboardType: TextInputType.none,
+              keyboardType: TextInputType.name,
               inputFormatters: [
                 FilteringTextInputFormatter.singleLineFormatter
               ],
@@ -346,7 +346,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               answer: controller.answerAux.value[13]
                 ..addListener(() =>
                     state.currentState!.didChange(controller.answerAux.value)),
-              labelText: "Quantos filhos voçê tem?",
+              labelText: "Quantos filhos você tem?",
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
@@ -471,7 +471,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 ..addListener(
                     () => addListenerComposto(controller, state, 1, 2)),
               title:
-                  "\nCaso afirmativo, selecione o diagnóstico\n correspondente. *",
+                  "\nCaso afirmativo, selecione o diagnóstico\n correspondente.",
               icon: Icons.admin_panel_settings,
               hasPrefiroNaoDizer: false,
               options: const [
@@ -497,6 +497,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 inputFormatters: [
                   FilteringTextInputFormatter.singleLineFormatter
                 ],
+                keyboardType: TextInputType.name,
                 validator: (value) {
                   if (value == null) {
                     return 'Digite a denominação desse outro tipo de transtorno';
@@ -538,12 +539,18 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   6: {
     'hasProx': false,
     'header': 'Observe',
-    'delay': 3,
     'answerLenght': 0,
-    'itens': (_, __) => [
-          const DisplayFrame(
+    'itens': (TelasController controller, __) => [
+          DisplayFrame(
             body: 'assets/arvore_free.png',
             bodyHasFrame: true,
+            isLoading: () {
+              Future.delayed(const Duration(seconds: 3)).then(
+                (value) {
+                  Modular.to.popAndPushNamed("/", arguments: 7);
+                },
+              );
+            },
           ),
         ]
   },
@@ -1447,10 +1454,9 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             options: const [
               'Sente algo estranho dentro do seu corpo, e/ou movimentos, como se levasse um empurrão?',
               'Sente como se alguém lhe tocasse, beliscassem, batessem ou beijassem seu corpo?',
-              'Sente movimentos no corpo, como se levasse um empurrão?',
               'Possui a sensação de falta de controle durante a alimentação; não consegue parar de comer ou controlar a quantidade que está ingerindo?',
               'Sente-se descansado e preparado para mais um dia, mesmo com apenas 3 horas de sono?',
-              'Você com frequência tem dificuldade em manter-se concentrado durante a realização de tarefas ouatividades?',
+              'Você com frequência tem dificuldade em manter-se concentrado durante a realização de tarefas ou atividades?',
               'Muitas vezes responde precipitadamente antes que as perguntas tenham sido completadas.',
             ],
           ),
@@ -1553,72 +1559,108 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   35: {
     'hasProx': false,
     'header': 'Atenção!!',
-    'delay': 3,
     'answerLenght': 0,
-    'itens': (_, __) => [
-          const DisplayFrame(
+    'itens': (TelasController controller, __) => [
+          DisplayFrame(
             body: 'assets/CORREDOR.png',
             bodyHasFrame: true,
+            isLoading: () {
+              Future.delayed(const Duration(seconds: 3)).then(
+                (value) {
+                  Modular.to.popAndPushNamed("/", arguments: 7);
+                },
+              );
+            },
           ),
         ]
   },
   36: {
     'hasProx': false,
     'header': 'Atenção!!',
-    'delay': 3,
     'answerLenght': 0,
-    'itens': (_, __) => [
-          const DisplayFrame(
+    'itens': (TelasController controller, __) => [
+          DisplayFrame(
             body: 'assets/PAPAI NOEL.png',
             bodyHasFrame: true,
+            isLoading: () {
+              Future.delayed(const Duration(seconds: 3)).then(
+                (value) {
+                  Modular.to.popAndPushNamed("/", arguments: 7);
+                },
+              );
+            },
           ),
         ]
   },
   37: {
     'hasProx': false,
     'header': 'Atenção!!',
-    'delay': 3,
     'answerLenght': 0,
-    'itens': (_, __) => [
-          const DisplayFrame(
+    'itens': (TelasController controller, __) => [
+          DisplayFrame(
             body: 'assets/circo.png',
             bodyHasFrame: true,
+            isLoading: () {
+              Future.delayed(const Duration(seconds: 3)).then(
+                (value) {
+                  Modular.to.popAndPushNamed("/", arguments: 7);
+                },
+              );
+            },
           ),
         ]
   },
   38: {
     'hasProx': false,
     'header': 'Atenção!!',
-    'delay': 3,
     'answerLenght': 0,
-    'itens': (_, __) => [
-          const DisplayFrame(
+    'itens': (TelasController controller, __) => [
+          DisplayFrame(
             body: 'assets/mascara.png',
             bodyHasFrame: true,
+            isLoading: () {
+              Future.delayed(const Duration(seconds: 3)).then(
+                (value) {
+                  Modular.to.popAndPushNamed("/", arguments: 7);
+                },
+              );
+            },
           ),
         ]
   },
   39: {
     'hasProx': false,
     'header': 'Atenção!!',
-    'delay': 3,
     'answerLenght': 0,
-    'itens': (_, __) => [
-          const DisplayFrame(
+    'itens': (TelasController controller, __) => [
+          DisplayFrame(
             body: 'assets/NUMERO8.png',
             bodyHasFrame: true,
+            isLoading: () {
+              Future.delayed(const Duration(seconds: 3)).then(
+                (value) {
+                  Modular.to.popAndPushNamed("/", arguments: 7);
+                },
+              );
+            },
           ),
         ]
   },
   40: {
     'hasProx': false,
     'header': 'Atenção!!',
-    'delay': 3,
     'answerLenght': 0,
-    'itens': (_, __) => [
-          const DisplayFrame(
+    'itens': (TelasController controller, __) => [
+          DisplayFrame(
             body: 'assets/reciclagem.png',
             bodyHasFrame: true,
+            isLoading: () {
+              Future.delayed(const Duration(seconds: 3)).then(
+                (value) {
+                  Modular.to.popAndPushNamed("/", arguments: 7);
+                },
+              );
+            },
           ),
         ]
   },
@@ -1637,11 +1679,11 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   state.currentState!.didChange(controller.answerAux.value)),
             options: const [
               'Diariamente, há momentos em que você sente como o se chão oscilasse?',
-              'Durante o dia há vários momentos em que você se sente irritadao e impaciente?',
+              'Durante o dia há vários momentos em que você se sente irritado(a) e impaciente?',
               'Diariamente, há momentos em que você se sente muito feliz, irradiante?',
-              'Durante o dia há vários momentos em que você se sente triste e/ou melancólico?',
-              'Tem notado muita preocupação com um ou mais defeitos ou falhas percebidas na aparência física que não são observáveis ou que parecem leves para os outros.',
-              'Você com frequência mexe de forma irrequieta as mãos e os pés ou remexe-se na cadeira quando está sentado?',
+              'Durante o dia há vários momentos em que você se sente triste e/ou melancólico(a)?',
+              'Tem notado(a) muita preocupação com um ou mais defeitos ou falhas percebidas na aparência física que não são observáveis ou que parecem leves para os outros.',
+              'Você com frequência mexe de forma irrequieta as mãos e os pés ou remexe-se na cadeira quando está sentado(a)?',
               'Exibe dificuldade em concordar com as ideias de outras pessoas, demonstrando inflexibilidade e rigidez tanto em relação a si mesmo quanto aos outros.',
             ],
           ),
@@ -1688,7 +1730,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title:
-                "\nSe possível, durante alguns minutos, imaginar ou tomar conhecimento de alguém ou algo através de uma abertura no tempo e espaço, qual das ações a seguir você escolheria? Selecione até duas opções que melhor se adequem a você.\n",
+                "\nSe possível, durante alguns minutos, imaginar ou tomar conhecimento de alguém ou algo através de uma abertura no tempo e espaço, qual das ações a seguir você escolheria? Selecione duas opções que melhor se adequem a você.\n",
             //icon: Icons.more_time,
             options: const [
               'Ver alguém que já morreu',
@@ -1703,7 +1745,6 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'Saber como faço para não pensar coisas bizarras',
               'Saber se ficarei rico(a)',
               'Saber quem está me perseguindo na rua',
-              'Não gostaria de ver ou saber de nada',
             ],
             optionsColumnsSize: 1,
             mimSizeAnswer: 2,
@@ -1725,10 +1766,10 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             options: const [
-              'Percebe-se impulsivo e de forma abusiva; p. ex., gastos exagerados, sexo com desconhecidos, abuso de substâncias, dirigir de forma perigosa/irresponsável e/ou atos repetitivos de autolesão?',
+              'Percebe-se impulsivo(a) e de forma abusiva; p. ex., gastos exagerados, sexo com desconhecidos, abuso de substâncias, dirigir de forma perigosa/irresponsável e/ou atos repetitivos de autolesão?',
               'Tem dificuldade em terminar o que começa?',
               'Quando você conta uma história que aconteceu, na maioria das vezes você exagera e dramatiza alguns detalhes?',
-              'Já testemunhou e/ou ainda é exposto (a) de forma repetida ou extrema a detalhes aversivos do evento traumático?',
+              'Já testemunhou e/ou ainda é exposto(a) de forma repetida ou extrema a detalhes aversivos do evento traumático?',
               'Você apresenta explosões de raiva recorrente, manifestadas por meio da linguagem (como insultos dirigidos a outras pessoas) ou através de ações (como agressão física)?',
               'Você está tendo insônia praticamente todos os dias?',
             ],
@@ -2571,7 +2612,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             inputFormatters: [
               FilteringTextInputFormatter.singleLineFormatter,
             ],
-          ),    
+          ),
           const SizedBox(height: 10.0),
           const Divider(),
           const SizedBox(height: 10.0),
