@@ -13,8 +13,8 @@ class TelasModule extends Module {
   List<Bind<Object>> get binds => [
         Bind.lazySingleton<TelasController>((i) => TelasController()),
         Bind.lazySingleton<Dio>((i) => Dio()),
-        Bind.lazySingleton<AssistidoRemoteStorageInterface>((i) =>
-            AssistidoRemoteStorageRepository(provider: i<Dio>())),
+        Bind.lazySingleton<AssistidoRemoteStorageInterface>(
+            (i) => AssistidoRemoteStorageRepository(provider: i<Dio>())),
       ];
 
   @override

@@ -766,7 +766,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               "1 - 5 - 2 - 9",
               "6 - 4 - 3 - 7"
             ],
-            optionsColumnsSize: 3,
+            optionsColumnsSize: 2,
           ),
         ]
   },
@@ -848,7 +848,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               "2 - 8 - 6 - 4 - 7 - 3",
               "6 - 1 - 9 - 4 - 5 - 2"
             ],
-            optionsColumnsSize: 2,
+            optionsColumnsSize: 1,
           ),
         ]
   },
@@ -889,7 +889,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               "5 - 2 - 3 - 7 - 4 - 9 - 8",
               "5 - 9 - 1 - 7 - 8 - 0 - 9"
             ],
-            optionsColumnsSize: 2,
+            optionsColumnsSize: 1,
           ),
         ]
   },
@@ -1425,7 +1425,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title:
-                "\n      1) MUITOS    2) OCEANO    3) PEIXES    4) E\n\n                 5) TEM      6) O      7) PLANTAS\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
+                "\n1) MUITOS\n2) OCEANO\n3) PEIXES\n4) E\n5) TEM\n6) O\n7) PLANTAS\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
             hasPrefiroNaoDizer: false,
             options: const [
               '1 - 4 - 6 - 2 - 5 - 3 - 7',
@@ -1434,7 +1434,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               '6 - 2 - 5 - 1 - 3 - 4 - 7',
               '7 - 4 - 3 - 5 - 1 - 2 - 6 '
             ],
-            optionsColumnsSize: 2,
+            optionsColumnsSize: 1,
           ),
         ]
   },
@@ -1866,7 +1866,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   49: {
     'hasProx': true,
     'header': 'Desenhe !!',
-    'answerLenght': 2,
+    'answerLenght': 3,
     'itens': (
       TelasController controller,
       GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
@@ -1874,8 +1874,16 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         [
           SingleSelectionList(
             answer: controller.answerAux.value[0]
-              ..addListener(() =>
-                  state.currentState!.didChange(controller.answerAux.value)),
+              ..addListener(() {
+                if (controller.answerAux.value[0].value == 'Não desejo fazer') {
+                  controller.answerAux.value[1].value = 'Sucess';
+                  controller.answerAux.value[2].value = 'Sucess';
+                  state.currentState!.didChange(controller.answerAux.value);
+                } else {
+                  addListenerComposto(controller, state, 0, 1);
+                  controller.answerAux.value[2].value = '';
+                }
+              }),
             title:
                 'Serão exibidos diversos pontos e ao clicar sobre estes pontos, você poderá compor imagens, uma vez que os pontos serão conectados por linhas retas. Escolha uma das sugestões fornecidas, selecionando a opção e inicie o processo de desenho. O tempo disponível é flexível, permitindo que você retorne ou apague conforme necessário.',
             options: const [
@@ -1884,14 +1892,32 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'Casa',
               'Estrela',
               'Quadrado',
-              'Não quero em fazer',
+              'Não desejo fazer',
             ],
             optionsColumnsSize: 1,
             hasPrefiroNaoDizer: false,
+            otherItem: TextFormList(
+              answer: controller.answerAux.value[1]
+                ..addListener(() =>
+                    state.currentState!.didChange(controller.answerAux.value)),
+              keyboardType: TextInputType.name,
+              labelText: "O que você deseja desenhar ?",
+              inputFormatters: [
+                FilteringTextInputFormatter.singleLineFormatter
+              ],
+              validator: (value) {
+                if (value == null) {
+                  return 'Descrição invalida!! Corrija por favor';
+                } else if ((value.isEmpty) || (value.length < 3)) {
+                  return 'Descrição invalida!! Corrija por favor';
+                }
+                return null;
+              },
+            ),
           ),
           const SizedBox(height: 10.0),
           DotsLine(
-            answer: controller.answerAux.value[1]
+            answer: controller.answerAux.value[2]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
           ),

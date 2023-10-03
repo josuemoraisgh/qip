@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../ajustes.dart';
 import 'parameters.dart';
@@ -31,7 +30,7 @@ class _TelasPageState extends State<TelasPage> {
     super.initState();
     controller = widget.controller ?? Modular.get<TelasController>();
     if (telas[widget.id]!['delay'] != null) {
-      SchedulerBinding.instance.endOfFrame.then(
+      WidgetsBinding.instance.addPostFrameCallback(
         //So executa depois que tudo ja estiver desenhado
         (_) {
           controller.delay(
