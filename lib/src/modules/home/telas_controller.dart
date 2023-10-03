@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 class TelasController {
   final storage = Modular.get<AssistidoRemoteStorageInterface>();
   List<String> answer = [];
+  final idPage = ValueNotifier<int>(0);
   final answerAux = ValueNotifier<List<ValueNotifier<String>>>([]);
   final emailAux = ValueNotifier<String>("");
   final player = AudioPlayer();

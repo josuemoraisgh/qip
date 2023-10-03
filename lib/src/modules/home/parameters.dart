@@ -15,8 +15,6 @@ import '../../modelView/options_style/text_form_list.dart';
 import '../../modelView/options_style/yes_no.dart';
 import 'telas_controller.dart';
 
-int _id = 0;
-
 void addListenerSimples(
   TelasController controller,
   GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
@@ -43,8 +41,7 @@ void addListenerComposto(
 }
 
 Map<int, Map<String, dynamic>> telas = {
-  ++_id: {
-    // 1
+  1: {
     'hasProx': true,
     'header': "Questionário Interativo Psicopatológico (QIP)",
     'answerLenght': 1,
@@ -119,8 +116,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 2
+  2: {
     'hasProx': true,
     'header': 'Questionário Sociodemográfico',
     'answerLenght': 19,
@@ -452,8 +448,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 3
+  3: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 3,
@@ -516,8 +511,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 4
+  4: {
     'hasProx': true,
     'header': 'Atenção!!',
     'delay': 3,
@@ -530,8 +524,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 5: {
+  5: {
     'hasProx': true,
     'header': 'Informações',
     'delay': 3,
@@ -543,8 +536,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 6: {
+  6: {
     'hasProx': false,
     'header': 'Observe',
     'answerLenght': 0,
@@ -555,15 +547,15 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/", arguments: _id+1);
+                  Modular.to.popAndPushNamed("/",
+                      arguments: controller.idPage.value + 1);
                 },
               );
             },
           ),
         ]
   },
-  ++_id: {
-    // 7: {
+  7: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -591,8 +583,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 8: {
+  8: {
     'hasProx': true,
     'header': 'Atenção!!',
     'delay': 3,
@@ -604,8 +595,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 9: {
+  9: {
     'hasProx': false,
     'header': 'Observe',
     'delay': 3,
@@ -617,8 +607,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 10: {
+  10: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -646,8 +635,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 11: {
+  11: {
     'hasProx': true,
     'header': 'Informações',
     'delay': 3,
@@ -660,8 +648,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 12: {
+  12: {
     'hasProx': false,
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
@@ -673,8 +660,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 13: {
+  13: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -703,8 +689,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 14: {
+  14: {
     'hasProx': false,
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
@@ -716,8 +701,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 15: {
+  15: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -746,8 +730,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 16: {
+  16: {
     'hasProx': false,
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
@@ -759,8 +742,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 17: {
+  17: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -789,8 +771,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 18: {
+  18: {
     'hasProx': false,
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
@@ -802,8 +783,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 19: {
+  19: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -832,8 +812,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 20: {
+  20: {
     'hasProx': false,
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
@@ -845,8 +824,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 21: {
+  21: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -875,8 +853,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 22: {
+  22: {
     'hasProx': false,
     'header': 'Atente-se para a sequência de números apresentada',
     'delay': 3,
@@ -888,8 +865,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 23: {
+  23: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -918,8 +894,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 24: {
+  24: {
     'hasProx': true,
     'header': 'Informações',
     'delay': 3,
@@ -932,8 +907,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 25: {
+  25: {
     'hasProx': true,
     'header':
         'Dentre as quatro alternativas de cada imagem. Selecione a palavra que melhor a descreve',
@@ -1250,8 +1224,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 26: {
+  26: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -1275,8 +1248,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 27: {
+  27: {
     'hasProx': true,
     'header': 'Qual das imagens abaixo completa a sequência a seguir?',
     'answerLenght': 1,
@@ -1309,8 +1281,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 28: {
+  28: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -1334,8 +1305,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 29: {
+  29: {
     'hasProx': true,
     'header': 'Complete as sequências a seguir:',
     'answerLenght': 4,
@@ -1442,8 +1412,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const SizedBox(height: 10.0),
         ],
   },
-  ++_id: {
-    // 30: {
+  30: {
     'hasProx': true,
     'header': 'Observe as palavras a seguir:',
     'answerLenght': 1,
@@ -1470,8 +1439,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 31: {
+  31: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -1495,8 +1463,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 32: {
+  32: {
     'hasProx': true,
     'header':
         'Preencha o campo a seguir com o nome da cidade e estado onde você está agora.',
@@ -1551,8 +1518,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 33: {
+  33: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -1578,8 +1544,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 34: {
+  34: {
     'hasProx': true,
     'header': 'Atenção!!',
     'delay': 3,
@@ -1592,8 +1557,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 35: {
+  35: {
     'hasProx': false,
     'header': 'Atenção!!',
     'answerLenght': 0,
@@ -1604,15 +1568,15 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/", arguments: _id+1);
+                  Modular.to.popAndPushNamed("/",
+                      arguments: controller.idPage.value + 1);
                 },
               );
             },
           ),
         ]
   },
-  ++_id: {
-    // 36: {
+  36: {
     'hasProx': false,
     'header': 'Atenção!!',
     'answerLenght': 0,
@@ -1623,15 +1587,15 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/", arguments: _id+1);
+                  Modular.to.popAndPushNamed("/",
+                      arguments: controller.idPage.value + 1);
                 },
               );
             },
           ),
         ]
   },
-  ++_id: {
-    // 37: {
+  37: {
     'hasProx': false,
     'header': 'Atenção!!',
     'answerLenght': 0,
@@ -1642,15 +1606,15 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/", arguments: _id+1);
+                  Modular.to.popAndPushNamed("/",
+                      arguments: controller.idPage.value + 1);
                 },
               );
             },
           ),
         ]
   },
-  ++_id: {
-    // 38: {
+  38: {
     'hasProx': false,
     'header': 'Atenção!!',
     'answerLenght': 0,
@@ -1661,15 +1625,15 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/", arguments: _id+1);
+                  Modular.to.popAndPushNamed("/",
+                      arguments: controller.idPage.value + 1);
                 },
               );
             },
           ),
         ]
   },
-  ++_id: {
-    // 39: {
+  39: {
     'hasProx': false,
     'header': 'Atenção!!',
     'answerLenght': 0,
@@ -1680,15 +1644,15 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/", arguments: _id+1);
+                  Modular.to.popAndPushNamed("/",
+                      arguments: controller.idPage.value + 1);
                 },
               );
             },
           ),
         ]
   },
-  ++_id: {
-    // 40: {
+  40: {
     'hasProx': false,
     'header': 'Atenção!!',
     'answerLenght': 0,
@@ -1699,15 +1663,15 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/", arguments: _id+1);
+                  Modular.to.popAndPushNamed("/",
+                      arguments: controller.idPage.value + 1);
                 },
               );
             },
           ),
         ]
   },
-  ++_id: {
-    // 41: {
+  41: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -1732,8 +1696,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 42: {
+  42: {
     'hasProx': true,
     'header': 'Encontre os objetos!',
     'answerLenght': 1,
@@ -1755,8 +1718,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               imagem: 'assets/seisimagens.png'),
         ],
   },
-  ++_id: {
-    // 43: {
+  43: {
     'hasProx': true,
     'header': 'Avalie e responda !!',
     'answerLenght': 1,
@@ -1797,8 +1759,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 44: {
+  44: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -1822,8 +1783,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 45: {
+  45: {
     'hasProx': false,
     'header': 'Atenção !!',
     'delay': 3,
@@ -1835,8 +1795,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    //  46: {
+  46: {
     'hasProx': false,
     'header': 'Pressione o play para escutar !!',
     'answerLenght': 0,
@@ -1846,15 +1805,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
     ) =>
         [
           DisplayFrame(
-            id: _id,
+            id: controller.idPage.value,
             body: "assets/audios/aguacorrente-edited_v2.mp3",
             bodyHasFrame: true,
             playMusic: controller.playMusic,
           ),
         ]
   },
-  ++_id: {
-    // 47: {
+  47: {
     'hasProx': true,
     'header': 'Responda !!',
     'answerLenght': 1,
@@ -1881,8 +1839,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 48: {
+  48: {
     'hasProx': true,
     'header': 'Observe e responda',
     'answerLenght': 1,
@@ -1913,8 +1870,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 49: {
+  49: {
     'hasProx': true,
     'header': 'Desenhe !!',
     'answerLenght': 3,
@@ -1974,8 +1930,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 50: {
+  50: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -1999,8 +1954,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 51: {
+  51: {
     'hasProx': true,
     'leading': {
       'selectedIcon': Icons.comment_sharp,
@@ -2029,8 +1983,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 52: {
+  52: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -2054,8 +2007,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 53: {
+  53: {
     'hasProx': true,
     'header': 'Avalie e responda !!',
     'answerLenght': 1,
@@ -2089,8 +2041,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 54: {
+  54: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -2114,8 +2065,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 55: {
+  55: {
     'hasProx': false,
     'header': 'Atenção!!',
     'delay': 3,
@@ -2128,8 +2078,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 56: {
+  56: {
     'hasProx': false,
     'header': 'Pressione o play para escutar !!',
     'answerLenght': 0,
@@ -2139,15 +2088,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
     ) =>
         [
           DisplayFrame(
-            id: _id,
+            id: controller.idPage.value,
             body: 'assets/audios/quatro_palavras.mp3',
             bodyHasFrame: true,
             playMusic: controller.playMusic,
           ),
         ]
   },
-  ++_id: {
-    // 57: {
+  57: {
     'hasProx': true,
     'header': 'Avalie e responda !!',
     'answerLenght': 1,
@@ -2183,8 +2131,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 58: {
+  58: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -2209,8 +2156,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    //  59: {
+  59: {
     'hasProx': true,
     'header': 'Responda de acordo com o som escutado anteriormente!!',
     'answerLenght': 1,
@@ -2236,8 +2182,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    //  60: {
+  60: {
     'hasProx': true,
     'header':
         'Marque a expressão que melhor corresponde a emoção básica descrita.',
@@ -2331,8 +2276,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 61: {
+  61: {
     'hasProx': false,
     'header': 'Atenção!!',
     'delay': 3,
@@ -2345,8 +2289,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 62: {
+  62: {
     'hasProx': true,
     'header':
         'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
@@ -2381,8 +2324,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 63: {
+  63: {
     'hasProx': true,
     'header':
         'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
@@ -2417,8 +2359,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 64: {
+  64: {
     'hasProx': true,
     'header':
         'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
@@ -2453,8 +2394,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 65: {
+  65: {
     'hasProx': true,
     'header':
         'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
@@ -2489,8 +2429,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 66: {
+  66: {
     'hasProx': true,
     'header': 'Avalie e responda !!',
     'answerLenght': 1,
@@ -2583,8 +2522,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 67: {
+  67: {
     'hasProx': false,
     'header': 'Atenção!!',
     'delay': 3,
@@ -2597,8 +2535,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 68: {
+  68: {
     'hasProx': false,
     'header': 'Pressione o play para escutar !!',
     'answerLenght': 0,
@@ -2608,15 +2545,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
     ) =>
         [
           DisplayFrame(
-            id: _id,
+            id: controller.idPage.value,
             body: 'assets/audios/dez_palavras.mp3',
             bodyHasFrame: true,
             playMusic: controller.playMusic,
           ),
         ]
   },
-  ++_id: {
-    // 69: {
+  69: {
     'hasProx': true,
     'header': 'Complete com o par correspondente escutado anteriormente',
     'answerLenght': 9,
@@ -2822,8 +2758,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 70: {
+  70: {
     'hasProx': true,
     'header': 'Responda as questões abaixo:',
     'answerLenght': 1,
@@ -2849,8 +2784,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    //  71: {
+  71: {
     'hasProx': true,
     'header': 'Com que frequência você pausa e consome estas substâncias?',
     'answerLenght': 5,
@@ -2953,8 +2887,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ],
   },
-  ++_id: {
-    // 72: {
+  72: {
     'hasProx': true,
     'header': 'Escolha !!',
     'answerLenght': 1,
@@ -2969,7 +2902,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 () {
                   state.currentState!.didChange(controller.answerAux.value);
                   if (controller.answerAux.value[0].value == 'Pular') {
-                    Modular.to.popAndPushNamed("/", arguments: _id+2);
+                    Modular.to.popAndPushNamed("/",
+                        arguments: controller.idPage.value + 2);
                   }
                 },
               ),
@@ -2986,8 +2920,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 73: {
+  73: {
     'hasProx': true,
     'header': 'Vamos colorir !!',
     'answerLenght': 1,
@@ -3033,8 +2966,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 74: {
+  74: {
     'hasProx': true,
     'header': 'Selecione qual dia da semana é hoje:',
     'answerLenght': 1,
@@ -3063,8 +2995,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 75: {
+  75: {
     'hasProx': true,
     'header':
         'Quanto tempo, aproximadamente, você acha que investiu para fazer este teste?',
@@ -3093,8 +3024,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  ++_id: {
-    // 76: {
+  76: {
     'hasProx': false,
     'header': 'Parabéns!!!!',
     'answerLenght': 0,

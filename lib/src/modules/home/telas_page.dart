@@ -29,7 +29,8 @@ class _TelasPageState extends State<TelasPage> {
   void initState() {
     super.initState();
     controller = widget.controller ?? Modular.get<TelasController>();
-    if (telas[widget.id]!['delay'] != null) {
+    controller.idPage.value = widget.id;
+    if (telas[widget.id]?['delay'] != null) {
       WidgetsBinding.instance.addPostFrameCallback(
         //So executa depois que tudo ja estiver desenhado
         (_) {
@@ -47,9 +48,9 @@ class _TelasPageState extends State<TelasPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (telas[widget.id]!['answerLenght'] != 0) {
+    if (telas[widget.id]?['answerLenght'] != 0) {
       controller.answerAux.value = List.generate(
-          telas[widget.id]!['answerLenght'],
+          telas[widget.id]?['answerLenght'],
           (index) => ValueNotifier<String>(""));
     }
     return LayoutBuilder(
