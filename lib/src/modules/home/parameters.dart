@@ -2075,7 +2075,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         ]
   },
   55: {
-    'hasProx': false,
+    'hasProx': true,
     'header': 'Atenção!!',
     'delay': 3,
     'answerLenght': 0,
@@ -2536,14 +2536,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         ],
   },
   67: {
-    'hasProx': false,
+    'hasProx': true,
     'header': 'Atenção!!',
     'delay': 3,
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(
             body:
-                "Na próxima tela será reproduzida uma lista de 10 pares de palavras relacionadas logicamente entre si (p. ex., alto-baixo). Depois, você será solicitado para preencher a palavra faltante.\n\nFique atento, você terá que memorizar todos os pares.\n\nQuando estiver pronto é so clicar em próximo...",
+                "Na próxima tela será reproduzida uma lista de 10 pares de palavras relacionadas logicamente entre si (p. ex., alto-baixo). Depois, você será solicitado para preencher a palavra faltante. Fique atento, você terá que memorizar todos os pares.\n\nQuando estiver pronto é só clicar em próximo...",
             bodyHasFrame: false,
           ),
         ]
@@ -2769,6 +2769,50 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               FilteringTextInputFormatter.singleLineFormatter,
             ],
           ),
+const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[8]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: 'chuva -',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length < 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),
+const SizedBox(height: 10.0),
+          const Divider(),
+          const SizedBox(height: 10.0),
+          TextFormList(
+            answer: controller.answerAux.value[8]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            optionsColumnsSize: 1,
+            options: 'Professor -',
+            validator: (value) {
+              if (value == null) {
+                return 'Dados Incorrets!!';
+              } else if ((value.isEmpty) || (value.length < 2)) {
+                return 'Dados Incorretos!!';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.name,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+            ],
+          ),                    
         ],
   },
   70: {
@@ -2914,19 +2958,18 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(
                 () {
                   state.currentState!.didChange(controller.answerAux.value);
-                  if (controller.answerAux.value[0].value == 'Pular') {
+                  if (controller.answerAux.value[0].value == 'Tenho Daltonismo e Vou Pular Teste.') {
                     Modular.to.popAndPushNamed("/",
                         arguments: controller.idPage.value + 2);
                   }
                 },
               ),
             title:
-                'Daltonismo é o termo usado para denominar a falta de sensibilidade ocular que algumas pessoas possuem na percepção de determinadas cores. Você tem Daltonismo? Já foi diagnosticado por um profissional especializado? Se sim, você pode optar por não realizar este teste; no entanto, se preferir tentar, isso não resultará em desvantagem. Basta clicar em \'SIM\' para prosseguir com a atividade.\n',
+                'Daltonismo é o termo usado para denominar a falta de sensibilidade ocular que algumas pessoas possuem na percepção de determinadas cores. Você tem Daltonismo? Foi diagnosticado por um profissional especializado? Se sim, basta clicar em \'Tenho Daltonismo e Vou Pular Teste.\' Se você não tem daltonismo, clique em \'Não tenho Daltonismo então Vou Fazer o Teste\' para continuar com a atividade.\n',
             icon: Icons.more_time,
             options: const [
-              'Sim',
-              'Não',
-              'Pular',
+              'Tenho Daltonismo e Vou Pular Teste.',
+              'Não tenho Daltonismo então Vou Fazer o Teste',          
             ],
             optionsColumnsSize: 3,
             hasPrefiroNaoDizer: false,
