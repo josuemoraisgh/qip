@@ -5,12 +5,12 @@ import 'package:just_audio/just_audio.dart';
 
 //Reatividade na classe inteira
 class TelasController {
-  final storage = Modular.get<AssistidoRemoteStorageInterface>();
   List<String> answer = [];
   final idPage = ValueNotifier<int>(0);
   final answerAux = ValueNotifier<List<ValueNotifier<String>>>([]);
   final emailAux = ValueNotifier<String>("");
   final isImagemFull = ValueNotifier<bool>(true);
+  final storage = Modular.get<AssistidoRemoteStorageInterface>();  
 
   void delay(
       {required int id,

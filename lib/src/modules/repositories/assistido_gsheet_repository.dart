@@ -6,11 +6,11 @@ import '../interfaces/asssistido_remote_storage_interface.dart';
 
 class AssistidoRemoteStorageRepository
     implements AssistidoRemoteStorageInterface {
-  late final Dio provider;
+  Dio? provider;
   final String baseUrl = 'https://script.google.com';
 
-  AssistidoRemoteStorageRepository({required provider}) {
-    this.provider = provider ?? Modular.get<Dio>();
+  AssistidoRemoteStorageRepository({this.provider}) {
+    provider = provider ?? Modular.get<Dio>();
   }
 
   Future<dynamic> sendGet(
@@ -20,7 +20,7 @@ class AssistidoRemoteStorageRepository
       dynamic p1,
       dynamic p2,
       dynamic p3}) async {
-    var response = await provider.get(
+    var response = await provider?.get(
         '$baseUrl/macros/s/AKfycbzQgJBXevX86H1Q_M9csBasJEi5dSQrUJNlANkRmo5MWQenrYvp1p69Wb63-YBdW0QYaQ/exec',
         queryParameters: {
           "table": table,
@@ -30,12 +30,12 @@ class AssistidoRemoteStorageRepository
           "p2": p2,
           "p3": p3,
         });
-    if (response.data != null) {
-      if ((response.data?["status"] ?? "Error") == "SUCCESS") {
-        return response.data!["items"];
+    if (response?.data != null) {
+      if ((response?.data?["status"] ?? "Error") == "SUCCESS") {
+        return response?.data!["items"];
       } else {
         debugPrint(
-            "AssistidoRemoteStorageRepository - sendUrl - ${response.data}");
+            "AssistidoRemoteStorageRepository - sendUrl - ${response?.data}");
       }
     }
     return null;

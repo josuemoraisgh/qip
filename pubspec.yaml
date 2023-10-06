@@ -33,7 +33,7 @@ dependencies:
   just_audio: ^0.9.34
   audioplayers: ^5.1.0
   flutter_colorpicker: ^1.0.3        
-  flutter_modular: ^5.0.3
+  flutter_modular: ^6.3.2
   hive: ^2.2.3
   hive_generator: ^2.0.0
   hive_flutter: ^1.1.0  
@@ -44,7 +44,7 @@ dependencies:
   brasil_fields: ^1.13.1
   intl: ^0.18.1
   pattern_formatter: ^3.0.0
-  collection: ^1.17.1
+  collection: ^1.17.2
   rx_notifier: ^2.3.0
   #image_size_getter: ^2.1.2
   cupertino_icons: ^1.0.2
