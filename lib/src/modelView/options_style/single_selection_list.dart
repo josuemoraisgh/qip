@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ia_triagem/src/modelView/base_widget/monta_alternativas.dart';
+import '/src/modelView/base_widget/monta_alternativas.dart';
 
 import '../base_widget/custom_button.dart';
 

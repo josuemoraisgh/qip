@@ -1,6 +1,6 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
-import 'package:ia_triagem/src/ajustes.dart';
+import '/src/ajustes.dart';
 
 
 

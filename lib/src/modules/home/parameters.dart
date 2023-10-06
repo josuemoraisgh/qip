@@ -2,8 +2,8 @@ import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:ia_triagem/src/modelView/options_style/display_frame.dart';
-import 'package:ia_triagem/src/modelView/options_style/multi_selection_list.dart';
+import '/src/modelView/options_style/display_frame.dart';
+import '/src/modelView/options_style/multi_selection_list.dart';
 
 import '../../modelView/options_style/arvore_circulos.dart';
 import '../../modelView/options_style/dots_line.dart';
@@ -1620,7 +1620,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
     'answerLenght': 0,
     'itens': (TelasController controller, __) => [
           DisplayFrame(
-            body: 'assets/mascara.png',
+            body: 'assets/chuteira.png',
             bodyHasFrame: true,
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
@@ -1737,21 +1737,28 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title:
-                "\nSe possível, durante alguns minutos, imaginar ou tomar conhecimento de alguém ou algo através de uma abertura no tempo e espaço, qual das ações a seguir você escolheria? Selecione duas opções que melhor se adequem a você.\n",
+                "\nSe tivesse a oportunidade de, por alguns minutos, adquirir conhecimento sobre alguém ou algo por meio de uma abertura no tempo e espaço, quais das ações a seguir você optaria por realizar? Escolha duas ou três opções que mais se adequariam a você.\n",
             //icon: Icons.more_time,
             options: const [
-              'Ver alguém que já morreu',
+              'Encontrar-se com um ente querido falecido.',
               'Ver uma pessoa nua',
-              'Voltar na minha infância e recomeçar tudo',
+              'Saber como desempenhar tarefas cotidianas sem ser prejudicado por pensamentos incessantes que me limitam.'
+                  'Voltar na minha infância e recomeçar tudo',
               'Voltar na minha adolescência e recomeçar tudo',
               'Saber se meu namorado (a) ou esposo (a) está me traindo',
               'Saber como poderia ser o futuro da minha família e ajudá-los',
               'Desaparecer no tempo e espaço, ao entrar pela fenda',
-              'Saber quem é minha alma gêmea',
+              'Saber se estarei vivo daqui 5 anos.'
+                  'Saber quem é minha alma gêmea',
               'Ver meu futuro profissional',
               'Saber como faço para não pensar coisas bizarras',
-              'Saber se ficarei rico(a)',
+              'Testemunhar avanços tecnológicos futuros.'
+                  'Presenciar um evento histórico de grande relevância, como a construção das pirâmides do Egito, a Grande Muralha da China, a era dos dinossauros, ou a criação de alguma das invenções de Albert Einstein ou Leonardo da Vinci, por exemplo.'
+                  'Saber se ficarei rico(a)',
               'Saber quem está me perseguindo na rua',
+              'Saber como faço para dormir a noite toda.'
+                  'Saber como fazer meu cônjuge e/ou filho(a) a realizar tarefas e tomar decisões em suas vidas de acordo com meus valores e princípios.'
+                  'Saber como desaparecer minha dor e sofrimento existencial.'
             ],
             optionsColumnsSize: 1,
             mimSizeAnswer: 2,
@@ -1998,11 +2005,12 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   state.currentState!.didChange(controller.answerAux.value)),
             options: const [
               'Nos últimos meses, você tem ouvido vozes de pessoas estranhas?',
-              'As vozes são seu próprio pensamento em voz alta?',
-              'Alguém tem desejado envenená-lo?',
+              'Ultimamente, você tem ouvido vozes que são seus próprios pensamentos sendo expressos em voz alta?'
+                  'Alguém tem tentado envenená-lo?',
               'Você tem dificuldade para relaxar? Está sempre ocupado?',
               'Você vem apresentando sensações de falta de ar ou sufocamento?',
               'Você está vivenciando um estado de luto prolongado e persistente, que se estende por um período superior a 12 meses, caracterizado por uma intensa saudade, preocupação e apatia em relação ao futuro?',
+              'Você tem medo de ser demitido o tempo todo?'
             ],
           ),
         ]
@@ -2055,7 +2063,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             options: const [
-              'Você tem-se irritado com mais facilidade que antes?',
+              'Você vive com medo de decepcionar as pessoas?'
+                  'Você tem-se irritado com mais facilidade que antes?',
               'Nos últimos meses você sente dificuldades de parar de se preocupar?',
               'Você pensa muitas coisas ao mesmo tempo?',
               'Você sente dificuldade em se concentrar?',
@@ -2109,13 +2118,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title:
-                'Selecione 1 ou 2 imagens que poderia representar você ou seu jeito de ser.',
+                'Escolha de 2 a 3 imagens que possam representar você ou seu jeito de ser.',
             //icon: Icons.more_time,
             options: const [
-              'assets/questao45leao.png',
               'assets/questao45coquetel.png',
               'assets/questao45humburgue.png',
+              'assets/questao45casa.png',
               'assets/questao45gato.png',
+              'assets/questao45trabalhador.png',
               'assets/questao45carro.png',
               'assets/questao45cachorro.png',
               'assets/questao45passaro.png',
@@ -2123,9 +2133,12 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/questao45cocacola.png',
               'assets/questao45cafe.png',
               'assets/questao45bombons.png',
-              'assets/questao45casa.png',
+              'assets/questao45viajar.png',
+              'assets/questao45livros.png',
+              'assets/questao45leaonovo.png',
+              'assets/questao45controlegame.png',
             ],
-            optionsColumnsSize: 3,
+            optionsColumnsSize: 2,
             mimSizeAnswer: 1,
             maxSizeAnswer: 2,
           ),
@@ -2277,14 +2290,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         ],
   },
   61: {
-    'hasProx': false,
+    'hasProx': true,
     'header': 'Atenção!!',
     'delay': 3,
     'answerLenght': 0,
     'itens': (_, __) => [
           const DisplayFrame(
             body:
-                "Nas próximas 4 telas serão exibidas diversas expressões de diferentes sentimentos. Em cada tela, marque no mínimo 2 e no máximo 6 expressões que melhor correspondem como você tem se sentido nos últimos meses.",
+                "Nas próximas 4 telas, serão exibidas diversas expressões representando diferentes sentimentos. Em cada tela, selecione pelo menos 3 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.\n\nQuando estiver pronto é só clicar em próximo...",
             bodyHasFrame: false,
           ),
         ]
@@ -2292,7 +2305,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   62: {
     'hasProx': true,
     'header':
-        'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
+        'Selecione pelo menos 3 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
     'answerLenght': 1,
     'itens': (
       TelasController controller,
@@ -2327,7 +2340,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   63: {
     'hasProx': true,
     'header':
-        'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
+        'Selecione pelo menos 3 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
     'answerLenght': 1,
     'itens': (
       TelasController controller,
@@ -2362,7 +2375,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   64: {
     'hasProx': true,
     'header':
-        'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
+        'Selecione pelo menos 3 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
     'answerLenght': 1,
     'itens': (
       TelasController controller,
@@ -2397,7 +2410,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   65: {
     'hasProx': true,
     'header':
-        'Selecione de 1 a 3 imagens que melhor representa você ou seu jeito de ser.',
+        'Selecione pelo menos 3 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
     'answerLenght': 1,
     'itens': (
       TelasController controller,
