@@ -519,7 +519,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
     'itens': (_, __) => [
           const DisplayFrame(
             body:
-                'A partir de agora serão apresentadas telas com as instruções das tarefas que você irá responder.\n\nCertifique-se que esteja em um ambiente silencioso, sem estímulos de distração.\n\nEm algumas telas, sons serão reproduzidos; portanto, é fundamental usar fones de ouvido ou ligar os alto-falantes do seu dispositivo.',
+                'A partir de agora serão apresentadas telas com as instruções das tarefas que você irá responder.\r\n\nCertifique-se que esteja em um ambiente silencioso, sem estímulos de distração.\f\n\nEm algumas telas, sons serão reproduzidos; portanto, é fundamental usar fones de ouvido ou ligar os alto-falantes do seu dispositivo.',
             bodyHasFrame: false,
           ),
         ]
@@ -1425,8 +1425,16 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             answer: controller.answerAux.value[0]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
-            title:
-                "\n1) MUITOS\f\n2) OCEANO\f\n3) PEIXES\f\n4) E\f\n5) TEM\f\n6) O\f\n7) PLANTAS\f\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
+            title: '''
+1) MUITOS
+2) OCEANO
+3) PEIXES
+4) E
+5) TEM
+6) O
+7) PLANTAS
+
+Agora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:''',
             hasPrefiroNaoDizer: false,
             options: const [
               '1 - 4 - 6 - 2 - 5 - 3 - 7',
