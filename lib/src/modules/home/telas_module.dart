@@ -5,6 +5,7 @@ import '/src/modules/home/telas_page.dart';
 import '../../notfound_page.dart';
 import '../interfaces/asssistido_remote_storage_interface.dart';
 import '../repositories/assistido_gsheet_repository.dart';
+import 'splash_page.dart';
 
 class TelasModule extends Module {
   @override
@@ -16,8 +17,8 @@ class TelasModule extends Module {
 
   @override
   void routes(r) {
-    //r.child("/", child: (_) => const SplashPage()),
-    r.wildcard(child: (_) => const NotFoundPage());    
-    r.child("/", child: (_) => TelasPage(id: r.args.data ?? 1));
+    r.child("/", child: (_) => const SplashPage());
+    r.child("/home", child: (_) => TelasPage(id: r.args.data ?? 1));
+    r.wildcard(child: (_) => const NotFoundPage());     
   }
 }
