@@ -22,7 +22,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Web
-        run: flutter build web --release --base-href=/qip/
+        run: flutter build web --release --base-href=./
 
       - name: Deploy
         run: |

@@ -10,9 +10,10 @@ class NotFoundPage extends StatelessWidget {
       color: groundColor,
       child: const Center(
         child: Text(
-            "Pagina não Encontrada !!",
+            "Pagina não encontrada !!",
             textAlign: TextAlign.center,
             style: TextStyle(
+              decoration: TextDecoration.none,
               fontSize: 50,
               height: 1.5,
               color: Colors.white,
