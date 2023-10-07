@@ -11,7 +11,7 @@ class NotFoundPage extends StatelessWidget {
             "Pagina não Encontrada !!",
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 26,
+              fontSize: 50,
               height: 1.5,
               color: Colors.white,
               shadows: <Shadow>[

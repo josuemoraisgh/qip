@@ -19,6 +19,6 @@ class TelasModule extends Module {
   void routes(r) {
     r.child("/", child: (_) => const SplashPage());
     r.child("/home", child: (_) => TelasPage(id: r.args.data ?? 1));
-    r.wildcard(child: (_) => const NotFoundPage());     
+    //r.wildcard(child: (_) => const NotFoundPage());     
   }
 }
