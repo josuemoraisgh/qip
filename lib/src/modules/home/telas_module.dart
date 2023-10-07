@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import '../../notfound_page.dart';
 import '/src/modules/home/telas_controller.dart';
 import '/src/modules/home/telas_page.dart';
 import '../interfaces/asssistido_remote_storage_interface.dart';
 import '../repositories/assistido_gsheet_repository.dart';
+import 'splash_page.dart';
 
 class TelasModule extends Module {
   @override
@@ -16,7 +16,7 @@ class TelasModule extends Module {
 
   @override
   void routes(r) {
-    r.child('/', child: (_) => TelasPage(id: r.args.data ?? 1));   
-    r.child('//', child: (_) => TelasPage(id: r.args.data ?? 1));     
+    //r.child('/', child: (_) => const SplashPage());
+    r.child('/', child: (_) => TelasPage(id: r.args.data ?? 1));         
   }
 }

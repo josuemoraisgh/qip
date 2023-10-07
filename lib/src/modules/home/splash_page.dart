@@ -17,7 +17,7 @@ class _SplashPageState extends State<SplashPage> {
     super.initState();
     Future.delayed(const Duration(seconds: 3)).then(
       (value) {
-        Modular.to.popAndPushNamed("/home", arguments: 1);
+        Modular.to.popAndPushNamed('/home', arguments: 1);
       },
     );
   }
@@ -29,8 +29,7 @@ class _SplashPageState extends State<SplashPage> {
       child: Center(
         child: Image.asset(
           'assets/montandocerebro.png',
-          height: 300.0,
-          width: 400.0,
+          scale: 0.5,
         ),
       ),
     );

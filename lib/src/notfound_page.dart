@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
 import 'ajustes.dart';
 
@@ -7,12 +8,12 @@ class NotFoundPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-      color: groundColor,
-      child: const Center(
-        child: Text(
-            "Pagina não encontrada !!",
+        color: groundColor,
+        child: Center(
+          child: Text(
+            "Pagina '${Modular.args.uri}' não encontrada !!",
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               decoration: TextDecoration.none,
               fontSize: 50,
               height: 1.5,
