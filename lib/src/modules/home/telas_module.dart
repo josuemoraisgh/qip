@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '/src/modules/home/telas_controller.dart';
 import '/src/modules/home/telas_page.dart';
-import '../../notfound_page.dart';
 import '../interfaces/asssistido_remote_storage_interface.dart';
 import '../repositories/assistido_gsheet_repository.dart';
 import 'splash_page.dart';
