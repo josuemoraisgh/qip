@@ -16,6 +16,6 @@ class TelasModule extends Module {
 
   @override
   void routes(r) {
-    r.child(Modular.initialRoute, child: (_) => TelasPage(id: r.args.data ?? 1));   
+    r.child('/', child: (_) => TelasPage(id: r.args.data ?? 1));   
   }
 }
