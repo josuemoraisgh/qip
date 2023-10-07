@@ -5,7 +5,7 @@ import 'modules/home/telas_module.dart';
 class AppModule extends Module {
   @override
   void routes(r) {
-    r.module('/', module: TelasModule());
+    r.module(Modular.initialRoute, module: TelasModule());
     r.wildcard(child: (_) => const NotFoundPage());
   }
 }
