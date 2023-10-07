@@ -48,6 +48,7 @@ class _TelasPageState extends State<TelasPage> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint(Modular.args.data.toString());
     if (telas[widget.id]?['answerLenght'] != 0) {
       controller.answerAux.value = List.generate(
           telas[widget.id]?['answerLenght'],
@@ -267,7 +268,7 @@ class _TelasPageState extends State<TelasPage> {
                   controller.storage.addData(controller.answer);
                   controller.storage.addData(resp);
                 }
-                Modular.to.popAndPushNamed("/home", arguments: widget.id + 1);
+                Modular.to.popAndPushNamed('/', arguments: widget.id + 1);
               },
         child: Row(
           children: [

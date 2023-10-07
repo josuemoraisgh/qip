@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'ajustes.dart';
+
 class NotFoundPage extends StatelessWidget {
   const NotFoundPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(),
-        body: const Center(
-          child: Text(
+  Widget build(BuildContext context) => Container(
+      color: groundColor,
+      child: const Center(
+        child: Text(
             "Pagina não Encontrada !!",
             textAlign: TextAlign.center,
             style: TextStyle(

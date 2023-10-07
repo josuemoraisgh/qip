@@ -547,7 +547,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/home",
+                  Modular.to.popAndPushNamed('/',
                       arguments: controller.idPage.value + 1);
                 },
               );
@@ -1568,7 +1568,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/home",
+                  Modular.to.popAndPushNamed('/',
                       arguments: controller.idPage.value + 1);
                 },
               );
@@ -1587,7 +1587,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/home",
+                  Modular.to.popAndPushNamed('/',
                       arguments: controller.idPage.value + 1);
                 },
               );
@@ -1606,7 +1606,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/home",
+                  Modular.to.popAndPushNamed('/',
                       arguments: controller.idPage.value + 1);
                 },
               );
@@ -1625,7 +1625,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/home",
+                  Modular.to.popAndPushNamed('/',
                       arguments: controller.idPage.value + 1);
                 },
               );
@@ -1644,7 +1644,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/home",
+                  Modular.to.popAndPushNamed('/',
                       arguments: controller.idPage.value + 1);
                 },
               );
@@ -1663,7 +1663,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             isLoading: () {
               Future.delayed(const Duration(seconds: 3)).then(
                 (value) {
-                  Modular.to.popAndPushNamed("/home",
+                  Modular.to.popAndPushNamed('/',
                       arguments: controller.idPage.value + 1);
                 },
               );
@@ -2959,7 +2959,7 @@ const SizedBox(height: 10.0),
                 () {
                   state.currentState!.didChange(controller.answerAux.value);
                   if (controller.answerAux.value[0].value == 'Tenho Daltonismo e Vou Pular Teste.') {
-                    Modular.to.popAndPushNamed("/home",
+                    Modular.to.popAndPushNamed('/',
                         arguments: controller.idPage.value + 2);
                   }
                 },
