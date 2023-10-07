@@ -13,9 +13,16 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3)).then((value) {
-      Modular.to.popAndPushNamed("/home", arguments: 1);      
-    });
+    WidgetsBinding.instance.addPostFrameCallback(
+      //So executa depois que tudo ja estiver desenhado
+      (_) {
+        Future.delayed(const Duration(seconds: 3)).then(
+          (value) {
+            Modular.to.popAndPushNamed("/home", arguments: 1);
+          },
+        );
+      },
+    );
   }
 
   @override
