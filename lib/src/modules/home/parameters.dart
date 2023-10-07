@@ -1426,7 +1426,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title:
-                "\n1) MUITOS\n2) OCEANO\n3) PEIXES\n4) E\n5) TEM\n6) O\n7) PLANTAS\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
+                "\n1) MUITOS\f\n2) OCEANO\f\n3) PEIXES\f\n4) E\f\n5) TEM\f\n6) O\f\n7) PLANTAS\f\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:",
             hasPrefiroNaoDizer: false,
             options: const [
               '1 - 4 - 6 - 2 - 5 - 3 - 7',
@@ -1742,23 +1742,23 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             options: const [
               'Encontrar-se com um ente querido falecido.',
               'Ver uma pessoa nua',
-              'Saber como desempenhar tarefas cotidianas sem ser prejudicado por pensamentos incessantes que me limitam.'
-                  'Voltar na minha infância e recomeçar tudo',
+              'Saber como desempenhar tarefas cotidianas sem ser prejudicado por pensamentos incessantes que me limitam.',
+              'Voltar na minha infância e recomeçar tudo',
               'Voltar na minha adolescência e recomeçar tudo',
               'Saber se meu namorado (a) ou esposo (a) está me traindo',
               'Saber como poderia ser o futuro da minha família e ajudá-los',
               'Desaparecer no tempo e espaço, ao entrar pela fenda',
-              'Saber se estarei vivo daqui 5 anos.'
-                  'Saber quem é minha alma gêmea',
+              'Saber se estarei vivo daqui 5 anos.',
+              'Saber quem é minha alma gêmea',
               'Ver meu futuro profissional',
               'Saber como faço para não pensar coisas bizarras',
-              'Testemunhar avanços tecnológicos futuros.'
-                  'Presenciar um evento histórico de grande relevância, como a construção das pirâmides do Egito, a Grande Muralha da China, a era dos dinossauros, ou a criação de alguma das invenções de Albert Einstein ou Leonardo da Vinci, por exemplo.'
-                  'Saber se ficarei rico(a)',
+              'Testemunhar avanços tecnológicos futuros.',
+              'Presenciar um evento histórico de grande relevância, como a construção das pirâmides do Egito, a Grande Muralha da China, a era dos dinossauros, ou a criação de alguma das invenções de Albert Einstein ou Leonardo da Vinci, por exemplo.',
+              'Saber se ficarei rico(a)',
               'Saber quem está me perseguindo na rua',
-              'Saber como faço para dormir a noite toda.'
-                  'Saber como fazer meu cônjuge e/ou filho(a) a realizar tarefas e tomar decisões em suas vidas de acordo com meus valores e princípios.'
-                  'Saber como desaparecer minha dor e sofrimento existencial.'
+              'Saber como faço para dormir a noite toda.',
+              'Saber como fazer meu cônjuge e/ou filho(a) a realizar tarefas e tomar decisões em suas vidas de acordo com meus valores e princípios.',
+              'Saber como desaparecer minha dor e sofrimento existencial.',
             ],
             optionsColumnsSize: 1,
             mimSizeAnswer: 2,
@@ -2005,8 +2005,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   state.currentState!.didChange(controller.answerAux.value)),
             options: const [
               'Nos últimos meses, você tem ouvido vozes de pessoas estranhas?',
-              'Ultimamente, você tem ouvido vozes que são seus próprios pensamentos sendo expressos em voz alta?'
-                  'Alguém tem tentado envenená-lo?',
+              'Ultimamente, você tem ouvido vozes que são seus próprios pensamentos sendo expressos em voz alta?',
+              'Alguém tem tentado envenená-lo?',
               'Você tem dificuldade para relaxar? Está sempre ocupado?',
               'Você vem apresentando sensações de falta de ar ou sufocamento?',
               'Você está vivenciando um estado de luto prolongado e persistente, que se estende por um período superior a 12 meses, caracterizado por uma intensa saudade, preocupação e apatia em relação ao futuro?',
@@ -2063,8 +2063,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             options: const [
-              'Você vive com medo de decepcionar as pessoas?'
-                  'Você tem-se irritado com mais facilidade que antes?',
+              'Você vive com medo de decepcionar as pessoas?',
+              'Você tem-se irritado com mais facilidade que antes?',
               'Nos últimos meses você sente dificuldades de parar de se preocupar?',
               'Você pensa muitas coisas ao mesmo tempo?',
               'Você sente dificuldade em se concentrar?',
@@ -2769,7 +2769,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               FilteringTextInputFormatter.singleLineFormatter,
             ],
           ),
-const SizedBox(height: 10.0),
+          const SizedBox(height: 10.0),
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
@@ -2791,7 +2791,7 @@ const SizedBox(height: 10.0),
               FilteringTextInputFormatter.singleLineFormatter,
             ],
           ),
-const SizedBox(height: 10.0),
+          const SizedBox(height: 10.0),
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
@@ -2812,7 +2812,7 @@ const SizedBox(height: 10.0),
             inputFormatters: [
               FilteringTextInputFormatter.singleLineFormatter,
             ],
-          ),                    
+          ),
         ],
   },
   70: {
@@ -2857,7 +2857,7 @@ const SizedBox(height: 10.0),
             title: '1) Cafeina:',
             icon: Icons.more_time,
             options: const [
-              'Nunca ',
+              'Nunca',
               'Uma vez por mês ou menos (raramente)',
               'Duas a quatro vezes ao mês (às vezes)',
               'Duas a três vezes por semana',
@@ -2876,7 +2876,7 @@ const SizedBox(height: 10.0),
             title: '2)	Álcool:',
             icon: Icons.more_time,
             options: const [
-              'Nunca ',
+              'Nunca',
               'Uma vez por mês ou menos (raramente)',
               'Duas a quatro vezes ao mês (às vezes)',
               'Duas a três vezes por semana',
@@ -2895,7 +2895,7 @@ const SizedBox(height: 10.0),
             title: '3)	Tabaco:',
             icon: Icons.more_time,
             options: const [
-              'Nunca ',
+              'Nunca',
               'Uma vez por mês ou menos (raramente)',
               'Duas a quatro vezes ao mês (às vezes)',
               'Duas a três vezes por semana',
@@ -2914,7 +2914,7 @@ const SizedBox(height: 10.0),
             title: '4)	Maconha:',
             icon: Icons.more_time,
             options: const [
-              'Nunca ',
+              'Nunca',
               'Uma vez por mês ou menos (raramente)',
               'Duas a quatro vezes ao mês (às vezes)',
               'Duas a três vezes por semana',
@@ -2933,7 +2933,7 @@ const SizedBox(height: 10.0),
             title: '5)	Cocaína/crack:',
             icon: Icons.more_time,
             options: const [
-              'Nunca ',
+              'Nunca',
               'Uma vez por mês ou menos (raramente)',
               'Duas a quatro vezes ao mês (às vezes)',
               'Duas a três vezes por semana',
@@ -2958,7 +2958,8 @@ const SizedBox(height: 10.0),
               ..addListener(
                 () {
                   state.currentState!.didChange(controller.answerAux.value);
-                  if (controller.answerAux.value[0].value == 'Tenho Daltonismo e Vou Pular Teste.') {
+                  if (controller.answerAux.value[0].value ==
+                      'Tenho Daltonismo e Vou Pular Teste.') {
                     Modular.to.popAndPushNamed('/',
                         arguments: controller.idPage.value + 2);
                   }
@@ -2969,7 +2970,7 @@ const SizedBox(height: 10.0),
             icon: Icons.more_time,
             options: const [
               'Tenho Daltonismo e Vou Pular Teste.',
-              'Não tenho Daltonismo então Vou Fazer o Teste',          
+              'Não tenho Daltonismo então Vou Fazer o Teste',
             ],
             optionsColumnsSize: 3,
             hasPrefiroNaoDizer: false,
