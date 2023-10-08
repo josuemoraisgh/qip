@@ -1426,7 +1426,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             title:
-                '\n1) MUITOS     \n2) OCEANO     \n3) PEIXES     \n4) E     \n5) TEM     \n6) O     \n7) PLANTAS     \n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:',
+                '\n1)\tMUITOS\n2)\tOCEANO\n3)\tPEIXES\n4)\tE\n5)\tTEM\n6)\tO\n7)\tPLANTAS\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:',
             hasPrefiroNaoDizer: false,
             options: const [
               '1 - 4 - 6 - 2 - 5 - 3 - 7',
