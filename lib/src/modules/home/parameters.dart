@@ -1425,7 +1425,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             answer: controller.answerAux.value[0]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
-            title: '\n1) MUITOS;\n\r2) OCEANO;\n\r3) PEIXES;\n\r4) E;\n\r5) TEM;\n\r6) O;\n\r7) PLANTAS;\n\r\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:',
+            title: '\n\n1) MUITOS;\n\n2) OCEANO;\n\n3) PEIXES;\n\n4) E;\n\n5) TEM;\n\n6) O;\n\n7) PLANTAS;\n\nAgora forme uma frase que faça sentido e contenha todas essas palavras. Marque a ordem correta:',
             hasPrefiroNaoDizer: false,
             options: const [
               '1 - 4 - 6 - 2 - 5 - 3 - 7',
