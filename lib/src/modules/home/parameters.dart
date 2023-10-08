@@ -2,6 +2,7 @@ import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:qip_triagem/src/modelView/options_style/muro_colorido.dart';
 import '/src/modelView/options_style/display_frame.dart';
 import '/src/modelView/options_style/multi_selection_list.dart';
 
@@ -1412,7 +1413,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const SizedBox(height: 10.0),
         ],
   },
-  30: {
+  30: { //Para inserir caracters em String use: "\u{0x___}"
     'hasProx': true,
     'header': 'Observe as palavras a seguir:',
     'answerLenght': 1,
@@ -1791,7 +1792,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         ]
   },
   45: {
-    'hasProx': false,
+    'hasProx': true,
     'header': 'Atenção !!',
     'delay': 3,
     'answerLenght': 0,
@@ -2332,8 +2333,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/emoji_nojo.png',
             ],
             optionsColumnsSize: 3,
-            mimSizeAnswer: 1,
-            maxSizeAnswer: 3,
+            mimSizeAnswer: 3,
+            maxSizeAnswer: 4,
           ),
         ],
   },
@@ -2367,8 +2368,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/emoji_preocupado.png',
             ],
             optionsColumnsSize: 3,
-            mimSizeAnswer: 1,
-            maxSizeAnswer: 3,
+            mimSizeAnswer: 3,
+            maxSizeAnswer: 4,
           ),
         ],
   },
@@ -2402,8 +2403,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/emoji_com_ciumes.png',
             ],
             optionsColumnsSize: 3,
-            mimSizeAnswer: 1,
-            maxSizeAnswer: 3,
+            mimSizeAnswer: 3,
+            maxSizeAnswer: 4,
           ),
         ],
   },
@@ -2437,8 +2438,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/emoji_animado.png',
             ],
             optionsColumnsSize: 3,
-            mimSizeAnswer: 1,
-            maxSizeAnswer: 3,
+            mimSizeAnswer: 3,
+            maxSizeAnswer: 4,
           ),
         ],
   },
@@ -2568,7 +2569,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   69: {
     'hasProx': true,
     'header': 'Complete com o par correspondente escutado anteriormente',
-    'answerLenght': 9,
+    'answerLenght': 11,
     'itens': (
       TelasController controller,
       GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
@@ -2773,7 +2774,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[8]
+            answer: controller.answerAux.value[9]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
@@ -2795,7 +2796,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[8]
+            answer: controller.answerAux.value[10]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
@@ -2961,16 +2962,16 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   if (controller.answerAux.value[0].value ==
                       'Tenho Daltonismo e Vou Pular Teste.') {
                     Modular.to.popAndPushNamed('/',
-                        arguments: controller.idPage.value + 2);
+                        arguments: controller.idPage.value + 3);
                   }
                 },
               ),
             title:
-                'Daltonismo é o termo usado para denominar a falta de sensibilidade ocular que algumas pessoas possuem na percepção de determinadas cores. Você tem Daltonismo? Foi diagnosticado por um profissional especializado? Se sim, basta clicar em \'Tenho Daltonismo e Vou Pular Teste.\' Se você não tem daltonismo, clique em \'Não tenho Daltonismo então Vou Fazer o Teste\' para continuar com a atividade.\n',
+                'Daltonismo é o termo usado para denominar a falta de sensibilidade ocular que algumas pessoas possuem na percepção de determinadas cores. Você tem Daltonismo? Foi diagnosticado por um profissional especializado? Se sim, basta clicar em \'Tenho daltonismo por isso vou pular teste.\' Se você não tem daltonismo, clique em \'Não tenho daltonismo então vou fazer o teste\' para continuar com a atividade.\n',
             icon: Icons.more_time,
             options: const [
-              'Tenho Daltonismo e Vou Pular Teste.',
-              'Não tenho Daltonismo então Vou Fazer o Teste',
+              'Tenho daltonismo por isso vou pular teste.',
+              'Não tenho daltonismo então vou fazer o teste.',
             ],
             optionsColumnsSize: 3,
             hasPrefiroNaoDizer: false,
@@ -2988,7 +2989,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         [
           const DisplayFrame(
             body:
-                'Marque a cor que você mais gosta e pinte os retângulos e os círculos das figuras abaixo.\n\nFaça da forma que mais te agrada.\n',
+                'Marque a cor que você mais gosta e pinte os círculos da figura abaixo.\n\nFaça da forma que mais te agrada.\n',
             bodyHasFrame: false,
           ),
           ArvoreCiculos(
@@ -3006,7 +3007,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'Rosa',
               'Marrom',
               'Preto',
-              'Branco',
+              'Cinza',
             ],
             optionsColumnsSize: 3,
             colors: const [
@@ -3016,14 +3017,60 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               Colors.yellow,
               Colors.red,
               Colors.pink,
-              Colors.grey,
+              Colors.brown,
               Colors.black,
-              Colors.white24,
+              Colors.grey,
             ],
           ),
         ]
   },
   74: {
+    'hasProx': true,
+    'header': 'Vamos colorir !!',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          const DisplayFrame(
+            body:
+                'Marque a cor que você mais gosta e pinte os retângulos da figura abaixo.\n\nFaça da forma que mais te agrada.\n',
+            bodyHasFrame: false,
+          ),
+          MuroColorido(
+            answer: controller.answerAux.value[0]
+              ..addListener(
+                () => state.currentState!.didChange(controller.answerAux.value),
+              ),
+            imagem: 'assets/arvore_circulos.png',
+            itens: const [
+              'Azul',
+              'Verde',
+              'Laranja',
+              'Amarelo',
+              'Vermelho',
+              'Rosa',
+              'Marrom',
+              'Preto',
+              'Cinza',
+            ],
+            optionsColumnsSize: 3,
+            colors: const [
+              Colors.blue,
+              Colors.green,
+              Colors.orange,
+              Colors.yellow,
+              Colors.red,
+              Colors.pink,
+              Colors.brown,
+              Colors.black,
+              Colors.grey,
+            ],
+          ),
+        ]
+  },  
+  75: {
     'hasProx': true,
     'header': 'Selecione qual dia da semana é hoje:',
     'answerLenght': 1,
@@ -3052,7 +3099,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  75: {
+  76: {
     'hasProx': true,
     'header':
         'Quanto tempo, aproximadamente, você acha que investiu para fazer este teste?',
@@ -3081,7 +3128,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  76: {
+  77: {
     'hasProx': false,
     'header': 'Parabéns!!!!',
     'answerLenght': 0,
