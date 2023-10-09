@@ -264,7 +264,7 @@ class _TelasPageState extends State<TelasPage> {
                 controller.answer += [
                   "${DateTime.now().toString()} - ${aux.join(";")}"
                 ];
-                if (widget.id == 75) {
+                if (widget.id == 78) {
                   controller.storage.addData(controller.answer);
                   controller.storage.addData(resp);
                 }

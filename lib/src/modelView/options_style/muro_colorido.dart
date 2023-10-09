@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../base_widget/custom_button.dart';
 import '../base_widget/monta_alternativas.dart';
@@ -26,6 +25,7 @@ class _MuroColoridoState extends State<MuroColorido> {
   List<Rect> pointSelected = [];
   ValueNotifier<String> selectedColor = ValueNotifier<String>('white');
   Map<int, String> paintSelected = <int, String>{};
+  ValueNotifier<bool> isChange = ValueNotifier<bool>(true);
   late Map<String, Paint> paintType;
 
   @override
@@ -41,97 +41,116 @@ class _MuroColoridoState extends State<MuroColorido> {
         }.entries,
       );
     }
-    int ini = 30;
-    for (int i = 0; i < 8; i++) {
-      for (int j = 0; j < 5; j++) {
-        if (i % 2 == 0) {
-          if (j != 4) {
-            pointSelected.add(
-              Rect.fromLTRB(80.0 * j + 40.0 + ini, 30.0 * i + 10.0,
-                  80.0 * (j + 1) + 40.0 + ini, 30.0 * (i + 1) + 10.0),
-            );
-          }
-        } else {
-          pointSelected.add(
-            Rect.fromLTRB(80.0 * j + ini, 30.0 * i + 10.0, 80.0 * (j + 1) + ini,
-                30.0 * (i + 1) + 10.0),
-          );
-        }
-      }
-    }    
+    pointSelected = List.filled(40, Rect.zero);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: selectedColor,
-      builder: (context, selectedColorNotifier, _) => Column(
-        children: [
-          MontaAlternativas(
-            optionsColumnsSize: widget.optionsColumnsSize ?? 1,
-            length: widget.itens.length,
-            builder: (int id) => Expanded(
-              child: CustomButton(
-                title: widget.itens[id],
-                value: widget.itens[id],
-                color: widget.colors?[id],
-                groupValue: selectedColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4.0),
-              border: Border.all(width: 0.2, color: Colors.black),
-              color: Colors.white,
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black,
-                  blurRadius: 4.0,
-                  spreadRadius: 0.0,
-                  offset: Offset(3.0, 3.0), // shadow direction: bottom right
-                )
-              ],
-            ),
-            child: Center(
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: 260,
-                child: GestureDetector(
-                  key: const ValueKey<int>(1),
-                  onPanDown: (DragDownDetails details) {
-                    for (int i = 0; i < pointSelected.length; i++) {
-                      if (isInside(pointSelected[i], details.localPosition)) {
-                        paintSelected[i] = selectedColorNotifier;
-                        break;
-                      }
-                    }
-                    if (paintSelected.isNotEmpty) {
-                      var aux = "";
-                      paintSelected.forEach((key, value) =>
-                          aux += "${key.toString()} - ${value.toString()};");
-                      widget.answer.value = aux.toString();
-                    } else {
-                      widget.answer.value = '';
-                    }
-                    setState(() {});
-                  },
-                  child: CustomPaint(
-                    painter: OpenPainter(
-                        pointSelected: pointSelected,
-                        paintSelected: paintSelected,
-                        paintType: paintType),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final double width = constraints.maxWidth;
+          const double height = 260;
+          {
+            double ini = 20;
+            double tam = (width - 2 * ini) / 5;
 
+            for (int i = 0; i < 8; i++) {
+              for (int j = 0; j < 5; j++) {
+                if (i % 2 == 0) {
+                  if (j != 4) {
+                    pointSelected[i * 5 + j] = Rect.fromLTRB(
+                        tam * j + 40.0 + ini,
+                        30.0 * i + 10.0,
+                        tam * (j + 1) + 40.0 + ini,
+                        30.0 * (i + 1) + 10.0);
+                  }
+                } else {
+                  pointSelected[i * 5 + j] = Rect.fromLTRB(
+                      tam * j + ini,
+                      30.0 * i + 10.0,
+                      tam * (j + 1) + ini,
+                      30.0 * (i + 1) + 10.0);
+                }
+              }
+            }
+            return ValueListenableBuilder(
+              valueListenable: selectedColor,
+              builder: (context, selectedColorNotifier, _) => Column(
+                children: [
+                  MontaAlternativas(
+                    optionsColumnsSize: widget.optionsColumnsSize ?? 1,
+                    length: widget.itens.length,
+                    builder: (int id) => Expanded(
+                      child: CustomButton(
+                        title: widget.itens[id],
+                        value: widget.itens[id],
+                        color: widget.colors?[id],
+                        groupValue: selectedColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4.0),
+                      border: Border.all(width: 0.2, color: Colors.black),
+                      color: Colors.white,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black,
+                          blurRadius: 4.0,
+                          spreadRadius: 0.0,
+                          offset: Offset(
+                              3.0, 3.0), // shadow direction: bottom right
+                        )
+                      ],
+                    ),
+                    child: Center(
+                      child: SizedBox(
+                        width: width,
+                        height: height,
+                        child: GestureDetector(
+                          key: const ValueKey<int>(1),
+                          onPanDown: (DragDownDetails details) {
+                            for (int i = 0; i < pointSelected.length; i++) {
+                              if (isInside(
+                                  pointSelected[i], details.localPosition)) {
+                                if (paintSelected[i] == selectedColorNotifier) {
+                                  paintSelected[i] = 'white';
+                                } else {
+                                  paintSelected[i] = selectedColorNotifier;
+                                }
+                                isChange.value = !isChange.value;
+                                break;
+                              }
+                            }
+                            if (paintSelected.isNotEmpty) {
+                              var aux = "";
+                              paintSelected.forEach((key, value) => aux +=
+                                  "${key.toString()} - ${value.toString()};");
+                              widget.answer.value = aux.toString();
+                            } else {
+                              widget.answer.value = '';
+                            }
+                          },
+                          child: ValueListenableBuilder(
+                            valueListenable: isChange,
+                            builder: (context, __, _) => CustomPaint(
+                              painter: OpenPainter(
+                                  pointSelected: pointSelected,
+                                  paintSelected: paintSelected,
+                                  paintType: paintType),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
+      );
   bool isInside(Rect ponto1, Offset ponto2) {
     return ponto1.left < ponto2.dx &&
         ponto1.right > ponto2.dx &&

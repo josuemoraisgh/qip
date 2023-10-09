@@ -1298,7 +1298,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             options: const [
               'Ultimamente tem arrancado o próprio cabelo de forma recorrente, resultando em perda de cabelo?',
               'Observou grande perda de interesse ou prazer em todas ou quase todas as atividades na maior parte do dia; sente-se triste, vazio, sem esperança?',
-              'As situações sociais, tais como falar em público, quase sempre provocam medo ou ansiedade?',
+              'Você se sente incomodado por pensamentos que surgem em sua mente, mesmo quando não os deseja, como o medo de estar exposto a germes, doenças ou sujeira, ou a necessidade de que tudo esteja alinhado de certa maneira?',
+              'Você é incomodado por imagens indesejadas que surgem em sua mente, como cenas violentas e horríveis, ou conteúdo de natureza sexual?',
               'Percebo que sou uma pessoa especial e único/a? Espero que um dia as pessoas possam reconhecer meu valor e a diferença que faço na vida delas.',
               'Tende a se enxergar como alguém socialmente incapaz, sem atrativos pessoais ou inferior aos outros?',
               'Possui dificuldade em iniciar projetos ou fazer as coisas sozinho (por falta de autoconfiança, em vez de falta de motivação ou energia)?',
@@ -1413,7 +1414,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const SizedBox(height: 10.0),
         ],
   },
-  30: { //Para inserir caracters em String use: "\u{0x___}"
+  30: {
+    //Para inserir caracters em String use: "\u{0x___}"
     'hasProx': true,
     'header': 'Observe as palavras a seguir:',
     'answerLenght': 1,
@@ -1959,8 +1961,6 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'Você apresenta comportamentos repetitivos (p. ex., lavar as mãos, organizar, verificar) ou atos mentais (p. ex., orar, contar ou repetir palavras em silêncio).',
               'Você se sente incomodado por impulsos como machucar alguém que você ama, mesmo quando não deseja fazê-lo?',
               'Você tem visto algo estranho como figuras, sombras, fogo, fantasmas, demônios, pessoas estranhas ou algo do tipo, no seu dia a dia?',
-              'Você se sente incomodado por pensamentos que surgem em sua mente, mesmo quando não os deseja, como o medo de estar exposto a germes, doenças ou sujeira, ou a necessidade de que tudo esteja alinhado de certa maneira?',
-              'Você é incomodado por imagens indesejadas que surgem em sua mente, como cenas violentas e horríveis, ou conteúdo de natureza sexual?',              
             ],
           ),
         ]
@@ -2143,8 +2143,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/questao45controlegame.png',
             ],
             optionsColumnsSize: 2,
-            mimSizeAnswer: 1,
-            maxSizeAnswer: 2,
+            mimSizeAnswer: 2,
+            maxSizeAnswer: 3,
           ),
         ],
   },
@@ -2308,8 +2308,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   62: {
     'hasProx': true,
-    'header':
-        'Selecione pelo menos 3 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
+    'header': 'Selecione!',
     'answerLenght': 1,
     'itens': (
       TelasController controller,
@@ -2321,6 +2320,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             //icon: Icons.more_time,
+            title:'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',            
             options: const [
               'assets/emoji_sempre_atrasado.png',
               'assets/emoji_poderoso.png',
@@ -2336,15 +2336,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/emoji_nojo.png',
             ],
             optionsColumnsSize: 3,
-            mimSizeAnswer: 3,
+            mimSizeAnswer: 2,
             maxSizeAnswer: 4,
           ),
         ],
   },
   63: {
     'hasProx': true,
-    'header':
-        'Selecione pelo menos 3 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
+    'header': 'Selecione!',
     'answerLenght': 1,
     'itens': (
       TelasController controller,
@@ -2356,6 +2355,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             //icon: Icons.more_time,
+            title:'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',            
             options: const [
               'assets/emoji_esperancoso.png',
               'assets/emoji_pura_alegria.png',
@@ -2371,15 +2371,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/emoji_preocupado.png',
             ],
             optionsColumnsSize: 3,
-            mimSizeAnswer: 3,
+            mimSizeAnswer: 2,
             maxSizeAnswer: 4,
           ),
         ],
   },
   64: {
     'hasProx': true,
-    'header':
-        'Selecione pelo menos 3 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
+    'header': 'Selecione!',
     'answerLenght': 1,
     'itens': (
       TelasController controller,
@@ -2391,6 +2390,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             //icon: Icons.more_time,
+            title:'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',            
             options: const [
               'assets/emoji_apaixonado.png',
               'assets/emoji_desesperado.png',
@@ -2406,15 +2406,14 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/emoji_com_ciumes.png',
             ],
             optionsColumnsSize: 3,
-            mimSizeAnswer: 3,
+            mimSizeAnswer: 2,
             maxSizeAnswer: 4,
           ),
         ],
   },
   65: {
     'hasProx': true,
-    'header':
-        'Selecione pelo menos 3 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
+    'header': 'Selecione!',
     'answerLenght': 1,
     'itens': (
       TelasController controller,
@@ -2426,6 +2425,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             //icon: Icons.more_time,
+            title:'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
             options: const [
               'assets/emoji_com_raiva.png',
               'assets/emoji_silenciado.png',
@@ -2441,7 +2441,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'assets/emoji_animado.png',
             ],
             optionsColumnsSize: 3,
-            mimSizeAnswer: 3,
+            mimSizeAnswer: 2,
             maxSizeAnswer: 4,
           ),
         ],
@@ -2950,6 +2950,31 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   72: {
     'hasProx': true,
+    'header': 'Responda as questões abaixo:',
+    'answerLenght': 1,
+    'itens': (
+      TelasController controller,
+      GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,
+    ) =>
+        [
+          TypeYesNo(
+            answer: controller.answerAux.value[0]
+              ..addListener(() =>
+                  state.currentState!.didChange(controller.answerAux.value)),
+            options: const [
+              'Você tem medo ou ansiedade acentuados acerca de um objeto ou situação (p. ex., voar, altura, animais, tomar uma injeção, ver sangue).',
+              'Você apresenta dificuldade persistente de descartar ou de se desfazer de pertences, independentemente do seu valor real.',
+              'Possui medo ou ansiedade acentuada acerca de uma ou mais situações sociais em que é exposto a uma possível avaliação por outras pessoas. Exemplos incluem interações sociais (p. ex., manter uma conversa, encontrar pessoas que não são familiares), ser observado (p. ex., comendo ou bebendo) e situações de desempenho diante de outros (p. ex., proferir palestras, falar em público).',
+              'Você não tem amigos íntimos ou confidentes que não sejam membros da família de primeiro grau. Geralmente, busca atividades de lazer e/ou profissionais de forma solitária?',
+              'Você adota um estilo bem baixo de gastos em relação a si e a outros; enxergando o dinheiro como algo a ser poupado para possíveis emergências futuras.',
+              'Você vem tendo sentimentos de inutilidade ou culpa excessiva? ',
+              'Você iniciou uma quantidade maior de projetos do que o normal ou se envolveu em atividades mais arriscadas do que o habitual?',
+            ],
+          ),
+        ]
+  },
+  73: {
+    'hasProx': true,
     'header': 'Escolha !!',
     'answerLenght': 1,
     'itens': (
@@ -2981,7 +3006,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  73: {
+  74: {
     'hasProx': true,
     'header': 'Vamos colorir !!',
     'answerLenght': 1,
@@ -2992,7 +3017,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         [
           const DisplayFrame(
             body:
-                'Marque a cor que você mais gosta e pinte os círculos da figura abaixo.\n\nFaça da forma que mais te agrada.\n',
+                'Marque a cor que você mais gosta e pinte os círculos da figura abaixo. Faça da forma que mais te agrada.\n',
             bodyHasFrame: false,
           ),
           ArvoreCiculos(
@@ -3027,7 +3052,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  74: {
+  75: {
     'hasProx': true,
     'header': 'Vamos colorir !!',
     'answerLenght': 1,
@@ -3038,7 +3063,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
         [
           const DisplayFrame(
             body:
-                'Marque a cor que você mais gosta e pinte os retângulos da figura abaixo.\n\nFaça da forma que mais te agrada.\n',
+                'Marque a cor que você mais gosta e pinte os retângulos da figura abaixo. Faça da forma que mais te agrada.\n',
             bodyHasFrame: false,
           ),
           MuroColorido(
@@ -3072,8 +3097,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             ],
           ),
         ]
-  },  
-  75: {
+  },
+  76: {
     'hasProx': true,
     'header': 'Selecione qual dia da semana é hoje:',
     'answerLenght': 1,
@@ -3102,7 +3127,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  76: {
+  77: {
     'hasProx': true,
     'header':
         'Quanto tempo, aproximadamente, você acha que investiu para fazer este teste?',
@@ -3131,7 +3156,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           ),
         ]
   },
-  77: {
+  78: {
     'hasProx': false,
     'header': 'Parabéns!!!!',
     'answerLenght': 0,

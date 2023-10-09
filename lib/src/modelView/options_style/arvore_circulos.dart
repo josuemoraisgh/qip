@@ -24,12 +24,13 @@ class ArvoreCiculos extends StatefulWidget {
 
 class _ArvoreCiculosState extends State<ArvoreCiculos> {
   List<Offset> pointSelected = [];
-  ValueNotifier<String> selectedColor = ValueNotifier<String>('white');
+  ValueNotifier<String> selectedColor = ValueNotifier<String>('');
   Map<int, String> paintSelected = <int, String>{};
   late Map<String, Paint> paintType;
   late Image image;
   var imageSize =
       ValueNotifier<(double imageWidth, double imageHeight)>((1.0, 1.0));
+  ValueNotifier<bool> isChange = ValueNotifier<bool>(true);
 
   @override
   void initState() {
@@ -70,27 +71,26 @@ class _ArvoreCiculosState extends State<ArvoreCiculos> {
             final double height =
                 (width / imageSizeFinal.$1) * imageSizeFinal.$2;
             pointSelected = [
-              Offset(0.38 * width, 0.70 * height),//0
-              Offset(0.38 * width, 0.60 * height),//1
-              Offset(0.20 * width, 0.55 * height),//2
-              Offset(0.29 * width, 0.39 * height),//3
-              Offset(0.30 * width, 0.48 * height),//4
-              Offset(0.40 * width, 0.28 * height),//5
-              Offset(0.28 * width, 0.30 * height),//6
-              Offset(0.50 * width, 0.21 * height),//7
-              Offset(0.59 * width, 0.14 * height),//8
-              Offset(0.70 * width, 0.10 * height),//9
-              Offset(0.78 * width, 0.18 * height),//10
-              Offset(0.90 * width, 0.20 * height),//11
-              Offset(0.70 * width, 0.32 * height),//12
-              Offset(0.85 * width, 0.31 * height),//13
-              Offset(0.83 * width, 0.40 * height),//14
-              Offset(0.66 * width, 0.50 * height),//15
-              Offset(0.84 * width, 0.52 * height),//16
-              Offset(0.90 * width, 0.60 * height),//17
-              Offset(0.67 * width, 0.64 * height),//18                  
-              Offset(0.80 * width, 0.70 * height),//19
-          
+              Offset(0.38 * width, 0.70 * height), //0
+              Offset(0.38 * width, 0.60 * height), //1
+              Offset(0.20 * width, 0.55 * height), //2
+              Offset(0.29 * width, 0.39 * height), //3
+              Offset(0.30 * width, 0.48 * height), //4
+              Offset(0.40 * width, 0.28 * height), //5
+              Offset(0.28 * width, 0.30 * height), //6
+              Offset(0.50 * width, 0.21 * height), //7
+              Offset(0.59 * width, 0.14 * height), //8
+              Offset(0.70 * width, 0.10 * height), //9
+              Offset(0.78 * width, 0.18 * height), //10
+              Offset(0.90 * width, 0.20 * height), //11
+              Offset(0.70 * width, 0.32 * height), //12
+              Offset(0.85 * width, 0.31 * height), //13
+              Offset(0.83 * width, 0.40 * height), //14
+              Offset(0.66 * width, 0.50 * height), //15
+              Offset(0.84 * width, 0.52 * height), //16
+              Offset(0.90 * width, 0.60 * height), //17
+              Offset(0.67 * width, 0.64 * height), //18
+              Offset(0.80 * width, 0.70 * height), //19
             ];
             return ValueListenableBuilder(
               valueListenable: selectedColor,
@@ -134,7 +134,12 @@ class _ArvoreCiculosState extends State<ArvoreCiculos> {
                               if (distance(pointSelected[i],
                                       details.localPosition) <=
                                   25) {
-                                paintSelected[i] = selectedColorNotifier;
+                                if (paintSelected[i] == selectedColorNotifier) {
+                                  paintSelected[i] = 'white';
+                                } else {
+                                  paintSelected[i] = selectedColorNotifier;
+                                }
+                                isChange.value = !isChange.value;
                                 break;
                               }
                             }
@@ -145,17 +150,19 @@ class _ArvoreCiculosState extends State<ArvoreCiculos> {
                               widget.answer.value = aux.toString();
                             } else {
                               widget.answer.value = '';
-                            }
-                            setState(() {});
+                            }        
                           },
                           child: Stack(
                             children: <Widget>[
                               image,
-                              CustomPaint(
-                                painter: OpenPainter(
-                                    pointSelected: pointSelected,
-                                    paintSelected: paintSelected,
-                                    paintType: paintType),
+                              ValueListenableBuilder(
+                                valueListenable: isChange,
+                                builder: (context, __, _) => CustomPaint(
+                                  painter: OpenPainter(
+                                      pointSelected: pointSelected,
+                                      paintSelected: paintSelected,
+                                      paintType: paintType),
+                                ),
                               ),
                             ],
                           ),
