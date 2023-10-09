@@ -651,7 +651,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   12: {
     'hasProx': false,
-    'header': 'Atente-se para a sequência de números apresentada',
+    'header': '',
     'delay': 3,
     'answerLenght': 1,
     'itens': (_, __) => [
@@ -692,7 +692,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   14: {
     'hasProx': false,
-    'header': 'Atente-se para a sequência de números apresentada',
+    'header': '',
     'delay': 3,
     'answerLenght': 1,
     'itens': (_, __) => [
@@ -733,7 +733,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   16: {
     'hasProx': false,
-    'header': 'Atente-se para a sequência de números apresentada',
+    'header': '',
     'delay': 3,
     'answerLenght': 1,
     'itens': (_, __) => [
@@ -774,7 +774,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   18: {
     'hasProx': false,
-    'header': 'Atente-se para a sequência de números apresentada',
+    'header': '',
     'delay': 3,
     'answerLenght': 1,
     'itens': (_, __) => [
@@ -815,7 +815,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   20: {
     'hasProx': false,
-    'header': 'Atente-se para a sequência de números apresentada',
+    'header': '',
     'delay': 3,
     'answerLenght': 1,
     'itens': (_, __) => [
@@ -856,7 +856,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   22: {
     'hasProx': false,
-    'header': 'Atente-se para a sequência de números apresentada',
+    'header': '',
     'delay': 3,
     'answerLenght': 1,
     'itens': (_, __) => [
@@ -1308,7 +1308,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   29: {
     'hasProx': true,
-    'header': 'Complete as sequências a seguir:',
+    'header': 'Complete as seguências a seguir:',
     'answerLenght': 4,
     'itens': (
       TelasController controller,
@@ -1483,9 +1483,9 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             optionsColumnsSize: 1,
             validator: (value) {
               if (value == null) {
-                return 'Cidade Inválido!!';
+                return 'Cidade Inválida!!';
               } else if (value.isEmpty) {
-                return 'Cidade Inválido!!';
+                return 'Cidade Inválida!!';
               }
               return null;
             },
@@ -1763,7 +1763,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             ],
             optionsColumnsSize: 1,
             mimSizeAnswer: 2,
-            maxSizeAnswer: 2,
+            maxSizeAnswer: 3,
           ),
         ],
   },
@@ -1957,7 +1957,10 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               'Você tem escutado Zumbido no ouvido?',
               'Você tem dificuldades em jogar fora objetos usados ou sem valor, mesmo quando não têm valor sentimental. Ultimamente guarda muitas coisas, papeis, recibos, com a ideia de que poderá precisar algum dia?',
               'Você apresenta comportamentos repetitivos (p. ex., lavar as mãos, organizar, verificar) ou atos mentais (p. ex., orar, contar ou repetir palavras em silêncio).',
+              'Você se sente incomodado por impulsos como machucar alguém que você ama, mesmo quando não deseja fazê-lo?',
               'Você tem visto algo estranho como figuras, sombras, fogo, fantasmas, demônios, pessoas estranhas ou algo do tipo, no seu dia a dia?',
+              'Você se sente incomodado por pensamentos que surgem em sua mente, mesmo quando não os deseja, como o medo de estar exposto a germes, doenças ou sujeira, ou a necessidade de que tudo esteja alinhado de certa maneira?',
+              'Você é incomodado por imagens indesejadas que surgem em sua mente, como cenas violentas e horríveis, ou conteúdo de natureza sexual?',              
             ],
           ),
         ]
