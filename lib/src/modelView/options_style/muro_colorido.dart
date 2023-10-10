@@ -48,19 +48,20 @@ class _MuroColoridoState extends State<MuroColorido> {
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final double width = constraints.maxWidth;
-          const double height = 260;
+          const double height = 200;
           {
-            double ini = 20;
-            double tam = (width - 2 * ini) / 5;
+            const double qtdadeTijolosLinha = 3;
+            const double ini = 20;
+            final double tam = (width - 2 * ini) / qtdadeTijolosLinha;
 
-            for (int i = 0; i < 8; i++) {
-              for (int j = 0; j < 5; j++) {
+            for (int i = 0; i < 6; i++) {
+              for (int j = 0; j < qtdadeTijolosLinha; j++) {
                 if (i % 2 == 0) {
-                  if (j != 4) {
+                  if (j != 2) {
                     pointSelected[i * 5 + j] = Rect.fromLTRB(
-                        tam * j + 40.0 + ini,
+                        tam * j + tam/2 + ini,
                         30.0 * i + 10.0,
-                        tam * (j + 1) + 40.0 + ini,
+                        tam * (j + 1) + tam/2 + ini,
                         30.0 * (i + 1) + 10.0);
                   }
                 } else {

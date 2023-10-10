@@ -1309,7 +1309,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   },
   29: {
     'hasProx': true,
-    'header': 'Complete as seguências a seguir:',
+    'header': 'Complete as sequências a seguir:',
     'answerLenght': 4,
     'itens': (
       TelasController controller,
@@ -1322,7 +1322,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.confirmation_num,
             title: '2, 4, 8, 16, ?',
-            labelText: "Seguência *",
+            labelText: "Sequência *",
             optionsColumnsSize: 1,
             validator: (value) {
               if (value == null) {
@@ -1346,7 +1346,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.confirmation_num,
             title: '1, 3, 9, ?',
-            labelText: "Seguência *",
+            labelText: "Sequência *",
             optionsColumnsSize: 1,
             validator: (value) {
               if (value == null) {
@@ -1370,7 +1370,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.confirmation_num,
             title: '3, 7, 11, 15, ? ',
-            labelText: "Seguência *",
+            labelText: "Sequência *",
             optionsColumnsSize: 1,
             validator: (value) {
               if (value == null) {
@@ -1394,7 +1394,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   state.currentState!.didChange(controller.answerAux.value)),
             icon: Icons.confirmation_num,
             title: '32, 16, 8, ? ',
-            labelText: "Seguência *",
+            labelText: "Sequência *",
             optionsColumnsSize: 1,
             validator: (value) {
               if (value == null) {
@@ -1688,7 +1688,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             options: const [
-              'Diariamente, há momentos em que você sente como o se chão oscilasse?',
+              'Diariamente, há momentos em que você sente como se o chão oscilasse?',
               'Durante o dia há vários momentos em que você se sente irritado(a) e impaciente?',
               'Diariamente, há momentos em que você se sente muito feliz, irradiante?',
               'Durante o dia há vários momentos em que você se sente triste e/ou melancólico(a)?',
@@ -2010,11 +2010,11 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             options: const [
               'Nos últimos meses, você tem ouvido vozes de pessoas estranhas?',
               'Ultimamente, você tem ouvido vozes que são seus próprios pensamentos sendo expressos em voz alta?',
-              'Alguém tem tentado envenená-lo?',
-              'Você tem dificuldade para relaxar? Está sempre ocupado?',
+              'Alguém tem tentado envenená-lo(a)?',
+              'Você tem dificuldade para relaxar? Está sempre ocupado(a)?',
               'Você vem apresentando sensações de falta de ar ou sufocamento?',
               'Você está vivenciando um estado de luto prolongado e persistente, que se estende por um período superior a 12 meses, caracterizado por uma intensa saudade, preocupação e apatia em relação ao futuro?',
-              'Você tem medo de ser demitido o tempo todo?'
+              'Você tem medo de ser demitido(a) o tempo todo?'
             ],
           ),
         ]
@@ -2760,28 +2760,6 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,
             options: '- móvel',
-            validator: (value) {
-              if (value == null) {
-                return 'Dados Incorrets!!';
-              } else if ((value.isEmpty) || (value.length < 2)) {
-                return 'Dados Incorretos!!';
-              }
-              return null;
-            },
-            keyboardType: TextInputType.name,
-            inputFormatters: [
-              FilteringTextInputFormatter.singleLineFormatter,
-            ],
-          ),
-          const SizedBox(height: 10.0),
-          const Divider(),
-          const SizedBox(height: 10.0),
-          TextFormList(
-            answer: controller.answerAux.value[9]
-              ..addListener(() =>
-                  state.currentState!.didChange(controller.answerAux.value)),
-            optionsColumnsSize: 1,
-            options: 'chuva -',
             validator: (value) {
               if (value == null) {
                 return 'Dados Incorrets!!';
