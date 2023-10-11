@@ -2320,7 +2320,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             //icon: Icons.more_time,
-            title:'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',            
+            title:
+                'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
             options: const [
               'assets/emoji_sempre_atrasado.png',
               'assets/emoji_poderoso.png',
@@ -2355,7 +2356,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             //icon: Icons.more_time,
-            title:'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',            
+            title:
+                'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
             options: const [
               'assets/emoji_esperancoso.png',
               'assets/emoji_pura_alegria.png',
@@ -2390,7 +2392,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             //icon: Icons.more_time,
-            title:'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',            
+            title:
+                'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
             options: const [
               'assets/emoji_apaixonado.png',
               'assets/emoji_desesperado.png',
@@ -2425,7 +2428,8 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             //icon: Icons.more_time,
-            title:'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
+            title:
+                'Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.',
             options: const [
               'assets/emoji_com_raiva.png',
               'assets/emoji_silenciado.png',
@@ -2966,7 +2970,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                 () {
                   state.currentState!.didChange(controller.answerAux.value);
                   if (controller.answerAux.value[0].value ==
-                      'Tenho Daltonismo e Vou Pular Teste.') {
+                      'Tenho daltonismo por isso vou pular teste.') {
                     Modular.to.popAndPushNamed('/',
                         arguments: controller.idPage.value + 3);
                   }
