@@ -2968,19 +2968,19 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
             answer: controller.answerAux.value[0]
               ..addListener(
                 () {
-                  state.currentState!.didChange(controller.answerAux.value);
                   if (controller.answerAux.value[0].value ==
-                      'Tenho daltonismo por isso vou pular teste.') {
+                      'Tenho daltonismo') {
                     controller.idPage.value = controller.idPage.value + 2;
                   }
+                  state.currentState!.didChange(controller.answerAux.value);                  
                 },
               ),
             title:
-                'Daltonismo é o termo usado para denominar a falta de sensibilidade ocular que algumas pessoas possuem na percepção de determinadas cores. Você tem Daltonismo? Foi diagnosticado por um profissional especializado? Se sim, basta clicar em \'Tenho daltonismo por isso vou pular teste.\' Se você não tem daltonismo, clique em \'Não tenho daltonismo então vou fazer o teste\' para continuar com a atividade.\n',
+                'Daltonismo é o termo usado para denominar a falta de sensibilidade ocular que algumas pessoas possuem na percepção de determinadas cores. Você tem Daltonismo? Foi diagnosticado por um profissional especializado? Se sim, basta clicar em \'Tenho daltonismo.\' Se você não tem daltonismo, clique em \'Não tenho daltonismo\' e depois continuar com a atividade.\n',
             icon: Icons.more_time,
             options: const [
-              'Tenho daltonismo por isso vou pular teste.',
-              'Não tenho daltonismo então vou fazer o teste.',
+              'Tenho daltonismo',
+              'Não tenho daltonismo',
             ],
             optionsColumnsSize: 3,
             hasPrefiroNaoDizer: false,
