@@ -2777,7 +2777,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
           const Divider(),
           const SizedBox(height: 10.0),
           TextFormList(
-            answer: controller.answerAux.value[10]
+            answer: controller.answerAux.value[9]
               ..addListener(() =>
                   state.currentState!.didChange(controller.answerAux.value)),
             optionsColumnsSize: 1,

@@ -48,6 +48,7 @@ class _TelasPageState extends State<TelasPage> {
 
   @override
   void dispose() {
+    formFieldkey.currentState!.dispose();
     _formKey.currentState!.dispose();
     super.dispose();
   }
