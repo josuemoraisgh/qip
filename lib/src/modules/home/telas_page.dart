@@ -47,6 +47,12 @@ class _TelasPageState extends State<TelasPage> {
   }
 
   @override
+  void dispose() {
+    _formKey.currentState!.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     debugPrint(Modular.args.data.toString());
     if (telas[widget.id]?['answerLenght'] != 0) {
@@ -175,7 +181,6 @@ class _TelasPageState extends State<TelasPage> {
                             List<Widget> itens = telas[widget.id]!['itens']!(
                                 controller, formFieldkey);
                             return ListView.builder(
-                              key: UniqueKey(),
                               shrinkWrap: true,
                               itemCount: itens.length,
                               itemBuilder: (BuildContext context, int index) =>
