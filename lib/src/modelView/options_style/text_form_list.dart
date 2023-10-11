@@ -92,20 +92,22 @@ class _TextFormListState extends State<TextFormList> {
                 const SizedBox(height: 15),
                 widget.options == null
                     ? _montaEdit()
-                    : Row(
-                        children: widget.options?[0] == "-"
-                            ? <Widget>[
-                                Flexible(flex: 25, child: _montaEdit()),
-                                const Flexible(
-                                    flex: 3, child: SizedBox(width: 5)),
-                                Flexible(flex: 10, child: _montaTexto()),
-                              ]
-                            : <Widget>[
-                                Flexible(flex: 10, child: _montaTexto()),
-                                const Flexible(
-                                    flex: 3, child: SizedBox(width: 5)),
-                                Expanded(flex: 25, child: _montaEdit()),
-                              ],
+                    : SafeArea(
+                        child: Row(
+                          children: widget.options?[0] == "-"
+                              ? <Widget>[
+                                  Flexible(flex: 60, child: _montaEdit()),
+                                  const Flexible(
+                                      flex: 5, child: SizedBox(width: 5)),
+                                  Flexible(flex: 35, child: _montaTexto()),
+                                ]
+                              : <Widget>[
+                                  Flexible(flex: 35, child: _montaTexto()),
+                                  const Flexible(
+                                      flex: 5, child: SizedBox(width: 5)),
+                                  Expanded(flex: 60, child: _montaEdit()),
+                                ],
+                        ),
                       ),
               ],
         ),
@@ -123,8 +125,8 @@ class _TextFormListState extends State<TextFormList> {
   Widget _montaTexto() {
     return Container(
       alignment: Alignment.center,
-      height: 70,
-      //width: 100,
+      height: 50,
+      //width: 500,
       decoration: myContainerDecoration(),
       child: Text(
         widget.options ?? "",
