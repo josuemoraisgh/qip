@@ -2971,8 +2971,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
                   state.currentState!.didChange(controller.answerAux.value);
                   if (controller.answerAux.value[0].value ==
                       'Tenho daltonismo por isso vou pular teste.') {
-                    Modular.to.popAndPushNamed('/',
-                        arguments: controller.idPage.value + 3);
+                    controller.idPage.value = controller.idPage.value + 2;
                   }
                 },
               ),

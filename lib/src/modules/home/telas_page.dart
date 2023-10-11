@@ -275,7 +275,7 @@ class _TelasPageState extends State<TelasPage> {
                   controller.storage.addData(controller.answer);
                   controller.storage.addData(resp);
                 }
-                Modular.to.popAndPushNamed('/', arguments: widget.id + 1);
+                Modular.to.popAndPushNamed('/', arguments: controller.idPage.value + 1);
               },
         child: Row(
           children: [
