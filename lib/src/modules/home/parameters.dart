@@ -2572,7 +2572,7 @@ Declaramos que obtivemos de forma apropriada e voluntária, o Consentimento Livr
   69: {
     'hasProx': true,
     'header': 'Complete com o par correspondente escutado anteriormente',
-    'answerLenght': 11,
+    'answerLenght': 10,
     'itens': (
       TelasController controller,
       GlobalKey<FormFieldState<List<ValueNotifier<String>>>> state,

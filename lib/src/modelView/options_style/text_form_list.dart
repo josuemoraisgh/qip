@@ -123,7 +123,7 @@ class _TextFormListState extends State<TextFormList> {
   Widget _montaTexto() {
     return Container(
       alignment: Alignment.center,
-      height: 50,
+      height: 70,
       //width: 100,
       decoration: myContainerDecoration(),
       child: Text(
