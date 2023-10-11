@@ -175,6 +175,7 @@ class _TelasPageState extends State<TelasPage> {
                             List<Widget> itens = telas[widget.id]!['itens']!(
                                 controller, formFieldkey);
                             return ListView.builder(
+                              key: UniqueKey(),
                               shrinkWrap: true,
                               itemCount: itens.length,
                               itemBuilder: (BuildContext context, int index) =>
