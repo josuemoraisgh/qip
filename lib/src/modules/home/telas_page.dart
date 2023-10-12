@@ -271,9 +271,8 @@ class _TelasPageState extends State<TelasPage> {
                 controller.answer += [
                   "${DateTime.now().toString()} - ${aux.join(";")}"
                 ];
-                if (widget.id == 78) {
+                if ((controller.idPage.value + 1) >= 78) {
                   controller.storage.addData(controller.answer);
-                  controller.storage.addData(resp);
                 }
                 Modular.to.popAndPushNamed('/', arguments: controller.idPage.value + 1);
               },
