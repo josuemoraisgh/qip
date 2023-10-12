@@ -5,7 +5,7 @@ import 'package:just_audio/just_audio.dart';
 
 //Reatividade na classe inteira
 class TelasController {
-  List<String> answer = [];
+  final answer = ValueNotifier<List<String>>([]);
   final idPage = ValueNotifier<int>(0);
   final answerAux = ValueNotifier<List<ValueNotifier<String>>>([]);
   final emailAux = ValueNotifier<String>("");

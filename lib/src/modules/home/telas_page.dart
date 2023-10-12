@@ -55,7 +55,7 @@ class _TelasPageState extends State<TelasPage> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(Modular.args.data.toString());
+    //debugPrint(Modular.args.data.toString());
     if (telas[widget.id]?['answerLenght'] != 0) {
       controller.answerAux.value = List.generate(
           telas[widget.id]?['answerLenght'],
@@ -267,12 +267,10 @@ class _TelasPageState extends State<TelasPage> {
             ? null
             : () {
                 List<String> aux = resp.map((e) => e.value).toList();
-                debugPrint("${widget.id.toString()};${aux.toString()}");
-                controller.answer += [
-                  "${DateTime.now().toString()} - ${aux.join(";")}"
-                ];
+                controller.answer.value.add("${DateTime.now().toString()} - ${aux.join(";")}");                
+                debugPrint(controller.answer.value.toString());
                 if ((controller.idPage.value + 1) >= 78) {
-                  controller.storage.addData(controller.answer);
+                  controller.storage.addData(controller.answer.value);
                 }
                 Modular.to.popAndPushNamed('/', arguments: controller.idPage.value + 1);
               },

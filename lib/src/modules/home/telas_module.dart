@@ -10,8 +10,8 @@ class TelasModule extends Module {
   @override
   void binds(i) {
         i.addInstance<Dio>(Dio());
-        i.add<AssistidoRemoteStorageInterface>(AssistidoRemoteStorageRepository.new);
-        i.add<TelasController>(TelasController.new);        
+        i.addSingleton<AssistidoRemoteStorageInterface>(AssistidoRemoteStorageRepository.new);
+        i.addSingleton<TelasController>(TelasController.new);        
   }
 
   @override
