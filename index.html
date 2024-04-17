@@ -1,0 +1,85 @@
+<html>
+
+<head>
+  <base href="/qip/"> 
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Questionário Interativo Psicopatológico (QIP)">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="QIP">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>QIP</title>
+  <link rel="manifest" href="manifest.json">  
+  <script defer src="index.dart.js" type="application/javascript"></script>
+
+  <style>
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
+    }
+    
+    .loader {
+      border: 16px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 16px solid blue;
+      border-right: 16px solid green;
+      border-bottom: 16px solid red;
+      border-left: 16px solid pink;
+      width: 120px;
+      height: 120px;
+      -webkit-animation: spin 2s linear infinite;
+      animation: spin 2s linear infinite;
+    }
+    
+    @-webkit-keyframes spin {
+      0% {
+        -webkit-transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+      }
+    }
+    
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="loading">
+    <div class="loader"></div>
+  </div>
+
+  <script src="flutter.js" type="application/javascript"></script>
+</body>
+<body>
+  <script>
+    if (!window._flutter) {
+  window._flutter = {};
+}
+_flutter.buildConfig = {"engineRevision":"97550907b70f4f3b328b6c1600df21fac1a1889a","builds":[{"compileTarget":"dart2wasm","renderer":"skwasm","mainWasmPath":"main.dart.wasm","jsSupportRuntimePath":"main.dart.mjs"},{"compileTarget":"dart2js","renderer":"canvaskit","mainJsPath":"main.dart.js"}]};
+
+    _flutter.loader.load();
+  </script>
+</body>
+</html>
