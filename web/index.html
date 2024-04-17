@@ -70,7 +70,12 @@
     <div class="loader"></div>
   </div>
 
-  <script src="main.dart.js" type="application/javascript"></script>
+  <script src="flutter.js" type="application/javascript"></script>
 </body>
-
+<body>
+  <script>
+    {{flutter_build_config}}
+    _flutter.loader.load();
+  </script>
+</body>
 </html>

@@ -16,13 +16,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v1
         with:
-          channel: "stable"
+          channel: "beta"
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build Web
-        run: flutter build web --release --base-href=/qip/
+        run: flutter build web --wasm --release --base-href=/qip/
 
       - name: Deploy
         run: |
