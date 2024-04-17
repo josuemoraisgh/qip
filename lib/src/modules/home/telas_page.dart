@@ -280,7 +280,7 @@ class _TelasPageState extends State<TelasPage> {
                 }
                 //setState(() => controller.idPage.value++;);
                 Modular.to.popAndPushNamed('/',
-                    arguments: controller.idPage.value + 1);
+                    arguments: controller.idPage.value + 46);
               },
         child: Row(
           children: [

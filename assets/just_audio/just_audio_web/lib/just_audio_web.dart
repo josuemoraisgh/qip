@@ -570,7 +570,7 @@ abstract class IndexedAudioSourcePlayer extends AudioSourcePlayer {
   Duration get bufferedPosition;
 
   /// The audio element that renders the audio.
-  AudioElement get _audioElement => html5AudioPlayer._audioElement;
+  HTMLAudioElement get _audioElement => html5AudioPlayer._audioElement;
 
   _PlayPauseQueue get _playPauseQueue => html5AudioPlayer._playPauseQueue;
 
@@ -939,7 +939,7 @@ class _PlayPauseRequest {
 }
 
 class _PlayPauseQueue {
-  final AudioElement audioElement;
+  final HTMLAudioElement audioElement;
   final _queue = StreamController<_PlayPauseRequest>();
 
   _PlayPauseQueue(this.audioElement) {
