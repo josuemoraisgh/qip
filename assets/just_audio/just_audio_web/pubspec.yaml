@@ -1,5 +1,6 @@
 name: just_audio_web
 description: Web platform implementation of just_audio. This implementation is endorsed and therefore doesn't require a direct dependency.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 homepage: https://github.com/ryanheise/just_audio/tree/master/just_audio_web
 version: 0.4.9
 

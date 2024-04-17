@@ -10,16 +10,16 @@ double typeSpace(double maxWidth) {
   return ((maxWidth - tamDesejado) > 0 ? (maxWidth - tamDesejado) / 2 : 0);
 }
 
-class TelasPage0 extends StatefulWidget {
+class TelasPage extends StatefulWidget {
   final TelasController? controller;
   final int? id;
-  const TelasPage0({super.key, required this.id, this.controller});
+  const TelasPage({super.key, required this.id, this.controller});
 
   @override
-  State<TelasPage0> createState() => _TelasPage0State();
+  State<TelasPage> createState() => _TelasPageState();
 }
 
-class _TelasPage0State extends State<TelasPage0> {
+class _TelasPageState extends State<TelasPage> {
   late TelasController controller;
   final _formKey = GlobalKey<FormState>();
   final formFieldkey = GlobalKey<FormFieldState<List<ValueNotifier<String>>>>();
@@ -279,7 +279,7 @@ class _TelasPage0State extends State<TelasPage0> {
                   controller.storage.addData(controller.answer.value);
                 }
                 //setState(() => controller.idPage.value++;);
-                Modular.to.popAndPushNamed('/a',
+                Modular.to.popAndPushNamed('/',
                     arguments: controller.idPage.value + 1);
               },
         child: Row(
