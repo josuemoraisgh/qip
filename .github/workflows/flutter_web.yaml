@@ -1,4 +1,4 @@
-name: Web qip
+name: Web
 
 on:
   push:
