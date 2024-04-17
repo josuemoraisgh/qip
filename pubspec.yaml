@@ -13,7 +13,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter  
-  just_audio: ^0.9.37
+  just_audio:
+    path: assets/just_audio/just_audio   
   #audioplayers: ^6.0.0
   flutter_colorpicker: ^1.0.3        
   flutter_modular: ^6.3.2
@@ -33,6 +34,8 @@ dependencies:
   cupertino_icons: ^1.0.6
   dio: ^5.4.2+1
   super_sliver_list: ^0.4.1
+  web: ^0.5.1
+
 
 dev_dependencies:
   flutter_test:
