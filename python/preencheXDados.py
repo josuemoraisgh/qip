@@ -69,24 +69,16 @@ def resposta_para_binario(valor):
 # Insere comentários no cabeçalho da aba `sheet_destino` com base na linha `linha_comentario` da aba `sheet_comentarios`.
 def inserir_comentarios_entre_abas(caminho_arquivo: str,sheet_destino: str,sheet_comentarios: str,linha_comentario: int = 2,pular_linhas_destino: int = 1):
     # Lê comentários da aba de origem
-    df_comentarios = pd.read_excel(caminho_arquivo,sheet_name=sheet_comentarios,skiprows=linha_comentario - 1,nrows=1)
-    # Lê os dados da aba de destino
-    df_destino = pd.read_excel(caminho_arquivo,sheet_name=sheet_destino,skiprows=pular_linhas_destino)
+    df_comentarios = pd.read_excel(caminho_arquivo,sheet_name=sheet_comentarios,skiprows=linha_comentario - 1,nrows=1,header=None)
     # Abre o arquivo Excel com openpyxl
     wb = load_workbook(caminho_arquivo)
     ws = wb[sheet_destino]
-    # Reescreve os dados e insere comentários
-    for col_idx, col_name in enumerate(df_destino.columns, start=1):
-        # Escreve o cabeçalho original
-        ws.cell(row=1, column=col_idx, value=col_name)
-        # Insere comentário se existir na origem
-        if col_name in df_comentarios.columns:
-            comentario = str(df_comentarios[col_name].iloc[0])
-            if pd.notna(comentario) and comentario.strip():
-                ws.cell(row=1, column=col_idx).comment = Comment(comentario, "GPT")
-        # Preenche os dados
-        for row_idx, valor in enumerate(df_destino[col_name], start=2):
-            ws.cell(row=row_idx, column=col_idx, value=valor)
+    # Insere cabeçalho e comentários na mesma ordem
+    
+    for col_idx in enumerate(df_comentarios.columns, start=1):
+        # Busca o comentário na mesma posição
+        ws.cell(row=1, column=col_idx).comment = Comment(str(df_comentarios.iloc[0, col_idx - 1]), "Resia Morais")
+    # Salva no mesmo arquivo
     wb.save(caminho_arquivo)
 
 if __name__ == '__main__':
@@ -164,4 +156,4 @@ if __name__ == '__main__':
     # Usando ExcelWriter para adicionar a nova aba ao arquivo Excel existente
     with pd.ExcelWriter(file_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
         df.to_excel(writer, sheet_name='XDados', index=False)
-    inserir_comentarios_entre_abas(file_path,"XDados","Pontuação",2,1)
+    inserir_comentarios_entre_abas(file_path,"XDados","Pontuação",2,0)
