@@ -75,9 +75,11 @@ def inserir_comentarios_entre_abas(caminho_arquivo: str,sheet_destino: str,sheet
     ws = wb[sheet_destino]
     # Insere cabeçalho e comentários na mesma ordem
     
-    for col_idx in enumerate(df_comentarios.columns, start=1):
-        # Busca o comentário na mesma posição
-        ws.cell(row=1, column=col_idx).comment = Comment(str(df_comentarios.iloc[0, col_idx - 1]), "Resia Morais")
+    # Aplica os comentários nas células da primeira linha
+    for col_idx, comentario in enumerate(df_comentarios.iloc[0], start=1):
+        if not pd.isna(comentario):
+            ws.cell(row=1, column=col_idx).comment = Comment(str(comentario), "Resia Morais")
+
     # Salva no mesmo arquivo
     wb.save(caminho_arquivo)
 
@@ -152,7 +154,7 @@ if __name__ == '__main__':
         return index
     df['Tela 51_part_2'] = df['Tela 51_part_2'].apply(pontos_51)    
     df.insert(0,"Alvo", df['Tela 03_part_2'])
-    df = df.drop(columns=['Tela 03_part_2', 'key','Mac Address_part_1','Mac Address_part_2','Mac Address_part_3'])
+    df = df.drop(columns=['Tela 03_part_3','Tela 03_part_2', 'key','Mac Address_part_1','Mac Address_part_2','Mac Address_part_3'])
     # Usando ExcelWriter para adicionar a nova aba ao arquivo Excel existente
     with pd.ExcelWriter(file_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
         df.to_excel(writer, sheet_name='XDados', index=False)
