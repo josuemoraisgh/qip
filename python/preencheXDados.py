@@ -266,8 +266,8 @@ if __name__ == '__main__':
                     continue
         return pontos
     df['Tela 51_part_2'] = df.apply(contar_pontos_linha_tela51, axis=1)    
+    df = df.copy()  # <-- desfragmenta        
     df.insert(0,"Alvo", df['Tela 03_part_2'])
-    df = df.copy()  # <-- desfragmenta
     df = df.drop(columns=['Tela 03_part_3','Tela 03_part_2', 'key','Mac Address_part_1','Mac Address_part_2','Mac Address_part_3']+colunas_coord_tela42+colunas_coord_tela51)
     # Usando ExcelWriter para adicionar a nova aba ao arquivo Excel existente
     with pd.ExcelWriter(file_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
