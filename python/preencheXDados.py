@@ -29,12 +29,6 @@ def str_null(df: pd.DataFrame, column: str) -> pd.DataFrame:
         df[column_name] = df[column_name].apply(lambda x: 1 if isinstance(x, str) else 0)        
     return df
 
-def yes_no(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    cols_tela = [col for col in df.columns if col.startswith(column) and col not in [f'{column}_part_1'] ]    
-    for column_name in cols_tela:
-        df[column_name] = df[column_name].map({'Não': 0, 'Sim': 1, ' Não': 0, ' Sim': 1}).astype('int')
-    return df
-
 # Função para:
 #   * remover espaços vazios antes e depois do ; e do |
 #   * Dividir as colunas que têm valores separados por ; e por |
