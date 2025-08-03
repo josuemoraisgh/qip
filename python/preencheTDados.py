@@ -63,9 +63,9 @@ def str_null(df: pd.DataFrame, column: str) -> pd.DataFrame:
     return df
 
 # Converte respostas mapeadas em valores binários de uma lista de colunas
-def substituir_map(df: pd.DataFrame, cols_tela: str, mapeamento: dict) -> pd.DataFrame:
+def substituir_map(df: pd.DataFrame, cols_tela: list, mapeamento: dict, othter: int) -> pd.DataFrame:
     for column_name in cols_tela:
-        df[column_name] = df[column_name].map(mapeamento).astype('int')
+        df[column_name] = df[column_name].map(mapeamento).fillna(othter).astype('int')
     return df
 
 # Converte respostas "Sim"/"Não" em valores binários (1/0)
@@ -153,15 +153,15 @@ if __name__ == '__main__':
         'Tela 02_part_12', # Religião
         'Tela 02_part_13', # Escolaridade
         'Tela 02_part_14', # Renda familiar
-        'Tela 07_part_2', # Tela 07 -                  
-        'Tela 10_part_2', # Tela 10 -         
-        'Tela 13_part_2', # Tela 13 -
-        'Tela 15_part_2', # Tela 15 -
-        'Tela 17_part_2', # Tela 17 -
-        'Tela 19_part_2', # Tela 19 -
-        'Tela 21_part_2', # Tela 21 -
-        'Tela 23_part_2', # Tela 23 -
         ])
+    cols_tela = ['Tela 07_part_2', 'Tela 10_part_2']
+    for col in cols_tela:
+        df = str_null(df,col)
+    
+    cols_tela = ['Tela 13_part_2','Tela 15_part_2','Tela 17_part_2','Tela 19_part_2','Tela 21_part_2','Tela 23_part_2']
+    for col in cols_tela:
+        resp = extrair_resposta_da_coluna(file_path, col)
+        df = substituir_map(df,[col],{resp:0},1)
     # Tela 25: # Dentre as quatro alternativas de cada imagem. Selecione a palavra que melhor a descreve
     cols_tela = [col for col in df.columns if col.startswith('Tela 25_') and col not in ['Tela 25_part_1'] ]
     df = label_encode_column(df,cols_tela)
@@ -195,35 +195,35 @@ if __name__ == '__main__':
     # Tela 49:
     df = label_encode_column(df,['Tela 49_part_2']) 
     # FUTURO df['Tela 49_part_3'] = df['Tela 49_part_3'] # Quando fazer aqui remove-lo da lista drop
-    # Tela 50: # + 7
+    # Tela 50: #
     df = yes_no(df,'Tela 50')            
-    # Tela 52: # + 7
+    # Tela 52: #
     df = yes_no(df,'Tela 52')
     # Tela 53: # Qual das imagens abaixo completa a sequência a seguir?
     df = str_null(df,'Tela 53')                    
-    # Tela 54: # + 7
+    # Tela 54: #
     df = yes_no(df,'Tela 54')  
     # Tela 57: # Preencha o campo a seguir com o nome da cidade e estado onde você está agora.
     df = str_null(df,'Tela 57')              
-    # Tela 58: # + 7
+    # Tela 58: #
     df = yes_no(df,'Tela 58') 
     # Tela 59: # Qual das opções corresponde ao som escutado?
     cols_tela = [col for col in df.columns if col.startswith('Tela 59_') and col not in ['Tela 59_part_1'] ]
     df = label_encode_column(df,cols_tela)  
-    # Tela 60: # + 6 Preencha o campo a seguir com o nome da cidade e estado onde você está agora.
+    # Tela 60: # Preencha o campo a seguir com o nome da cidade e estado onde você está agora.
     cols_tela = [col for col in df.columns if col.startswith('Tela 60_') and col not in ['Tela 60_part_1'] ]
     df = label_encode_column(df,cols_tela)
-    # Tela 62: # Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.
+    # Tela 62: #
     df = str_null(df,'Tela 62')
-    # Tela 63: # Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.
+    # Tela 63: #
     df = str_null(df,'Tela 63')
-    # Tela 64: # Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.
+    # Tela 64: #
     df = str_null(df,'Tela 64')
-    # Tela 65: # Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.
+    # Tela 65: #
     df = str_null(df,'Tela 65')
-    # Tela 66: # Selecione pelo menos 2 e no máximo 4 expressões que melhor correspondem ao que você tem sentido nos últimos meses.
+    # Tela 66: #
     df = str_null(df,'Tela 66')              
-    # Tela 69: # + 10
+    # Tela 69: #
     cols_tela = [col for col in df.columns if col.startswith('Tela 69_') and col not in ['Tela 69_part_1'] ]
     for col in cols_tela:
         df[col] = df[col].astype(str)
