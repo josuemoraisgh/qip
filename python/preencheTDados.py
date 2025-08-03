@@ -1,53 +1,31 @@
-import pandas as pd
 import unicodedata
 from sklearn.preprocessing import LabelEncoder
 from openpyxl import load_workbook
 from openpyxl.comments import Comment
-import numpy as np
+import pandas as pd
 from datetime import datetime
 
-def subtrair_tempos_parcial(valor1, formato1, valor2, formato2):
-    """
-    Subtrai dois datetimes com base apenas nas partes definidas no formato1.
-    
-    valor1: string ou Series (com formato parcial)
-    valor2: string ou Series (com datetime completo)
-    formato1: formato parcial (ex: '%H:%M')
-    formato2: formato completo (ex: '%Y-%m-%d %H:%M:%S.%f')
-    
-    Retorna: diferença em segundos, baseada apenas no que o formato1 define.
-    """
-    def extrair_parcial(dt, formato_base):
-        base = datetime(1900, 1, 1)
-        if '%Y' in formato_base: base = base.replace(year=dt.year)
-        if '%m' in formato_base: base = base.replace(month=dt.month)
-        if '%d' in formato_base: base = base.replace(day=dt.day)
-        if '%H' in formato_base: base = base.replace(hour=dt.hour)
-        if '%M' in formato_base: base = base.replace(minute=dt.minute)
-        if '%S' in formato_base: base = base.replace(second=dt.second)
-        if '%f' in formato_base: base = base.replace(microsecond=dt.microsecond)
-        return base
+def diferenca_parcial(col1, formato_parcial_col1, col2, formato_col2):
+    componentes = {'%Y': 'year', '%m': 'month', '%d': 'day','%H': 'hour', '%M': 'minute', '%S': 'second', '%f': 'microsecond'}
+    def extrair_componentes(dt, formato, formato_ref):
+        if isinstance(dt, pd.Timestamp):
+            dt = dt.strftime(formato)
+        dt_parse = datetime.strptime(dt, formato)
+        comp_dt = {'year': 1900, 'month': 1, 'day': 1,'hour': 0, 'minute': 0, 'second': 0, 'microsecond': 0}
+        for f, attr in componentes.items():
+            if f in formato_ref:
+                comp_dt[attr] = getattr(dt_parse, attr)
+        return datetime(**comp_dt)
 
-    # Caso seja Series, aplica linha a linha
-    if isinstance(valor1, pd.Series) and isinstance(valor2, pd.Series):
-        def calcular_dif(linha1, linha2):
-            try:
-                dt1 = pd.to_datetime(linha1, format=formato1, errors='coerce')
-                dt2 = pd.to_datetime(linha2, format=formato2, errors='coerce')
-                if pd.isna(dt1) or pd.isna(dt2): return np.nan
-                return (extrair_parcial(dt1, formato1) - extrair_parcial(dt2, formato1)).total_seconds()
-            except:
-                return np.nan
-        return [calcular_dif(v1, v2) for v1, v2 in zip(valor1, valor2)]
-    
-    # Caso seja string única
-    try:
-        dt1 = pd.to_datetime(valor1, format=formato1, errors='coerce')
-        dt2 = pd.to_datetime(valor2, format=formato2, errors='coerce')
-        if pd.isna(dt1) or pd.isna(dt2): return np.nan
-        return (extrair_parcial(dt1, formato1) - extrair_parcial(dt2, formato1)).total_seconds()
-    except:
-        return np.nan
+    diferencas = []
+    for val1, val2 in zip(col1, col2):
+        dt1 = extrair_componentes(val1, formato_parcial_col1, formato_parcial_col1)
+        dt2 = extrair_componentes(val2, formato_col2, formato_parcial_col1)
+
+        delta = (dt2 - dt1).total_seconds()
+        diferencas.append(delta)
+
+    return pd.Series(diferencas)
 
 # Extrai a resposta esperada de uma coluna específica da aba "Pontuação"
 def extrair_resposta_da_coluna(caminho_arquivo: str, nome_coluna: str, aba='Pontuação') -> str:
@@ -159,8 +137,8 @@ if __name__ == '__main__':
             " Trans. Depressivo + Trans. Ansiedade" : (2.0 + 8.0)/1024 
         }).astype('float')
     # Calcula o quanto o entrevistado estava errado em noção do dia em que ele esta
-    df['Tela 02_part_2'] = subtrair_tempos_parcial(df['Tela 02_part_2'],'%H:%M',timeInicial,'%Y-%m-%d %H:%M:%S.%f')  # se ele errou apenas em 3 minutos ou menos, considera-se que ele acertou o dia
-    df['Tela 02_part_3'] = subtrair_tempos_parcial(df['Tela 02_part_3'],'%d-%m-%Y',timeInicial,'%Y-%m-%d %H:%M:%S.%f')
+    df['Tela 02_part_2'] = (diferenca_parcial(df['Tela 02_part_2'],'%H:%M',timeInicial,'%Y-%m-%d %H:%M:%S.%f').abs() > 120).astype(int)  # se ele errou apenas em 3 minutos ou menos, considera-se que ele acertou o dia
+    df['Tela 02_part_3'] = (diferenca_parcial(df['Tela 02_part_3'],'%d/%m/%Y',timeInicial,'%Y-%m-%d %H:%M:%S.%f').abs() > 86.400).astype(int)
     df = label_encode_column(df,[
         'Tela 02_part_5',  # Gênero
         'Tela 02_part_6',  # Sexo do nascimento 
