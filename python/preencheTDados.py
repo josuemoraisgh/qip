@@ -162,9 +162,14 @@ if __name__ == '__main__':
     for col in cols_tela:
         resp = extrair_resposta_da_coluna(file_path, col)
         df = substituir_map(df,[col],{resp:0},1)
-    # Tela 25: # Dentre as quatro alternativas de cada imagem. Selecione a palavra que melhor a descreve
-    cols_tela = [col for col in df.columns if col.startswith('Tela 25_') and col not in ['Tela 25_part_1'] ]
-    df = label_encode_column(df,cols_tela)
+    
+    cols_tela = ['Tela 25', 'Tela 27','Tela 29','Tela 30','Tela 33']
+    for column in cols_tela:
+        cols = [col for col in df.columns if col.startswith(column) and col not in [f'{column}_part_1']]
+        for col in cols:
+            resp = extrair_resposta_da_coluna(file_path, col)
+            df = substituir_map(df,[col],{resp:0},1)
+
     # Tela 26: # Responda as questões abaixo:
     df = yes_no(df,'Tela 26')
     # Tela 27: # Qual das imagens abaixo completa a sequência a seguir?
