@@ -13,19 +13,35 @@ def normalizar_texto(texto: str) -> str:
     texto = unicodedata.normalize('NFD', texto)
     return texto.encode('ascii', 'ignore').decode('utf-8')
 
-import pandas as pd
-
 def expandir_opcoes_em_colunas(df, coluna_base, opcoes):
-    # Localizar o índice da coluna base
-    col_base_idx = df.columns.get_loc(f"{coluna_base}_part_2")
-    # Cria cópias da coluna base para cada opção (n-1 porque a original já existe)
-    for i, opc in enumerate(opcoes):
-        nova_coluna_nome = f"{coluna_base}_part_{i + 3}"
-        # Insere a nova coluna logo após a coluna base
-        df.insert(col_base_idx + i + 1, nova_coluna_nome, df[f"{coluna_base}_part_2"].copy())
-        df[nova_coluna_nome] = (df[nova_coluna_nome] != opc).astype(int)
-    df[f"{coluna_base}_part_2"] = (df[f"{coluna_base}_part_2"] != opcoes[0]).astype(int)
-    return df
+    """
+    Substitui a coluna `{coluna_base}_part_2` por colunas binárias correspondentes às opções fornecidas.
+    A nova `{coluna_base}_part_2` representa a 1ª opção da lista, `{coluna_base}_part_3` a 2ª, etc.
+    Todas as colunas são inseridas no lugar exato onde a `part_2` original estava.
+    """
+    col_base = f"{coluna_base}_part_2"
+    if col_base not in df.columns:
+        raise ValueError(f"Coluna '{col_base}' não encontrada no DataFrame.")
+    # Índice onde está a coluna original
+    col_base_idx = df.columns.get_loc(col_base)
+    # Converte os valores para string para comparação
+    base_values = df[col_base].astype(str)
+    # Cria dicionário com novas colunas binárias
+    novas_colunas = {
+        f"{coluna_base}_part_{i + 2}": (base_values == opcao).astype(int)
+        for i, opcao in enumerate(opcoes)
+    }
+    # Cria DataFrame com novas colunas
+    df_novas = pd.DataFrame(novas_colunas, index=df.index)
+    # Remove a coluna original
+    df_sem_col_base = df.drop(columns=[col_base])
+    # Divide o DataFrame ao redor da antiga coluna
+    df_esquerda = df_sem_col_base.iloc[:, :col_base_idx]
+    df_direita = df_sem_col_base.iloc[:, col_base_idx:]
+    # Insere novas colunas no local original
+    df_resultado = pd.concat([df_esquerda, df_novas, df_direita], axis=1)
+    return df_resultado
+
 
 # Calcula a diferença entre dois conjuntos de datas parcialmente formatadas
 # com base apenas nas partes especificadas no formato
