@@ -6,6 +6,49 @@ import pandas as pd
 from datetime import datetime
 import inspect
 
+def expandir_opcoes_em_colunas(df: pd.DataFrame, coluna_origem: str, opcoes: list[str], substituir_part2: bool = True) -> pd.DataFrame:
+    """
+    Cria colunas binárias baseadas na presença de palavras/frases em uma coluna de texto (como múltiplas escolhas).
+    Insere as colunas codificadas imediatamente após a coluna "_part_2" e opcionalmente remove essa coluna.
+
+    Parâmetros:
+    - df : pd.DataFrame
+        DataFrame original.
+    - coluna_origem : str
+        Prefixo da tela, ex: "Tela 08".
+    - opcoes : list[str]
+        Lista de palavras ou frases a serem buscadas.
+    - substituir_part2 : bool
+        Se True, remove a coluna {coluna_origem}_part_2 após expandir.
+
+    Retorna:
+    - pd.DataFrame com colunas binárias adicionadas.
+    """
+    col_base = f"{coluna_origem}_part_2"
+    if col_base not in df.columns:
+        raise ValueError(f"A coluna '{col_base}' não existe no DataFrame.")
+    # Extrai os textos como string
+    valores = df[col_base].astype(str)
+    # Cria todas as colunas binárias como dicionário
+    novas_colunas = {
+        f"{coluna_origem}_part_{idx + 2}": valores.str.contains(opcao, case=False, na=False).astype(int)
+        for idx, opcao in enumerate(opcoes)
+    }
+    # Converte para DataFrame com mesmo índice
+    encoded_df = pd.DataFrame(novas_colunas, index=df.index)
+    # Localiza posição da coluna base
+    insert_idx = df.columns.get_loc(col_base)
+    # Divide o DataFrame original
+    left = df.iloc[:, :insert_idx + 1]
+    right = df.iloc[:, insert_idx + 1:]
+    # Concatena preservando a ordem
+    df_novo = pd.concat([left, encoded_df, right], axis=1)
+    # Remove a coluna original, se solicitado
+    if substituir_part2:
+        df_novo = df_novo.drop(columns=[col_base])
+    return df_novo
+
+
 # Calcula a diferença entre dois conjuntos de datas parcialmente formatadas
 # com base apenas nas partes especificadas no formato
 def diferenca_parcial(col1, formato_parcial_col1, col2, formato_col2):
@@ -109,7 +152,6 @@ if __name__ == '__main__':
     # Converte strings para timestamps
     for col in existing_columns:
         df[col] = df[col].apply(lambda x: extract_timestamp(x, col))        
-
     timeInicial = df['Tela 01_part_1']
 
     # Calcula o tempo entre telas
@@ -147,6 +189,7 @@ if __name__ == '__main__':
     # Codifica alternativas de múltipla escolha
     df = label_encode_column(df,['Tela 27','Tela 30','Tela 32','Tela 33','Tela 47','Tela 48','Tela 49','Tela 59','Tela 60','Tela 69','Tela 71','Tela 73'])
 
+    df = expandir_opcoes_em_colunas(df,"Tela 33",['Manhã: 6:00 às 11:59 horas','Tarde: 12:00 às 17:59 horas','Noite: 18:00 às 23:59 horas','Madrugada: 00:00 às 05:59 horas'])
     # Verifica se o participante reconheceu corretamente o dia da semana
     day_of_week = timeInicial.dt.day_name(locale='pt_BR').apply(remover_acentos_e_transformar_minusculo)
     df['Tela 76_part_2'] = df['Tela 76_part_2'].str.strip().apply(remover_acentos_e_transformar_minusculo)
