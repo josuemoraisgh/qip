@@ -54,7 +54,7 @@ def aplicar_transformacao_personalizada(df: pd.DataFrame, colunas_por_tela: dict
                 df[coluna] = df[coluna].apply(funcao)
             else:
                 # Assume-se que é uma função que precisa do nome da coluna
-                df[coluna] = df[coluna].apply(funcao(coluna))
+                df[coluna] = df[coluna].apply(lambda x: funcao(coluna,x))
     return df
 
 # Remove acentos e transforma texto para minúsculas
