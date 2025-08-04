@@ -57,13 +57,6 @@ def aplicar_transformacao_personalizada(df: pd.DataFrame, colunas_por_tela: dict
                 df[coluna] = df[coluna].apply(funcao(coluna))
     return df
 
-# Gera uma função lambda para comparar a resposta do participante com a esperada
-def gerar_transformador_resp(file_path):
-    def func(nome_coluna):
-        resposta = extrair_resposta_da_coluna(file_path, nome_coluna)
-        return lambda x: int(x != resposta)
-    return func
-
 # Remove acentos e transforma texto para minúsculas
 def remover_acentos_e_transformar_minusculo(texto):
     texto = texto.lower()
@@ -136,7 +129,7 @@ if __name__ == '__main__':
     # Marca 1 se tiver texto nas colunas selecionadas
     df = aplicar_transformacao_personalizada(df, {
         tela : lambda x: int(isinstance(x, str))
-        for tela in ['Tela 07','Tela 10','Tela 43','Tela 53','Tela 57','Tela 62','Tela 63','Tela 64','Tela 65','Tela 66']
+        for tela in ['Tela 43','Tela 53','Tela 57','Tela 62','Tela 63','Tela 64','Tela 65','Tela 66']
     })
 
     # Converte respostas "Sim"/"Não" para 1/0
@@ -147,12 +140,12 @@ if __name__ == '__main__':
 
     # Marca como incorreto (1) as respostas diferentes da correta que será zerada (0)
     df = aplicar_transformacao_personalizada(df, {
-        tela : gerar_transformador_resp(file_path)
+        tela : lambda nome_coluna, x: int(x != extrair_resposta_da_coluna(file_path, nome_coluna))
         for tela in ['Tela 13','Tela 15','Tela 17','Tela 19','Tela 21','Tela 23','Tela 25','Tela 27','Tela 29','Tela 30','Tela 33']
     })
 
     # Codifica alternativas de múltipla escolha
-    df = label_encode_column(df,['Tela 27','Tela 30','Tela 33','Tela 47','Tela 48','Tela 49','Tela 59','Tela 60','Tela 69','Tela 71','Tela 73'])
+    df = label_encode_column(df,['Tela 27','Tela 30','Tela 32','Tela 33','Tela 47','Tela 48','Tela 49','Tela 59','Tela 60','Tela 69','Tela 71','Tela 73'])
 
     # Verifica se o participante reconheceu corretamente o dia da semana
     day_of_week = timeInicial.dt.day_name(locale='pt_BR').apply(remover_acentos_e_transformar_minusculo)
