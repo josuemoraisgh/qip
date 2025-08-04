@@ -5,49 +5,51 @@ from openpyxl.comments import Comment
 import pandas as pd
 from datetime import datetime
 import inspect
+import unicodedata
+
+def normalizar_texto(texto: str) -> str:
+    """Remove acentos e transforma em minúsculas."""
+    texto = texto.lower()
+    texto = unicodedata.normalize('NFD', texto)
+    return texto.encode('ascii', 'ignore').decode('utf-8')
 
 def expandir_opcoes_em_colunas(df: pd.DataFrame, coluna_origem: str, opcoes: list[str], substituir_part2: bool = True) -> pd.DataFrame:
     """
-    Cria colunas binárias baseadas na presença de palavras/frases em uma coluna de texto (como múltiplas escolhas).
-    Insere as colunas codificadas imediatamente após a coluna "_part_2" e opcionalmente remove essa coluna.
+    Expande uma coluna de texto com múltiplas opções em colunas binárias (One-hot).
+    Remove acentuação para evitar erro de correspondência.
 
     Parâmetros:
-    - df : pd.DataFrame
-        DataFrame original.
-    - coluna_origem : str
-        Prefixo da tela, ex: "Tela 08".
-    - opcoes : list[str]
-        Lista de palavras ou frases a serem buscadas.
-    - substituir_part2 : bool
-        Se True, remove a coluna {coluna_origem}_part_2 após expandir.
+    - df: pd.DataFrame
+    - coluna_origem: prefixo como 'Tela 33'
+    - opcoes: lista de frases esperadas
+    - substituir_part2: se True, remove a coluna original part_2
 
     Retorna:
-    - pd.DataFrame com colunas binárias adicionadas.
+    - pd.DataFrame com colunas binárias expandidas
     """
     col_base = f"{coluna_origem}_part_2"
     if col_base not in df.columns:
         raise ValueError(f"A coluna '{col_base}' não existe no DataFrame.")
-    # Extrai os textos como string
-    valores = df[col_base].astype(str)
-    # Cria todas as colunas binárias como dicionário
+    # Normaliza a coluna do DataFrame
+    valores = df[col_base].astype(str).apply(normalizar_texto)
+    # Normaliza as opções
+    opcoes_norm = [normalizar_texto(opcao) for opcao in opcoes]
+    # Cria novas colunas binárias
     novas_colunas = {
-        f"{coluna_origem}_part_{idx + 2}": valores.str.contains(opcao, case=False, na=False).astype(int)
-        for idx, opcao in enumerate(opcoes)
+        f"{coluna_origem}_part_{idx + 2}": valores.str.contains(opcao_norm, na=False).astype(int)
+        for idx, opcao_norm in enumerate(opcoes_norm)
     }
-    # Converte para DataFrame com mesmo índice
+    # Cria DataFrame com mesmo index
     encoded_df = pd.DataFrame(novas_colunas, index=df.index)
-    # Localiza posição da coluna base
+    # Insere imediatamente após a coluna base
     insert_idx = df.columns.get_loc(col_base)
-    # Divide o DataFrame original
     left = df.iloc[:, :insert_idx + 1]
     right = df.iloc[:, insert_idx + 1:]
-    # Concatena preservando a ordem
     df_novo = pd.concat([left, encoded_df, right], axis=1)
-    # Remove a coluna original, se solicitado
+    # Remove coluna original, se desejado
     if substituir_part2:
         df_novo = df_novo.drop(columns=[col_base])
     return df_novo
-
 
 # Calcula a diferença entre dois conjuntos de datas parcialmente formatadas
 # com base apenas nas partes especificadas no formato
@@ -99,12 +101,6 @@ def aplicar_transformacao_personalizada(df: pd.DataFrame, colunas_por_tela: dict
                 # Assume-se que é uma função que precisa do nome da coluna
                 df[coluna] = df[coluna].apply(lambda x: funcao(coluna,x))
     return df
-
-# Remove acentos e transforma texto para minúsculas
-def remover_acentos_e_transformar_minusculo(texto):
-    texto = texto.lower()
-    texto_sem_acentos = unicodedata.normalize('NFD', texto)
-    return texto_sem_acentos.encode('ascii', 'ignore').decode('utf-8')
 
 # Codifica colunas categóricas em números
 def label_encode_column(df: pd.DataFrame, cols_tela: list[str]) -> pd.DataFrame:
@@ -191,8 +187,8 @@ if __name__ == '__main__':
 
     df = expandir_opcoes_em_colunas(df,"Tela 33",['Manhã: 6:00 às 11:59 horas','Tarde: 12:00 às 17:59 horas','Noite: 18:00 às 23:59 horas','Madrugada: 00:00 às 05:59 horas'])
     # Verifica se o participante reconheceu corretamente o dia da semana
-    day_of_week = timeInicial.dt.day_name(locale='pt_BR').apply(remover_acentos_e_transformar_minusculo)
-    df['Tela 76_part_2'] = df['Tela 76_part_2'].str.strip().apply(remover_acentos_e_transformar_minusculo)
+    day_of_week = timeInicial.dt.day_name(locale='pt_BR').apply(normalizar_texto)
+    df['Tela 76_part_2'] = df['Tela 76_part_2'].str.strip().apply(normalizar_texto)
     df['Tela 76_part_2'] = (df['Tela 76_part_2'] == day_of_week).astype(int)
 
     # Avalia discrepância entre tempo declarado e tempo real
