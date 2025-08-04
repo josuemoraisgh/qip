@@ -171,7 +171,7 @@ if __name__ == '__main__':
     # Marca como incorreto (1) as respostas diferentes da correta que será zerada (0)
     df = aplicar_transformacao_personalizada(df, {
         tela : lambda nome_coluna, x: int(x != extrair_resposta_da_coluna(file_path, nome_coluna))
-        for tela in ['Tela 13','Tela 15','Tela 17','Tela 19','Tela 21','Tela 23','Tela 25','Tela 27','Tela 29','Tela 30','Tela 33']
+        for tela in ['Tela 13','Tela 15','Tela 17','Tela 19','Tela 21','Tela 23','Tela 25','Tela 27','Tela 29','Tela 30']
     })
 
     # Codifica alternativas de múltipla escolha
