@@ -13,43 +13,19 @@ def normalizar_texto(texto: str) -> str:
     texto = unicodedata.normalize('NFD', texto)
     return texto.encode('ascii', 'ignore').decode('utf-8')
 
-def expandir_opcoes_em_colunas(df: pd.DataFrame, coluna_origem: str, opcoes: list[str], substituir_part2: bool = True) -> pd.DataFrame:
-    """
-    Expande uma coluna de texto com múltiplas opções em colunas binárias (One-hot).
-    Remove acentuação para evitar erro de correspondência.
+import pandas as pd
 
-    Parâmetros:
-    - df: pd.DataFrame
-    - coluna_origem: prefixo como 'Tela 33'
-    - opcoes: lista de frases esperadas
-    - substituir_part2: se True, remove a coluna original part_2
-
-    Retorna:
-    - pd.DataFrame com colunas binárias expandidas
-    """
-    col_base = f"{coluna_origem}_part_2"
-    if col_base not in df.columns:
-        raise ValueError(f"A coluna '{col_base}' não existe no DataFrame.")
-    # Normaliza a coluna do DataFrame
-    valores = df[col_base].astype(str).apply(normalizar_texto)
-    # Normaliza as opções
-    opcoes_norm = [normalizar_texto(opcao) for opcao in opcoes]
-    # Cria novas colunas binárias
-    novas_colunas = {
-        f"{coluna_origem}_part_{idx + 2}": valores.str.contains(opcao_norm, na=False).astype(int)
-        for idx, opcao_norm in enumerate(opcoes_norm)
-    }
-    # Cria DataFrame com mesmo index
-    encoded_df = pd.DataFrame(novas_colunas, index=df.index)
-    # Insere imediatamente após a coluna base
-    insert_idx = df.columns.get_loc(col_base)
-    left = df.iloc[:, :insert_idx + 1]
-    right = df.iloc[:, insert_idx + 1:]
-    df_novo = pd.concat([left, encoded_df, right], axis=1)
-    # Remove coluna original, se desejado
-    if substituir_part2:
-        df_novo = df_novo.drop(columns=[col_base])
-    return df_novo
+def expandir_opcoes_em_colunas(df, coluna_base, opcoes):
+    # Localizar o índice da coluna base
+    col_base_idx = df.columns.get_loc(f"{coluna_base}_part_2")
+    # Cria cópias da coluna base para cada opção (n-1 porque a original já existe)
+    for i, opc in enumerate(opcoes):
+        nova_coluna_nome = f"{coluna_base}_part_{i + 3}"
+        # Insere a nova coluna logo após a coluna base
+        df.insert(col_base_idx + i + 1, nova_coluna_nome, df[f"{coluna_base}_part_2"].copy())
+        df[nova_coluna_nome] = (df[nova_coluna_nome] != opc).astype(int)
+    df[f"{coluna_base}_part_2"] = (df[f"{coluna_base}_part_2"] != opcoes[0]).astype(int)
+    return df
 
 # Calcula a diferença entre dois conjuntos de datas parcialmente formatadas
 # com base apenas nas partes especificadas no formato
