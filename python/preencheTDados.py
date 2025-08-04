@@ -5,7 +5,6 @@ from openpyxl.comments import Comment
 import pandas as pd
 from datetime import datetime
 import inspect
-import unicodedata
 
 def normalizar_texto(texto: str) -> str:
     """Remove acentos e transforma em minúsculas."""
@@ -13,35 +12,39 @@ def normalizar_texto(texto: str) -> str:
     texto = unicodedata.normalize('NFD', texto)
     return texto.encode('ascii', 'ignore').decode('utf-8')
 
-def expandir_opcoes_em_colunas(df, coluna_base, opcoes):
+def expandir_opcoes_em_colunas(df: pd.DataFrame, coluna_base: str, opcoes: list) -> pd.DataFrame:
     """
-    Substitui a coluna `{coluna_base}_part_2` por colunas binárias correspondentes às opções fornecidas.
-    A nova `{coluna_base}_part_2` representa a 1ª opção da lista, `{coluna_base}_part_3` a 2ª, etc.
-    Todas as colunas são inseridas no lugar exato onde a `part_2` original estava.
+    Substitui a coluna `{coluna_base}_part_2` por colunas binárias,
+    com base na presença (via texto normalizado) das opções especificadas.
+    Cada item de `opcoes` pode ser uma string ou uma lista de strings.
     """
     col_base = f"{coluna_base}_part_2"
     if col_base not in df.columns:
         raise ValueError(f"Coluna '{col_base}' não encontrada no DataFrame.")
-    # Índice onde está a coluna original
+    # Índice original da coluna a ser substituída
     col_base_idx = df.columns.get_loc(col_base)
-    # Converte os valores para string para comparação
-    base_values = df[col_base].astype(str)
-    # Cria dicionário com novas colunas binárias
-    novas_colunas = {
-        f"{coluna_base}_part_{i + 2}": (base_values == opcao).astype(int)
-        for i, opcao in enumerate(opcoes)
-    }
+    # Normaliza todos os valores da coluna base
+    base_values = df[col_base].astype(str).apply(normalizar_texto)
+    novas_colunas = {}
+    for i, opcao in enumerate(opcoes):
+        col_name = f"{coluna_base}_part_{i + 2}"
+        if isinstance(opcao, str):
+            termos = [normalizar_texto(opcao)]
+        elif isinstance(opcao, list):
+            termos = [normalizar_texto(term) for term in opcao if isinstance(term, str)]
+        else:
+            raise ValueError(f"Opção inválida no índice {i}: deve ser string ou lista de strings")
+        # Verifica se algum dos termos normalizados está presente no valor da célula
+        match = base_values.apply(lambda texto: any(termo in texto for termo in termos))
+        novas_colunas[col_name] = match.astype(int)
     # Cria DataFrame com novas colunas
     df_novas = pd.DataFrame(novas_colunas, index=df.index)
-    # Remove a coluna original
-    df_sem_col_base = df.drop(columns=[col_base])
-    # Divide o DataFrame ao redor da antiga coluna
-    df_esquerda = df_sem_col_base.iloc[:, :col_base_idx]
-    df_direita = df_sem_col_base.iloc[:, col_base_idx:]
-    # Insere novas colunas no local original
-    df_resultado = pd.concat([df_esquerda, df_novas, df_direita], axis=1)
-    return df_resultado
-
+    # Remove a coluna original e insere as novas no mesmo lugar
+    df_sem_original = df.drop(columns=[col_base])
+    df_esquerda = df_sem_original.iloc[:, :col_base_idx]
+    df_direita = df_sem_original.iloc[:, col_base_idx:]
+    df_final = pd.concat([df_esquerda, df_novas, df_direita], axis=1)
+    return df_final
 
 # Calcula a diferença entre dois conjuntos de datas parcialmente formatadas
 # com base apenas nas partes especificadas no formato
@@ -170,14 +173,16 @@ if __name__ == '__main__':
 
     # Marca como incorreto (1) as respostas diferentes da correta que será zerada (0)
     df = aplicar_transformacao_personalizada(df, {
-        tela : lambda nome_coluna, x: int(x != extrair_resposta_da_coluna(file_path, nome_coluna))
-        for tela in ['Tela 13','Tela 15','Tela 17','Tela 19','Tela 21','Tela 23','Tela 25','Tela 27','Tela 29','Tela 30']
+        tela: lambda nome_coluna, x: int(normalizar_texto(str(x)) != normalizar_texto(extrair_resposta_da_coluna(file_path, nome_coluna)))
+        for tela in ['Tela 13','Tela 15','Tela 17','Tela 19','Tela 21','Tela 23','Tela 25','Tela 27','Tela 29','Tela 30','Tela 69']
     })
 
     # Codifica alternativas de múltipla escolha
-    df = label_encode_column(df,['Tela 27','Tela 30','Tela 32','Tela 47','Tela 48','Tela 49','Tela 59','Tela 60','Tela 69','Tela 71','Tela 73'])
+    df = label_encode_column(df,['Tela 27','Tela 30','Tela 32','Tela 47','Tela 48','Tela 49','Tela 59','Tela 60','Tela 71','Tela 73'])
 
     df = expandir_opcoes_em_colunas(df,"Tela 33",['Manhã: 6:00 às 11:59 horas','Tarde: 12:00 às 17:59 horas','Noite: 18:00 às 23:59 horas','Madrugada: 00:00 às 05:59 horas'])
+    df = expandir_opcoes_em_colunas(df,"Tela 42",['0',['1','2'],['3','4'],['5','6']])  
+      
     # Verifica se o participante reconheceu corretamente o dia da semana
     day_of_week = timeInicial.dt.day_name(locale='pt_BR').apply(normalizar_texto)
     df['Tela 76_part_2'] = df['Tela 76_part_2'].str.strip().apply(normalizar_texto)
