@@ -4,7 +4,10 @@ from openpyxl import load_workbook
 from openpyxl.comments import Comment
 import pandas as pd
 from datetime import datetime
+import inspect
 
+# Calcula a diferença entre dois conjuntos de datas parcialmente formatadas
+# com base apenas nas partes especificadas no formato
 def diferenca_parcial(col1, formato_parcial_col1, col2, formato_col2):
     componentes = {'%Y': 'year', '%m': 'month', '%d': 'day','%H': 'hour', '%M': 'minute', '%S': 'second', '%f': 'microsecond'}
     def extrair_componentes(dt, formato, formato_ref):
@@ -16,77 +19,68 @@ def diferenca_parcial(col1, formato_parcial_col1, col2, formato_col2):
             if f in formato_ref:
                 comp_dt[attr] = getattr(dt_parse, attr)
         return datetime(**comp_dt)
-
     diferencas = []
     for val1, val2 in zip(col1, col2):
         dt1 = extrair_componentes(val1, formato_parcial_col1, formato_parcial_col1)
         dt2 = extrair_componentes(val2, formato_col2, formato_parcial_col1)
-
         delta = (dt2 - dt1).total_seconds()
         diferencas.append(delta)
-
     return pd.Series(diferencas)
 
-# Extrai a resposta esperada de uma coluna específica da aba "Pontuação"
+# Extrai a resposta correta esperada da aba "Pontuação" de um arquivo Excel
 def extrair_resposta_da_coluna(caminho_arquivo: str, nome_coluna: str, aba='Pontuação') -> str:
-    wb = load_workbook(caminho_arquivo, data_only=True)
-    if aba not in wb.sheetnames:
-        return ""
-    ws = wb[aba]
-    col_index = None
-    for col_num, cell in enumerate(ws[1], start=1):
-        if cell.value and str(cell.value).strip() == nome_coluna.strip():
-            col_index = col_num
-            break
-    if not col_index:
-        return ""
-    cell_val = ws.cell(row=2, column=col_index).value
-    if not isinstance(cell_val, str):
-        return ""
-    if "R.:" in cell_val:
-        return cell_val.split("R.:", 1)[1].strip()
-    else:
+    try:
+        df = pd.read_excel(caminho_arquivo, sheet_name=aba, nrows=2)
+        if nome_coluna not in df.columns:
+            return ""
+        valor = df[nome_coluna].iloc[0]
+        if not isinstance(valor, str):
+            return ""
+        return valor.split("R.:", 1)[1].strip() if "R.:" in valor else ""
+    except Exception as e:
+        print(f"[ERRO] Não foi possível extrair '{nome_coluna}' da aba '{aba}': {e}")
         return ""
 
-# Remove acentos e transforma o texto para minúsculo
+# Aplica uma função personalizada para cada grupo de colunas por tela
+# Agora a função trata dois casos:
+# 1. Se a função recebida for um lambda simples (sem argumento), aplica diretamente
+# 2. Se for um gerador de função (como gerar_transformador_resp), passa o nome da coluna como argumento
+def aplicar_transformacao_personalizada(df: pd.DataFrame, colunas_por_tela: dict[str, callable]) -> pd.DataFrame:
+    for tela, funcao in colunas_por_tela.items():
+        colunas = [col for col in df.columns if col.startswith(tela) and col not in [f'{tela}_part_1']]
+        for coluna in colunas:
+            # Verifica se a função aceita apenas um argumento (a célula)
+            if len(inspect.signature(funcao).parameters) == 1:
+                df[coluna] = df[coluna].apply(funcao)
+            else:
+                # Assume-se que é uma função que precisa do nome da coluna
+                df[coluna] = df[coluna].apply(funcao(coluna))
+    return df
+
+# Gera uma função lambda para comparar a resposta do participante com a esperada
+def gerar_transformador_resp(file_path):
+    def func(nome_coluna):
+        resposta = extrair_resposta_da_coluna(file_path, nome_coluna)
+        return lambda x: int(x != resposta)
+    return func
+
+# Remove acentos e transforma texto para minúsculas
 def remover_acentos_e_transformar_minusculo(texto):
     texto = texto.lower()
     texto_sem_acentos = unicodedata.normalize('NFD', texto)
-    texto_sem_acentos = texto_sem_acentos.encode('ascii', 'ignore').decode('utf-8')
-    return texto_sem_acentos
+    return texto_sem_acentos.encode('ascii', 'ignore').decode('utf-8')
 
-# Marca 1 se o valor da coluna for string, 0 caso contrário (verifica presença de resposta)
-def str_null(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    cols_tela = [col for col in df.columns if col.startswith(column) and col not in [f'{column}_part_1']]
-    for column_name in cols_tela:
-        df[column_name] = df[column_name].apply(lambda x: 1 if isinstance(x, str) else 0)
+# Codifica colunas categóricas em números
+def label_encode_column(df: pd.DataFrame, cols_tela: list[str]) -> pd.DataFrame:
+    for column in cols_tela:
+        colunas = [col for col in df.columns if col.startswith(column) and col not in [f'{column}_part_1'] ]
+        for coluna in colunas:
+            if coluna in df.columns:
+                le = LabelEncoder()
+                df[coluna] = le.fit_transform(df[coluna].astype(str))
     return df
 
-# Converte respostas mapeadas em valores binários de uma lista de colunas
-def substituir_map(df: pd.DataFrame, cols_tela: list, mapeamento: dict, othter: int) -> pd.DataFrame:
-    for column_name in cols_tela:
-        df[column_name] = df[column_name].map(mapeamento).fillna(othter).astype('int')
-    return df
-
-# Converte respostas "Sim"/"Não" em valores binários (1/0)
-def yes_no(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    cols_tela = [col for col in df.columns if col.startswith(column) and col not in [f'{column}_part_1']]
-    for column_name in cols_tela:
-        df[column_name] = df[column_name].map({'Não': 0, 'Sim': 1, ' Não': 0, ' Sim': 1}).astype('int')
-    return df
-
-# Codifica colunas categóricas em números usando LabelEncoder
-def label_encode_column(df: pd.DataFrame, colunas: list[str]) -> pd.DataFrame:
-    df_copiado = df.copy()
-    for coluna in colunas:
-        if coluna in df_copiado.columns:
-            le = LabelEncoder()
-            df_copiado[coluna] = le.fit_transform(df_copiado[coluna].astype(str))
-        else:
-            print(f"Aviso: Coluna '{coluna}' não encontrada no DataFrame.")
-    return df_copiado
-
-# Converte string para datetime com formato esperado. Se falhar, retorna None
+# Converte string para datetime, se falhar, retorna None
 def extract_timestamp(date_str, col_name):
     try:
         return pd.to_datetime(date_str, format='%Y-%m-%d %H:%M:%S.%f')
@@ -95,7 +89,7 @@ def extract_timestamp(date_str, col_name):
         print(f"Motivo do erro: {e}")
         return None
 
-# Insere comentários no cabeçalho de uma aba a partir de outra aba com as descrições
+# Insere comentários de uma aba de origem na primeira linha da aba de destino
 def inserir_comentarios_entre_abas(caminho_arquivo: str, sheet_destino: str, sheet_comentarios: str, linha_comentario: int = 2, pular_linhas_destino: int = 1):
     df_comentarios = pd.read_excel(caminho_arquivo, sheet_name=sheet_comentarios, skiprows=linha_comentario - 1, nrows=1, header=None)
     wb = load_workbook(caminho_arquivo)
@@ -105,168 +99,70 @@ def inserir_comentarios_entre_abas(caminho_arquivo: str, sheet_destino: str, she
             ws.cell(row=1, column=col_idx).comment = Comment(str(comentario), "Resia Morais")
     wb.save(caminho_arquivo)
 
+# Classifica o erro de percepção de tempo com base na faixa estimada
+def classify_time(faixa: str, valor: int) -> int:
+    if faixa == ' Mais que 1 hora' and valor > 70: return 0
+    if faixa.strip() in ['5 minutos', '15 minutos', '30 minutos', '40 minutos', '60 minutos']:
+        return int(faixa.strip().split()[0]) - valor
+    return 0
+
+# Início do processamento principal
 if __name__ == '__main__':
-    # Caminho para o arquivo xlsx local
     file_path = './python/banco_dados.xlsx'
-    # Carregar o DataFrame
-    df = pd.read_excel(file_path, sheet_name='XDados')
-        
-    # Gerar a lista de colunas para aplicar a função
+    df = pd.read_excel(file_path, sheet_name='XDados')        
     columns_to_apply  = [f'Tela {i+1:02}_part_1' for i in range(77)]
-    # Filtrar as colunas que realmente existem no DataFrame
     existing_columns = [col for col in columns_to_apply if col in df.columns]
-    # Aplicar a função apenas nas colunas existentes
-    #df[existing_columns] = df[existing_columns].map(extract_timestamp)
+
+    # Converte strings para timestamps
     for col in existing_columns:
-        df[col] = df[col].apply(lambda x: extract_timestamp(x, col))
-        
+        df[col] = df[col].apply(lambda x: extract_timestamp(x, col))        
+
     timeInicial = df['Tela 01_part_1']
-    # Subtrair a próxima coluna pela coluna anterior
+
+    # Calcula o tempo entre telas
     for i in range(1, len(existing_columns)):
         df[existing_columns[i-1]] = pd.to_datetime(df[existing_columns[i]],format='%Y-%m-%d %H:%M:%S.%f',errors='coerce').sub(df[existing_columns[i-1]]).dt.total_seconds()
 
+    # Tempo total em minutos
     df['Tela 77_part_1'] = pd.to_datetime(df['Tela 77_part_1'],format='%Y-%m-%d %H:%M:%S.%f',errors='coerce').sub(timeInicial).dt.total_seconds() / 60
 
-    df["Alvo"] = df["Alvo"].map({             
-            " Não": 0.0,
-            " Transtorno do Espectro Autista": 1.0/1024,
-            " Transtornos Depressivos": 2.0/1024,
-            " Transtorno Ciclotímico": 4.0/1024,
-            " Transtornos de Ansiedade": 8.0/1024,
-            " Transtorno de Estresse Pós-traumático": 16.0/1024,
-            " Transtornos Alimentares": 32.0/1024,
-            " Transtorno Bipolar": 64.0/1024,
-            " Transtorno Obsessivo-compulsivo": 128.0/1024,
-            " Transtorno de Déficit de Atenção/Hiperatividade": 256.0/1024,
-            " Transtorno da Personalidade Borderline": 512.0/1024,
-            " Transtorno do Espectro da Esquizofrenia e Outros Transtornos Psicóticos": 1024.0/1024, 
-            " Trans. Depressivo + Trans. Ansiedade" : (2.0 + 8.0)/1024 
-        }).astype('float')
-    # Calcula o quanto o entrevistado estava errado em noção do dia em que ele esta
-    df['Tela 02_part_2'] = (diferenca_parcial(df['Tela 02_part_2'],'%H:%M',timeInicial,'%Y-%m-%d %H:%M:%S.%f').abs() > 120).astype(int)  # se ele errou apenas em 3 minutos ou menos, considera-se que ele acertou o dia
-    df['Tela 02_part_3'] = (diferenca_parcial(df['Tela 02_part_3'],'%d/%m/%Y',timeInicial,'%Y-%m-%d %H:%M:%S.%f').abs() > 86.400).astype(int)
-    df = label_encode_column(df,[
-        'Tela 02_part_5',  # Gênero
-        'Tela 02_part_6',  # Sexo do nascimento 
-        'Tela 02_part_7',  # Cor ou Raça
-        'Tela 02_part_9',  # Estado civil
-        'Tela 02_part_12', # Religião
-        'Tela 02_part_13', # Escolaridade
-        'Tela 02_part_14', # Renda familiar
-        ])
-    cols_tela = ['Tela 07_part_2', 'Tela 10_part_2']
-    for col in cols_tela:
-        df = str_null(df,col)
-    
-    cols_tela = ['Tela 13_part_2','Tela 15_part_2','Tela 17_part_2','Tela 19_part_2','Tela 21_part_2','Tela 23_part_2']
-    for col in cols_tela:
-        resp = extrair_resposta_da_coluna(file_path, col)
-        df = substituir_map(df,[col],{resp:0},1)
-    
-    cols_tela = ['Tela 25', 'Tela 27','Tela 29','Tela 30','Tela 33']
-    for column in cols_tela:
-        cols = [col for col in df.columns if col.startswith(column) and col not in [f'{column}_part_1']]
-        for col in cols:
-            resp = extrair_resposta_da_coluna(file_path, col)
-            df = substituir_map(df,[col],{resp:0},1)
+    # Verifica erro de noção de hora e data
+    df['Tela 02_part_2'] = (diferenca_parcial(df['Tela 02_part_2'],'%H:%M',timeInicial,'%Y-%m-%d %H:%M:%S.%f').abs() > 120).astype(int)
+    df['Tela 02_part_3'] = (diferenca_parcial(df['Tela 02_part_3'],'%d/%m/%Y',timeInicial,'%Y-%m-%d %H:%M:%S.%f').abs() > 86400).astype(int)
 
-    # Tela 26: # Responda as questões abaixo:
-    df = yes_no(df,'Tela 26')
-    # Tela 27: # Qual das imagens abaixo completa a sequência a seguir?
-    cols_tela = [col for col in df.columns if col.startswith('Tela 27_') and col not in ['Tela 27_part_1'] ]
-    df = label_encode_column(df,cols_tela)
-    # Tela 28: # Responda as questões abaixo:
-    df = yes_no(df,'Tela 28')
-    # Tela 30: # Observe as palavras a seguir:
-    cols_tela = [col for col in df.columns if col.startswith('Tela 30_') and col not in ['Tela 30_part_1'] ]
-    df = label_encode_column(df,cols_tela)          
-    # Tela 31: # Responda as questões abaixo: + 6
-    df = yes_no(df,'Tela 31')
-    # Tela 33: # Hora 
-    cols_tela = [col for col in df.columns if col.startswith('Tela 33_') and col not in ['Tela 33_part_1'] ]
-    df = label_encode_column(df,cols_tela)
-    # Tela 41:
-    df = yes_no(df,'Tela 41')                                                                                
-    # Tela 43:
-    df = str_null(df,'Tela 43')
-    # Tela 44: # + 6
-    df = yes_no(df,'Tela 44')
-    # Tela 47:
-    cols_tela = [col for col in df.columns if col.startswith('Tela 47_') and col not in ['Tela 47_part_1'] ]
-    df = label_encode_column(df,cols_tela)    
-    # Tela 48:
-    cols_tela = [col for col in df.columns if col.startswith('Tela 48_') and col not in ['Tela 48_part_1'] ]
-    df = label_encode_column(df,cols_tela)
-    # Tela 49:
-    df = label_encode_column(df,['Tela 49_part_2']) 
-    # FUTURO df['Tela 49_part_3'] = df['Tela 49_part_3'] # Quando fazer aqui remove-lo da lista drop
-    # Tela 50: #
-    df = yes_no(df,'Tela 50')            
-    # Tela 52: #
-    df = yes_no(df,'Tela 52')
-    # Tela 53: # Qual das imagens abaixo completa a sequência a seguir?
-    df = str_null(df,'Tela 53')                    
-    # Tela 54: #
-    df = yes_no(df,'Tela 54')  
-    # Tela 57: # Preencha o campo a seguir com o nome da cidade e estado onde você está agora.
-    df = str_null(df,'Tela 57')              
-    # Tela 58: #
-    df = yes_no(df,'Tela 58') 
-    # Tela 59: # Qual das opções corresponde ao som escutado?
-    cols_tela = [col for col in df.columns if col.startswith('Tela 59_') and col not in ['Tela 59_part_1'] ]
-    df = label_encode_column(df,cols_tela)  
-    # Tela 60: # Preencha o campo a seguir com o nome da cidade e estado onde você está agora.
-    cols_tela = [col for col in df.columns if col.startswith('Tela 60_') and col not in ['Tela 60_part_1'] ]
-    df = label_encode_column(df,cols_tela)
-    # Tela 62: #
-    df = str_null(df,'Tela 62')
-    # Tela 63: #
-    df = str_null(df,'Tela 63')
-    # Tela 64: #
-    df = str_null(df,'Tela 64')
-    # Tela 65: #
-    df = str_null(df,'Tela 65')
-    # Tela 66: #
-    df = str_null(df,'Tela 66')              
-    # Tela 69: #
-    cols_tela = [col for col in df.columns if col.startswith('Tela 69_') and col not in ['Tela 69_part_1'] ]
-    for col in cols_tela:
-        df[col] = df[col].astype(str)
-    df = label_encode_column(df,cols_tela)
-    # Tela 70: # + 8
-    df = yes_no(df,'Tela 70')
-    # Tela 71: # + 5
-    cols_tela = [col for col in df.columns if col.startswith('Tela 71_') and col not in ['Tela 71_part_1'] ]
-    df = label_encode_column(df,cols_tela)
-    # Tela 72: # + 7
-    df = yes_no(df,'Tela 72')
-    # Tela 73: # Daltonismo é o termo usado para denominar a falta de sensibilidade
-    cols_tela = [col for col in df.columns if col.startswith('Tela 73_') and col not in ['Tela 73_part_1'] ]
-    df = label_encode_column(df,cols_tela)          
-    # Tela 74: # 
-    # FUTURO: Quando fazer aqui remove-lo da lista drop
-    # Tela 75: # 
-    # FUTURO: Quando fazer aqui remove-lo da lista drop
-    # Tela 76:
+    # Label Encoding de dados demográficos
+    df = label_encode_column(df,['Tela 02_part_5','Tela 02_part_6','Tela 02_part_7','Tela 02_part_9','Tela 02_part_12','Tela 02_part_13','Tela 02_part_14'])
+
+    # Marca 1 se tiver texto nas colunas selecionadas
+    df = aplicar_transformacao_personalizada(df, {
+        tela : lambda x: int(isinstance(x, str))
+        for tela in ['Tela 07','Tela 10','Tela 43','Tela 53','Tela 57','Tela 62','Tela 63','Tela 64','Tela 65','Tela 66']
+    })
+
+    # Converte respostas "Sim"/"Não" para 1/0
+    df = aplicar_transformacao_personalizada(df, {
+        tela: lambda x: {'Sim':1, 'Não':0, ' Sim':1, ' Não':0}.get(x, 0)
+        for tela in ['Tela 26','Tela 28','Tela 31','Tela 41','Tela 44','Tela 50','Tela 52','Tela 54','Tela 58','Tela 70','Tela 72']
+    })
+
+    # Marca como incorreto (1) as respostas diferentes da correta que será zerada (0)
+    df = aplicar_transformacao_personalizada(df, {
+        tela : gerar_transformador_resp(file_path)
+        for tela in ['Tela 13','Tela 15','Tela 17','Tela 19','Tela 21','Tela 23','Tela 25','Tela 27','Tela 29','Tela 30','Tela 33']
+    })
+
+    # Codifica alternativas de múltipla escolha
+    df = label_encode_column(df,['Tela 27','Tela 30','Tela 33','Tela 47','Tela 48','Tela 49','Tela 59','Tela 60','Tela 69','Tela 71','Tela 73'])
+
+    # Verifica se o participante reconheceu corretamente o dia da semana
     day_of_week = timeInicial.dt.day_name(locale='pt_BR').apply(remover_acentos_e_transformar_minusculo)
     df['Tela 76_part_2'] = df['Tela 76_part_2'].str.strip().apply(remover_acentos_e_transformar_minusculo)
-    df['Tela 76_part_2'] = (df['Tela 76_part_2'] == day_of_week).astype(int)  
-    # Tela 77: Calcula o quanto o entrevistado estava errado em noção do tempo gasto para resolver o questionário.
-    def classify_time(faixa: str, valor: int) -> int: # Criar a coluna de classificação
-        if faixa == ' Mais que 1 hora' and valor > 70: return 0
-        elif faixa == ' 5 minutos': 
-            return 5 - valor
-        elif faixa == ' 15 minutos': 
-            return 15 - valor
-        elif faixa == ' 30 minutos': 
-            return 30 - valor
-        elif faixa == ' 40 minutos': 
-            return 40 - valor
-        elif faixa == ' 60 minutos' or faixa == ' Mais que 1 hora': 
-            return 60 - valor
-    df['Tela 77_part_2'] = df.apply(lambda row: classify_time(row['Tela 77_part_2'], row['Tela 77_part_1']), axis=1)    
+    df['Tela 76_part_2'] = (df['Tela 76_part_2'] == day_of_week).astype(int)
 
-    # Usando ExcelWriter para adicionar a nova aba ao arquivo Excel existente
+    # Avalia discrepância entre tempo declarado e tempo real
+    df['Tela 77_part_2'] = df.apply(lambda row: classify_time(row['Tela 77_part_2'], row['Tela 77_part_1']), axis=1)
+
+    # Salva o resultado na aba "TDados" e insere comentários de apoio
     with pd.ExcelWriter(file_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
         df.to_excel(writer, sheet_name='TDados', index=False)
-    inserir_comentarios_entre_abas(file_path,"TDados","Pontuação",2,0)
+    inserir_comentarios_entre_abas(file_path, "TDados", "Pontuação", 2, 0)
