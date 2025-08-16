@@ -178,7 +178,7 @@ if __name__ == '__main__':
     })
 
     # Codifica alternativas de múltipla escolha
-    df = label_encode_column(df,['Tela 27','Tela 30','Tela 32','Tela 47','Tela 48','Tela 49','Tela 59','Tela 60','Tela 71','Tela 73'])
+    df = label_encode_column(df,['Tela 27','Tela 30','Tela 32','Tela 47','Tela 48','Tela 59','Tela 60','Tela 71','Tela 73'])
 
     df = expandir_opcoes_em_colunas(df,"Tela 33",['Manhã: 6:00 às 11:59 horas','Tarde: 12:00 às 17:59 horas','Noite: 18:00 às 23:59 horas','Madrugada: 00:00 às 05:59 horas'])
     df = expandir_opcoes_em_colunas(df,"Tela 42",['0',['1','2'],['3','4'],['5','6']])  
