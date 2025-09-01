@@ -1,0 +1,74 @@
+PS C:\SourceCode\qip> & "C:/Program Files/Python312/python.exe" c:/SourceCode/qip/python/05_tuna_heuristica.py
+[INFO] Colunas congeladas (X coluna toda = 0): 41
+[INFO] Colunas ajustáveis (X tem algum valor >0): 353
+[INFO] Macro top-3 baseline (com 'Sem Transtorno' via regra): 34.665% | T1=0.600, T2=0.160, gamma=0.30 | regra_acionada=13.9%
+[IT 001] macro_top3 (com Normal)=35.141%  best=35.141%  | T1=0.562 T2=0.200 γ=0.30  acion=17.1%
+[IT 010] macro_top3 (com Normal)=39.297%  best=39.297%  | T1=0.562 T2=0.140 γ=0.30  acion=24.7%
+[IT 020] macro_top3 (com Normal)=44.111%  best=44.111%  | T1=0.524 T2=0.200 γ=0.30  acion=33.5%
+[IT 030] macro_top3 (com Normal)=44.734%  best=44.734%  | T1=0.562 T2=0.160 γ=0.30  acion=31.6%
+[IT 040] macro_top3 (com Normal)=47.084%  best=47.084%  | T1=0.218 T2=0.040 γ=0.30  acion=1.3%
+[IT 050] macro_top3 (com Normal)=53.203%  best=53.203%  | T1=0.371 T2=0.200 γ=0.30  acion=34.8%
+[IT 060] macro_top3 (com Normal)=52.621%  best=53.203%  | T1=0.371 T2=0.200 γ=0.30  acion=41.8%
+[IT 070] macro_top3 (com Normal)=57.353%  best=57.353%  | T1=0.333 T2=0.160 γ=0.30  acion=38.6%
+[IT 080] macro_top3 (com Normal)=59.840%  best=59.840%  | T1=0.333 T2=0.180 γ=0.30  acion=44.9%
+[IT 090] macro_top3 (com Normal)=62.001%  best=62.001%  | T1=0.333 T2=0.180 γ=0.30  acion=46.8%
+[IT 100] macro_top3 (com Normal)=62.828%  best=62.828%  | T1=0.295 T2=0.160 γ=0.30  acion=35.4%
+[IT 110] macro_top3 (com Normal)=73.112%  best=73.112%  | T1=0.295 T2=0.120 γ=0.30  acion=36.1%
+[IT 120] macro_top3 (com Normal)=78.892%  best=78.892%  | T1=0.409 T2=0.080 γ=0.30  acion=42.4%
+[IT 130] macro_top3 (com Normal)=81.694%  best=81.694%  | T1=0.447 T2=0.200 γ=0.30  acion=71.5%
+[IT 140] macro_top3 (com Normal)=81.789%  best=81.789%  | T1=0.447 T2=0.200 γ=0.30  acion=73.4%
+[IT 150] macro_top3 (com Normal)=81.979%  best=81.979%  | T1=0.447 T2=0.200 γ=0.30  acion=73.4%
+[IT 160] macro_top3 (com Normal)=82.360%  best=82.360%  | T1=0.447 T2=0.200 γ=0.30  acion=75.9%
+[IT 170] macro_top3 (com Normal)=82.890%  best=82.890%  | T1=0.447 T2=0.200 γ=0.30  acion=75.3%
+[IT 180] macro_top3 (com Normal)=83.894%  best=83.894%  | T1=0.447 T2=0.200 γ=0.30  acion=75.9%
+[IT 190] macro_top3 (com Normal)=83.990%  best=83.990%  | T1=0.485 T2=0.200 γ=0.30  acion=77.2%
+[IT 200] macro_top3 (com Normal)=83.799%  best=83.990%  | T1=0.447 T2=0.180 γ=0.30  acion=74.7%
+[IT 210] macro_top3 (com Normal)=83.609%  best=83.990%  | T1=0.447 T2=0.160 γ=0.30  acion=72.2%
+[IT 220] macro_top3 (com Normal)=83.609%  best=83.990%  | T1=0.409 T2=0.160 γ=0.30  acion=72.8%
+[IT 230] macro_top3 (com Normal)=83.514%  best=83.990%  | T1=0.409 T2=0.160 γ=0.30  acion=72.8%
+[IT 240] macro_top3 (com Normal)=83.133%  best=83.990%  | T1=0.333 T2=0.160 γ=0.30  acion=67.1%
+[IT 250] macro_top3 (com Normal)=83.323%  best=83.990%  | T1=0.333 T2=0.160 γ=0.30  acion=68.4%
+[IT 260] macro_top3 (com Normal)=83.514%  best=83.990%  | T1=0.333 T2=0.160 γ=0.30  acion=69.6%
+[IT 270] macro_top3 (com Normal)=83.037%  best=83.990%  | T1=0.295 T2=0.180 γ=0.30  acion=63.9%
+[IT 280] macro_top3 (com Normal)=82.942%  best=83.990%  | T1=0.295 T2=0.180 γ=0.30  acion=63.3%
+[IT 290] macro_top3 (com Normal)=82.942%  best=83.990%  | T1=0.295 T2=0.160 γ=0.30  acion=62.7%
+[IT 300] macro_top3 (com Normal)=84.615%  best=84.615%  | T1=0.333 T2=0.080 γ=0.30  acion=56.3%
+[IT 310] macro_top3 (com Normal)=84.615%  best=84.615%  | T1=0.333 T2=0.080 γ=0.30  acion=55.7%
+[IT 320] macro_top3 (com Normal)=85.048%  best=85.048%  | T1=0.333 T2=0.060 γ=0.30  acion=49.4%
+[IT 330] macro_top3 (com Normal)=85.143%  best=85.143%  | T1=0.333 T2=0.060 γ=0.30  acion=49.4%
+[IT 340] macro_top3 (com Normal)=85.143%  best=85.143%  | T1=0.333 T2=0.060 γ=0.30  acion=49.4%
+[IT 350] macro_top3 (com Normal)=85.185%  best=85.185%  | T1=0.256 T2=0.160 γ=0.30  acion=52.5%
+[IT 360] macro_top3 (com Normal)=95.048%  best=95.048%  | T1=0.333 T2=0.060 γ=0.30  acion=48.1%
+[IT 370] macro_top3 (com Normal)=95.185%  best=95.185%  | T1=0.256 T2=0.160 γ=0.30  acion=52.5%
+[IT 380] macro_top3 (com Normal)=95.185%  best=95.185%  | T1=0.256 T2=0.140 γ=0.30  acion=51.9%
+[IT 390] macro_top3 (com Normal)=96.804%  best=96.804%  | T1=0.256 T2=0.140 γ=0.30  acion=53.2%
+[IT 400] macro_top3 (com Normal)=96.899%  best=96.899%  | T1=0.256 T2=0.140 γ=0.30  acion=53.8%
+[IT 410] macro_top3 (com Normal)=96.899%  best=96.899%  | T1=0.256 T2=0.140 γ=0.30  acion=53.8%
+[IT 420] macro_top3 (com Normal)=96.994%  best=96.994%  | T1=0.256 T2=0.140 γ=0.30  acion=55.1%
+[IT 430] macro_top3 (com Normal)=97.810%  best=97.810%  | T1=0.256 T2=0.140 γ=0.30  acion=56.3%
+[IT 440] macro_top3 (com Normal)=97.048%  best=97.810%  | T1=0.256 T2=0.080 γ=0.30  acion=50.6%
+[IT 450] macro_top3 (com Normal)=97.048%  best=97.810%  | T1=0.256 T2=0.080 γ=0.30  acion=50.6%
+[IT 460] macro_top3 (com Normal)=97.810%  best=97.810%  | T1=0.256 T2=0.120 γ=0.30  acion=57.0%
+[IT 470] macro_top3 (com Normal)=97.810%  best=97.810%  | T1=0.256 T2=0.120 γ=0.30  acion=57.0%
+[IT 480] macro_top3 (com Normal)=94.476%  best=97.810%  | T1=0.256 T2=0.120 γ=0.30  acion=57.0%
+[IT 490] macro_top3 (com Normal)=94.476%  best=97.810%  | T1=0.256 T2=0.120 γ=0.30  acion=57.0%
+[IT 500] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.120 γ=0.30  acion=56.3%
+[IT 510] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.120 γ=0.30  acion=57.0%
+[IT 520] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.120 γ=0.30  acion=57.0%
+[IT 530] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.120 γ=0.30  acion=57.0%
+[IT 540] macro_top3 (com Normal)=94.286%  best=97.810%  | T1=0.256 T2=0.100 γ=0.30  acion=56.3%
+[IT 550] macro_top3 (com Normal)=94.286%  best=97.810%  | T1=0.256 T2=0.100 γ=0.30  acion=56.3%
+[IT 560] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.140 γ=0.30  acion=57.0%
+[IT 570] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.140 γ=0.30  acion=57.6%
+[IT 580] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.140 γ=0.30  acion=57.6%
+[IT 590] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.140 γ=0.30  acion=57.6%
+[IT 600] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.140 γ=0.30  acion=58.9%
+[IT 610] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.140 γ=0.30  acion=58.9%
+[IT 620] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.140 γ=0.30  acion=58.9%
+[IT 630] macro_top3 (com Normal)=94.381%  best=97.810%  | T1=0.256 T2=0.140 γ=0.30  acion=58.9%
+[PARAR] Sem melhora por muito tempo (early stop).
+[RESULTADO] Macro top-3 final (com 'Sem Transtorno'): 97.810%  (ganho=+63.144%)
+[REGRAS] T1=0.256  T2=0.140  gamma=0.30  acionamento=56.3%
+✅ Abas criadas/atualizadas: Pontuação_Tunada Resultado_Heuristica_Tunada Metricas_Heuristica_Tunada Regras_Normal Explicacao_Resultados
+💾 Arquivo salvo em: c:\SourceCode\qip\python\banco_dados.xlsx
+➡️ Macro top-3 (com 'Sem Transtorno') final: 97.810%

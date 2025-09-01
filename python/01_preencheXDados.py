@@ -160,13 +160,17 @@ if __name__ == '__main__':
         "Sucess;": "",  # Remove "Sucess;"
         "Sucess": ""    # Remove "Sucess"
     }, regex=True)
-    
+    df_replace = df_replace.drop(columns=['Tela 74','Tela 75'])
     # Lista fixa de opções
     opcoes = ["Jesus Cristo","Coração","Dragão cuspindo fogo","Árvore","Não vi nada","Outra coisa"]
     # Aplicar às colunas desejadas
-    for coluna in ['Tela 07', 'Tela 10']:
+    for coluna in ['Tela 07', 'Tela 10', 'Tela 33']:
         if coluna in df_replace.columns:
             df_replace[coluna] = df_replace[coluna].apply(lambda valor: resposta_para_binario(valor, opcoes))
+            
+    opcoes = ['Manhã: 6:00 às 11:59 horas','Tarde: 12:00 às 17:59 horas','Noite: 18:00 às 23:59 horas','Madrugada: 00:00 às 05:59 horas']
+    df_replace['Tela 33'] = df_replace['Tela 33'].apply(lambda valor: resposta_para_binario(valor, opcoes))
+    
     # Tela 43:
     # df_replace['Tela 43'] = limpar_respostas_delimitadas(df_replace['Tela 43'])
     # opcoes = [
