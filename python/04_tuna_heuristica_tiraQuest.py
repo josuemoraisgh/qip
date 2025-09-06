@@ -402,6 +402,14 @@ df_regras = pd.DataFrame([{
     "param": "macro_top3_final", "value": macro_final
 }])
 
+# 5) Linha explicativa para Explicacao_Resultados
+df_expl_add = pd.DataFrame([{
+    "Aba": ABA_RES_HEUR_TUN,
+    "Descricao": ("Probabilidades heurísticas com pesos tunados + classe adicional 'Sem Transtorno' por regra: "
+                  "se top1_prob < T1 e (top1-top2) < T2, aloca-se γ à nova classe e reescala as demais. "
+                  "T1/T2/γ aprendidos para maximizar macro top-3.")
+}])
+
 # -------------- gravar --------------
 saved_path = save_preserving_sheets(
     ARQUIVO,
@@ -410,6 +418,7 @@ saved_path = save_preserving_sheets(
         (df_res,      ABA_RES_HEUR_TUN),
         (df_metricas_tun, ABA_MET_HEUR_TUN),
         (df_regras,   ABA_REGRAS_NORMAL),
+        (df_expl_add, ABA_EXPLICAO),
     ]
 )
 

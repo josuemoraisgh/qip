@@ -15,121 +15,144 @@
   linkcolor=blue,
   urlcolor=blue,
   citecolor=blue,
-  pdftitle={Softmax, Ajuste de Pesos e Classe Sem Transtorno},
+  pdftitle={Método Heurístico Regularizado, Regra de Normalidade, Ensemble (Apêndices A e B)},
   pdfauthor={Assistente},
   pdfcreator={Assistente}
 }
 
-\title{\textbf{Softmax, Ajuste de Pesos e Classe \emph{Sem Transtorno}}}
+\title{\textbf{Método Heurístico Regularizado com Regra de Normalidade\\
+e Diretrizes para Ensemble Heurístico--Discriminativo}}
 \author{Guia didático e objetivo}
 \date{\today}
 
 \begin{document}
 \maketitle
 
-\section{Softmax: do escore à probabilidade relativa}
-Considere um vetor de escores (também chamados de \emph{logits}) $s=(s_1,\ldots,s_K) \in \mathbb{R}^K$.
-A função \textbf{softmax} produz uma distribuição de probabilidades $p=(p_1,\ldots,p_K)$ tal que $p_k \in (0,1)$ e $\sum_k p_k = 1$:
+\section{Método Heurístico Regularizado com Regra de Normalidade}
+Esta seção descreve, em linguagem direta, o método que você está usando hoje: um \textbf{modelo heurístico ajustado por dados} (mantendo a interpretabilidade) e uma \textbf{regra de baixa ativação} para detectar a classe \emph{Sem Transtorno}.
+
+\subsection*{Modelo (visão curta e precisa)}
+Dadas as respostas $X\in[0,1]^{n\times m}$ e a matriz de pesos $W\in[0,1]^{m\times K}$,
 \begin{equation}
-  \mathrm{softmax}(s)_k \;=\; \frac{e^{s_k}}{\sum_{t=1}^{K} e^{s_t}} \,.
+  S = XW,\qquad p=\mathrm{softmax}(S).
 \end{equation}
-Para estabilidade numérica, subtrai-se $\max(s)$ (não altera o valor final):
+Isto é equivalente a uma \textbf{logística multinomial sem termo de viés}. Cada linha de $p$ é uma distribuição de probabilidades entre as $K$ classes clínicas tradicionais.
+
+\subsection*{Perda (o que o treinamento minimiza)}
+Queremos que as probabilidades concordem com o Alvo (multirrótulo permitido). Usamos a entropia cruzada média com \textbf{Elastic Net ancorado em $W_0$}:
 \begin{equation}
-  \mathrm{softmax}(s)_k \;=\; \frac{e^{\,s_k - \max(s)}}{\sum_{t=1}^{K} e^{\,s_t - \max(s)}} \,.
+  \mathcal{L}(W)= -\frac{1}{n}\sum Y\log p \;+\; \lambda_1 \lVert W-W_0\rVert_1 \;+\; \lambda_2 \lVert W-W_0\rVert_2^2.
+\end{equation}
+Interpretação: o primeiro termo foca em acertar; os termos $\ell_1$ e $\ell_2$ empurram para \emph{mudar o mínimo possível} em relação ao $W_0$ original (preservando o desenho do questionário).
+
+\subsection*{Restrições estruturais}
+\begin{enumerate}[leftmargin=1.5em]
+  \item Se uma coluna $j$ de $X$ tem \textbf{todos} os valores iguais a 0 ($X_{\cdot j}\equiv 0$), então \textbf{não alteramos} essa coluna de pesos: ela permanece exatamente como em $W_0$ (coluna \emph{congelada}).
+  \item Para as demais colunas (\emph{ajustáveis}), após cada passo projetamos os pesos para o intervalo \([\,\varepsilon,1\,]\), evitando negativos/zeros e explosões.
+\end{enumerate}
+
+\subsection*{Pós-regra: \emph{Sem Transtorno} por baixa ativação}
+Ao final, aplicamos uma regra para introduzir a classe \textbf{Sem Transtorno}, sem aumentar a dimensionalidade de $W$:
+\begin{itemize}[leftmargin=1.5em]
+  \item Se a maior probabilidade (top-1) é \emph{baixa} ($p^{(1)}<T_1$) e a margem entre a primeira e a segunda é \emph{pequena} ($p^{(1)}-p^{(2)}<T_2$), alocamos
+  \(
+    p_{\mathrm{normal}}=\gamma
+  \)
+  e reescalamos as demais por $(1-\gamma)$, mantendo soma 1.
+  \item Os parâmetros $(T_1,T_2,\gamma)$ são escolhidos por \emph{grid search} para maximizar a \textbf{macro top-3} (incluindo a nova classe).
+\end{itemize}
+
+\subsection*{Leitura rápida das abas no Excel}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Pontuação\_Tunada:} $W$ após o ajuste (colunas congeladas = $W_0$; ajustáveis em $[\,\varepsilon,1\,]$).
+  \item \textbf{Resultado\_Heuristica\_Tunada:} probabilidades $p_{\langle classe\rangle}$, $p_{\mathrm{Sem\ Transtorno}}$ e ranking top-1/top-2/top-3 (já com a classe extra).
+  \item \textbf{Metricas\_Heuristica\_Tunada:} macro top-3 e tabela por classe (taxa top-3, suporte).
+  \item \textbf{Regras\_Normal:} melhores $T_1$, $T_2$, $\gamma$ e taxa de acionamento.
+\end{itemize}
+
+\section{Diretrizes para construir um \emph{Ensemble} Heurístico--Discriminativo}
+Se desejar evoluir para ensemble, a ideia é combinar a probabilidade da heurística tunada ($p^{(H)}$) com a de um \textbf{modelo discriminativo} treinado ($p^{(M)}$), e só então aplicar a mesma regra de \emph{Sem Transtorno}.
+
+\subsection*{O que usar em $p^{(M)}$ (modelo discriminativo)}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Recomendado:} Logística multinomial (\texttt{multi\_class='multinomial'}, \texttt{solver='lbfgs'}, \texttt{class\_weight='balanced'}): simples, estável com poucos dados, bem calibrável e combina bem com a heurística.
+  \item \textbf{Alternativas:} Random Forest (boa capacidade, mas geralmente menos calibrada) ou Gradient Boosting/XGBoost/LightGBM (modelos fortes; calibrar depois).
+  \item \textbf{Calibração:} Platt, isotônica ou temperatura antes do blending tende a melhorar a qualidade das probabilidades.
+\end{itemize}
+
+\subsection*{Mistura convexa e regra de normalidade}
+\begin{equation}
+  p \;=\; (1-\alpha)\,p^{(H)} \;+\; \alpha\,p^{(M)},\qquad \alpha\in[0,1],
+\end{equation}
+com $\alpha$ escolhido por validação para maximizar a \emph{macro top-3}. Depois, aplicamos a \textbf{mesma regra} do \emph{Sem Transtorno} (baixa ativação) sobre $p$.
+
+\paragraph{Frase pronta (para o relatório).}
+\emph{``Ensemble Heurístico--Discriminativo: $p=(1-\alpha)p^{(H)}+\alpha p^{(M)}$ (com $\alpha$ escolhido por validação para maximizar a macro top-3), seguido da regra de baixa ativação para `Sem Transtorno'.''}
+
+\appendix
+
+\section{Apêndice A: Aprendizado supervisionado com entropia cruzada e Elastic Net}
+Nesta seção, detalhamos como o ajuste de $W$ é feito, mantendo o método interpretável e próximo da sua heurística original $W_0$.
+
+\subsection*{O que está sendo treinado}
+Temos $X\in[0,1]^{n\times m}$ (respostas) e $W\in[0,1]^{m\times K}$ (pesos). Calculamos
+\begin{equation}
+S=XW,\qquad P_{i,:}=\mathrm{softmax}(S_{i,:}).
+\end{equation}
+Queremos que $P$ concorde com os rótulos (Alvo). Para lidar com \emph{multirrótulo}, usamos uma distribuição alvo $Y$ por linha (soma 1 entre os rótulos positivos).
+
+\subsection*{Entropia cruzada (cross-entropy)}
+A perda média é
+\begin{equation}
+\mathrm{CE}(W) \;=\; -\frac{1}{n}\sum_{i=1}^{n}\sum_{k=1}^{K} Y_{ik}\,\log P_{ik},
+\end{equation}
+diminuindo quando o modelo atribui alta probabilidade às classes corretas.
+
+\subsection*{Elastic Net ancorado em $W_0$}
+Para evitar overfitting e permanecer próximo da heurística,
+\begin{equation}
+\lambda_1 \lVert W - W_0 \rVert_1 \;+\; \lambda_2 \lVert W - W_0 \rVert_2^2.
+\end{equation}
+O termo $L2$ favorece mudanças suaves; o termo $L1$ zera muitos desvios $(W{-}W_0)$, preservando a estrutura.
+
+\subsection*{Função objetivo completa}
+\begin{equation}
+\mathcal{L}(W) \;=\; \mathrm{CE}(W) \;+\; \lambda_1 \lVert W - W_0 \rVert_1 \;+\; \lambda_2 \lVert W - W_0 \rVert_2^2.
 \end{equation}
 
-\paragraph{Intuição.} As exponenciais ampliam diferenças: uma pequena vantagem em $s_k$ pode virar uma vantagem maior em $p_k$.
-A normalização pela soma garante que os $p_k$ somem $1$, permitindo comparar classes em uma mesma linha.
+\subsection*{Passo de atualização (ideia)}
+\begin{enumerate}[leftmargin=1.5em]
+\item \textbf{Gradiente da CE:}\ $G=\frac{1}{n} X^{\top} (P - Y)$.
+\item \textbf{Parte suave (CE + L2):}\ $W_{\text{tent}} = W - \eta \,\big(G + 2\lambda_2 (W - W_0)\big)$.
+\item \textbf{Prox L1 no desvio:}\ $\Delta = W_{\text{tent}} - W_0 \Rightarrow \Delta \leftarrow \mathrm{soft\text{-}threshold}(\Delta,\, \eta\lambda_1)$; então $W_{\text{novo}}=W_0+\Delta$.
+\item \textbf{Projeção de restrições:} colunas sem sinal em $X$ ficam exatamente como $W_0$ (congeladas); demais são \emph{clipadas} para $[\varepsilon,1]$.
+\end{enumerate}
 
-\paragraph{Temperatura (opcional).} Controla a ``nitidez'' das probabilidades:
+\subsection*{Escolha de $\lambda_1,\lambda_2$ e dicas práticas}
+\begin{itemize}[leftmargin=1.5em]
+\item Aumente $\lambda_2$ se notar pesos ``explodindo'' (suaviza).
+\item Aumente $\lambda_1$ se quiser mudar menos (mais desvios zerados $\to$ mais perto de $W_0$).
+\item Faça um grid pequeno e selecione por \emph{macro top-3} e inspeção de interpretabilidade.
+\item Se houver desequilíbrio de classes, é possível ponderar a CE por classe.
+\end{itemize}
+
+\subsection*{Diagnóstico e parada}
+Monitore a \emph{macro top-3} ao longo das iterações; use \emph{early stopping} quando estabilizar. Inspecione colunas antes/depois para verificar coerência clínica.
+
+\section{Apêndice B: Softmax detalhado}
+A função \textbf{softmax} transforma um vetor de escores (logits) $s=(s_1,\ldots,s_K)$ em probabilidades $p=(p_1,\ldots,p_K)$, com $p_k\in(0,1)$ e $\sum_k p_k=1$:
 \begin{equation}
-  \mathrm{softmax}_T(s)_k \;=\; \frac{e^{s_k/T}}{\sum_t e^{s_t/T}}\,,
+  \mathrm{softmax}(s)_k \;=\; \frac{e^{s_k}}{\sum_{t=1}^{K} e^{s_t}}\,.
+\end{equation}
+Para estabilidade numérica, subtrai-se $\max(s)$ (não altera o resultado final):
+\begin{equation}
+  \mathrm{softmax}(s)_k \;=\; \frac{e^{\,s_k - \max(s)}}{\sum_{t=1}^{K} e^{\,s_t - \max(s)}}\,.
+\end{equation}
+\paragraph{Intuição.} As exponenciais ampliam diferenças; a normalização força a soma $=1$ e torna as classes comparáveis.\\
+\textbf{Temperatura (opcional).}
+\begin{equation}
+  \mathrm{softmax}_T(s)_k \;=\; \frac{e^{s_k/T}}{\sum_t e^{s_t/T}},
 \end{equation}
 com $T<1$ deixando a distribuição mais ``dura'' (top-1 maior) e $T>1$ mais ``suave''.
-
-\section{Ajuste de pesos: como melhorar sem ``estragar'' o questionário}
-Seja $X \in [0,1]^{n \times m}$ a matriz de respostas (linhas = casos, colunas = itens/perguntas) e $W \in [0,1]^{m \times K}$ a matriz de pesos (colunas = classes).
-Calculamos notas lineares $S$ e probabilidades $P$ por:
-\begin{equation}
-  S \;=\; XW \quad\text{e}\quad P_{i,:} \;=\; \mathrm{softmax}(S_{i,:}) \,.
-\end{equation}
-
-\subsection*{Objetivo e métrica}
-Nosso objetivo é aumentar a taxa de acerto por classe no \textbf{top-3} (``macro top-3''), isto é, a média (entre classes) da fração de linhas em que a classe verdadeira aparece entre as 3 maiores probabilidades.
-Para suportar alvos com \emph{múltiplos rótulos}, definimos uma distribuição-alvo por linha $Y \in [0,1]^{n \times K}$ onde, para os rótulos presentes na linha $i$, atribuimos pesos iguais que somam 1.
-
-\subsection*{Restrições práticas que mantêm a estrutura do questionário}
-\begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Apenas colunas ajustáveis:} uma coluna (feature) $j$ só é ajustada se houver ao menos um valor $X_{:,j}>0$. Colunas com $X_{:,j}=0$ para todas as linhas são \emph{congeladas} e mantidas exatamente como no $W_0$ original (não são zeradas nem alteradas).
-  \item \textbf{Limites dos pesos:} para colunas ajustáveis, projetamos $W$ no intervalo $[\,\varepsilon,\,1\,]$ (com $\varepsilon$ pequeno).
-  \item \textbf{Proximidade ao original:} penalizamos desvios em relação a $W_0$ (pesos originais) via \emph{Elastic Net} (combinação de L1 e L2).
-\end{itemize}
-
-\subsection*{Função de perda e otimização}
-Minimizamos a entropia cruzada média entre $P$ e $Y$ (somente nas classes clínicas tradicionais) com penalização elástica em torno de $W_0$:
-\begin{equation}
-  \mathcal{L}(W) \;=\; -\frac{1}{n}\sum_{i=1}^{n}\sum_{k=1}^{K} Y_{ik}\,\log P_{ik}
-  \;+\; \lambda_1\lVert W-W_0 \rVert_1 \;+\; \lambda_2\lVert W-W_0 \rVert_2^2 \,.
-\end{equation}
-Após cada passo de gradiente/proximal, aplicamos a projeção
-\begin{equation}
-  \Pi(W) \;=\; 
-  \begin{cases}
-    W_{j,:} \leftarrow W_{0\,j,:}, & \text{se } \max_i X_{ij}=0 \quad (\text{coluna congelada})\\[2pt]
-    W_{j,:} \leftarrow \mathrm{clip}(W_{j,:}, \varepsilon, 1), & \text{caso contrário (ajustável).}
-  \end{cases}
-\end{equation}
-Paramos quando não há melhora do macro top-3 (ou ao atingir uma meta).
-
-\section{Classe \textit{Sem Transtorno} por regra de ``baixa ativação''}
-As features medem \emph{presença} de sintomas; por isso, ao invés de criar uma 12ª coluna em $W$ para o ``normal'', introduzimos a classe \textbf{Sem Transtorno} por uma \textbf{regra} aplicada sobre as probabilidades já calculadas $P$ (com $K=11$ classes).
-
-\subsection*{Quando a regra aciona?}
-Para cada linha, definimos:
-\begin{align}
-  p^{(1)} &= \max_k P_k \quad (\text{probabilidade top-1}),\\
-  p^{(2)} &= \text{segunda maior probabilidade},\\
-  \Delta  &= p^{(1)} - p^{(2)} \quad (\text{margem}).
-\end{align}
-A regra aciona se
-\begin{equation}
-  p^{(1)} < T_1 \quad \text{e} \quad \Delta < T_2 \,,
-\end{equation}
-sinalizando que não há classe fortemente ativada \emph{e} há pouca separação em relação à segunda colocada.
-
-\subsection*{Como atribuímos probabilidade ao \textit{Sem Transtorno}?}
-Se a regra aciona, alocamos uma fração $\gamma$ à nova classe e reescalamos as demais probabilidades para manter soma $1$.
-Dado $P\in\mathbb{R}^K$,
-\begin{equation}
-  P' \;=\;
-  \begin{cases}
-    \big[(1-\gamma)P;\ \gamma\big], & \text{se aciona}\\[2pt]
-    \big[P;\ 0\big], & \text{se não aciona}
-  \end{cases}
-\end{equation}
-onde $P' \in \mathbb{R}^{K+1}$ inclui a posição extra para \emph{Sem Transtorno}.
-O ranking (top-1/top-2/top-3) passa a considerar $K{+}1$ classes.
-
-\subsection*{Como escolhemos $T_1$, $T_2$ e $\gamma$? (busca em grade)}
-Avaliamos diversas combinações $(T_1,T_2,\gamma)$ e escolhemos a que maximiza o \textbf{macro top-3} \emph{incluindo} a classe \emph{Sem Transtorno}.
-Para isso, mapeamos respostas ``não'' no \emph{Alvo} para este novo rótulo e computamos a taxa de acerto por classe (aparece no top-3) e depois a média entre classes com suporte $>0$.
-
-\paragraph{Exemplo numérico.}
-Suponha $P=[0{,}24,\ 0{,}22,\ 0{,}18,\ \ldots]$, então $p^{(1)}=0{,}24$, $p^{(2)}=0{,}22$, $\Delta=0{,}02$.
-Se a melhor tripla for $T_1{=}0{,}30$, $T_2{=}0{,}06$, $\gamma{=}0{,}50$, a regra aciona e obtemos
-\begin{equation}
-  P'=\big[\,0{,}12,\ 0{,}11,\ 0{,}09,\ \ldots,\ 0{,}50\,\big],
-\end{equation}
-onde $0{,}50$ é $p_{\mathrm{Sem\ Transtorno}}$ e as demais probabilidades foram multiplicadas por $(1{-}\gamma)=0{,}5$.
-
-\section{Leitura das planilhas geradas}
-\begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Pontuação\_Tunada:} matriz de pesos $W$ após o ajuste (colunas congeladas iguais ao $W_0$, ajustáveis em $[\varepsilon,1]$).
-  \item \textbf{Resultado\_Heuristica\_Tunada:} probabilidades $p\_{\langle classe\rangle}$, a coluna $p\_{\mathrm{Sem\ Transtorno}}$ e o ranking top-1/top-2/top-3 com as $K{+}1$ classes.
-  \item \textbf{Metricas\_Heuristica\_Tunada:} macro top-3 (incluindo \emph{Sem Transtorno}) e tabela por classe (taxa de top-3, suporte).
-  \item \textbf{Regras\_Normal:} valores aprendidos $(T_1,T_2,\gamma)$, taxa de acionamento e métrica final.
-\end{itemize}
-
-\paragraph{Observação.} Por configuração, podemos também exigir que uma coluna só seja ajustável se, além de $X_{:,j}$ ter algum valor $>0$, a coluna correspondente em $W_0$ possuir ao menos um peso diferente de zero (mantendo a \emph{sparsidade} original).
 
 \end{document}
