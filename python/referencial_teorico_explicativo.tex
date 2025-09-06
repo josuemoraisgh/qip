@@ -1,0 +1,142 @@
+
+\documentclass[12pt,a4paper]{article}
+
+% ------- Packages -------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  citecolor=black
+}
+
+\title{Referencial Teórico Explicativo das Análises Estatísticas (com Exemplos Práticos)}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Como ler este documento}
+Este material explica, de forma clara e objetiva, \textbf{o que mede cada indicador}, \textbf{por que ele é útil} para sua avaliação, \textbf{como interpretar} e \textbf{como agir} com base no resultado. Sempre que possível, há um \textbf{exemplo prático curto}. O foco é tornar a leitura dos relatórios (planilha de resultados) mais simples e acionável.
+
+\section{Probabilidades \textit{softmax} e entropia cruzada}
+\textbf{O que é.} O modelo atribui a cada classe $c$ um \emph{score} linear $S_{ic}$ e converte esses escores em probabilidades $P_{ic}$ pela \textit{softmax}:
+\begin{equation}
+P_{ic} \;=\; \frac{e^{S_{ic}}}{\sum_{d=1}^{K} e^{S_{id}}}.
+\end{equation}
+A \textbf{entropia cruzada} é a perda de treinamento mais comum para alinhar $P$ com os rótulos verdadeiros.
+
+\textbf{Para que serve na avaliação.} As probabilidades indicam \textbf{confiança relativa} do modelo entre as classes. Se a massa de probabilidade fica concentrada sempre nas mesmas classes, isso revela \textbf{viés de alocação} --- útil para decidir recalibração e ajuste dos pesos.
+
+\textbf{Exemplo prático.} Suponha que um caso tenha $P(\text{Depressivo})=0{,}62$, $P(\text{Ansiedade})=0{,}30$ e as demais abaixo de $0{,}03$. O modelo está \emph{polarizado}. Mesmo que a classe verdadeira seja outra, é improvável aparecer no \emph{top-3}, o que reduz a acurácia.
+
+\section{Acurácia \emph{top-$k$} e médias \emph{macro}/\emph{micro}}
+\textbf{O que é.} A acurácia \emph{top-$k$} verifica se a classe verdadeira aparece entre as $k$ maiores probabilidades ($k=1,2,3,\dots$). A \textbf{média micro} pondera classes pelo tamanho; a \textbf{média macro} dá o mesmo peso a cada classe (mais justa em dados desbalanceados).
+
+\textbf{Para que serve.} Em contextos com \textbf{ambiguidade} (mais de uma classe pode fazer sentido), \emph{top-$k$} é mais informativa do que apenas \emph{top-1}. A média \emph{macro} revela se o modelo atende \textbf{todas} as classes, não apenas as mais frequentes.
+
+\textbf{Exemplo prático.} Se 5 instâncias têm classes verdadeiras $\{A,B,C,D,E\}$ e o modelo acerta o \emph{top-3} em 3 delas, a acurácia \emph{top-3} é $3/5=0{,}60$. Se a classe $E$ nunca aparece entre as predições, a \emph{macro} vai denunciar esse desequilíbrio.
+
+\section{Indicador de erro $E_i$ e por que correlacioná-lo com as variáveis}
+\textbf{O que é.} Define-se $E_i=1$ quando a classe verdadeira da instância $i$ \textbf{não} está no \emph{top-$k$}, e $E_i=0$ caso contrário. Assim, $E$ sintetiza acerto/erro \emph{pós-decisão}.
+
+\textbf{Para que serve.} Ao correlacionar cada variável $X_j$ com $E$, descobre-se \textbf{quais variáveis estão associadas ao erro}. Isso apoia decisões de \textbf{higiene de itens} (revisar pergunta), \textbf{tratamento de dados} (normalização, \emph{outliers}) e \textbf{ajuste de pesos}.
+
+\textbf{Exemplo prático.} Se \texttt{Tela 62\_part\_4} exibe $r=0{,}22$ com $E$ (positivo), valores altos dessa variável tendem a acompanhar \emph{erros}. Possíveis ações: revisar o item, reduzir seu peso, ou checar se há colinearidade que distorce sua influência.
+
+\section{Contribuição média absoluta $|x\_j w\_{jc}|$}
+\textbf{O que é.} Em modelos lineares, $x\_{ij}w\_{jc}$ é quanto a variável $j$ empurra a decisão para a classe $c$ no caso $i$. A \textbf{contribuição média absoluta} faz a média de $|x\_{ij}w\_{jc}|$ ao longo de casos e classes verdadeiras:
+\begin{equation}
+\overline{C}_j \;=\; \mathbb{E}_i\,\mathbb{E}_{c \in Y_i}\,\bigl|\,x_{ij}w_{jc}\,\bigr|.
+\end{equation}
+
+\textbf{Para que serve.} Ranqueia as variáveis pelo \textbf{tamanho de impacto} típico na decisão (independente de sinal). Útil para priorizar o que merece auditoria, manter itens relevantes e \textbf{evitar enxugar variáveis importantes}.
+
+\textbf{Exemplo prático.} Se \texttt{Tela 54\_part\_6} tem $\overline{C}=0{,}63$ (a mais alta), ela está entre as que mais movimentam a decisão. Deve ser mantida, mas vale checar se não está redundante com outras (ver VIF e correlações).
+
+\section{Correlação de Pearson com o erro (ponto-biserial)}\label{sec:pearson}
+\textbf{O que é.} Pearson mede associação \textbf{linear} entre uma variável contínua $X$ e o erro $E$ (binário). É equivalente à correlação \emph{ponto-biserial}.
+
+\textbf{Para que serve.} \textbf{Sinal}: $r>0$ indica que valores altos de $X$ associam-se a \emph{mais erro}; $r<0$, a \emph{menos erro}. \textbf{Ação}: itens com $r$ alto e positivo merecem revisão/ajuste; itens com $r$ negativo consistente podem ser \textbf{bons discriminadores}.
+
+\textbf{Exemplo numérico.} Se $r(\texttt{Tela 66\_part\_63},E)=-0{,}33$, casos com essa variável alta tendem a \emph{acertar} mais. Esse item ajuda o modelo; preserve-o e verifique se pode ser referência para calibrar pesos de itens correlatos.
+
+\section{Correlação de Spearman com o erro}
+\textbf{O que é.} Spearman mede associação \textbf{monotônica} (usa \emph{ranks}). Detecta tendência geral de subida/descida mesmo sem linearidade perfeita, e é robusto a \emph{outliers}.
+
+\textbf{Para que serve.} Complementa Pearson. Se Pearson $\approx 0$ e Spearman $<0$, pode existir \textbf{relação monotônica} que a linearidade não captou. \textbf{Ação}: checar gráficos (quantis) e considerar transformações (log, \emph{winsorize}) ou cortes por faixas.
+
+\textbf{Exemplo prático.} Uma variável que só piora o erro quando está \emph{muito} alta pode dar Spearman negativo (monotonia geral), mas Pearson baixo (não linear).
+
+\section{Informação mútua (IM) com o erro}
+\textbf{O que é.} A IM mede \textbf{dependência geral} entre $X$ e $E$ (não precisa ser linear nem monotônica). Valores maiores indicam que conhecer $X$ \textbf{reduz a incerteza} sobre $E$.
+
+\textbf{Para que serve.} Encontra variáveis com impacto \textbf{não linear}. Útil quando Pearson/Spearman não apontam nada, mas há interação por limiares. \textbf{Ação}: itens com IM alta merecem inspeção — podem demandar \textbf{regras por faixas} ou transformação.
+
+\textbf{Exemplo prático.} Um item que, abaixo de certo valor, não afeta o erro, mas acima de um limiar dispara o erro, tende a ter IM maior do que Pearson/Spearman.
+
+\section{Multicolinearidade: matriz de correlação e VIF}
+\textbf{O que é.} \textbf{Colinearidade} ocorre quando um item é combinação linear de outros (ou quase). A matriz de correlação (Pearson ou Spearman) revela \textbf{pares redundantes} ($|\rho|\ge 0{,}8$). O \textbf{VIF} estima o quanto a variância do peso de um item inflaciona por explicar-se pelos demais:
+\begin{equation}
+\mathrm{VIF}_j \;=\; \frac{1}{1 - R_j^2}.
+\end{equation}
+
+\textbf{Para que serve.} Reduzir colinearidade \textbf{estabiliza} os pesos e melhora generalização. \textbf{Ação}: retirar duplicatas/quase-duplicatas; criar índices compostos; aplicar regularização (L1+L2).
+
+\textbf{Exemplo prático.} Se \texttt{Tela 02\_part\_5} e \texttt{Tela 02\_part\_6} têm $\rho=+1{,}00$, uma delas pode ser removida sem perda de informação, simplificando o modelo e reduzindo VIF.
+
+\section{Distribuição de probabilidade por classe}
+\textbf{O que é.} Estatísticas como média e desvio-padrão de $P(\text{classe}=c)$ ao longo dos casos. Revelam \textbf{viés de alocação}: concentração excessiva em poucas classes.
+
+\textbf{Para que serve.} Se a média de uma classe é muito alta e das demais muito baixa, o modelo está \textbf{polarizado}. \textbf{Ação}: recalibrar ($W$ perto de $W_0$ com regularização centrada), reequilibrar itens e usar \textbf{métrica macro}.
+
+\textbf{Exemplo prático.} Se $\bar{p}(\text{Depressivo})=0{,}61$ e $\bar{p}(\text{Ansiedade})=0{,}32$, quase toda a probabilidade está aí, reduzindo a chance das outras classes entrarem no \emph{top-3}.
+
+\section{Regra de abstenção (``Sem Transtorno'')}
+\textbf{O que é.} Quando a maior probabilidade $p_{(1)}$ é baixa e a margem $p_{(1)}-p_{(2)}$ também, o caso é \textbf{incerto}. A regra adiciona uma classe ``Sem Transtorno'' com fração $\gamma$ da probabilidade, melhorando a \textbf{segurança} das decisões.
+
+\textbf{Para que serve.} Reduz falsos positivos em casos ambíguos. \textbf{Ação}: escolher $(T_1,T_2,\gamma)$ por busca em grade visando \textbf{maximizar macro \emph{top-$k$}}.
+
+\textbf{Exemplo prático.} Se $p_{(1)}=0{,}35$ e $p_{(1)}-p_{(2)}=0{,}03$, com $T_1=0{,}4$, $T_2=0{,}05$ e $\gamma=0{,}5$, transfere-se metade da massa para ``Sem Transtorno'' e reescala-se o restante. Casos duvidosos deixam de ser forçados a uma classe clínica.
+
+\section{Como juntar tudo: roteiro em 6 passos}
+\begin{enumerate}[leftmargin=1.2cm]
+  \item \textbf{Verifique o desempenho macro \emph{top-$k$}} e a distribuição de probabilidades por classe (polarização?).
+  \item \textbf{Reduza redundâncias}: pares com $|\rho|\ge 0{,}8$ e itens com VIF alto (ou infinito).
+  \item \textbf{Priorize variáveis com alta contribuição} $\overline{C}_j$ e \textbf{boa associação} com acerto (Pearson/Spearman negativos com $E$).
+  \item \textbf{Investigue IM alta}: pode haver limiares; avalie cortes/transformações.
+  \item \textbf{Ajuste pesos com regularização centrada} (L1+L2) e valide com \textbf{macro \emph{top-$k$}} por classe.
+  \item \textbf{Aplique e calibre a abstenção} (``Sem Transtorno'') para casos de baixa confiança.
+\end{enumerate}
+
+\section{Quadro-resumo: ``se... então...''}
+\begin{itemize}[leftmargin=1.2cm]
+  \item \textbf{Se} $r(X_j,E)\!>\!0$ e $|\rho_s(X_j,E)|$ também $\uparrow$ \textbf{então} revisar item, tratar \emph{outliers} e/ou reduzir peso.
+  \item \textbf{Se} $r(X_j,E)\!<\!0$ de forma consistente \textbf{então} item é bom discriminador; mantenha e use como referência.
+  \item \textbf{Se} IM alta e correlações baixas \textbf{então} procurar \textbf{limiares} ou \textbf{efeitos não lineares}.
+  \item \textbf{Se} $|\rho|\ge 0{,}8$ entre dois itens \textbf{então} mantenha um representante (ou construa índice composto).
+  \item \textbf{Se} VIF muito alto \textbf{então} reduzir colinearidade antes de interpretar pesos.
+  \item \textbf{Se} probabilidades concentradas em 2--3 classes \textbf{então} recalibrar e usar métrica \emph{macro}.
+\end{itemize}
+
+\section*{Glossário rápido}
+\textbf{Top-$k$}: acerto quando a classe verdadeira aparece entre as $k$ maiores probabilidades.\\
+\textbf{Macro}: média por classe (peso igual para classes). \textbf{Micro}: média global ponderada pelo tamanho.\\
+\textbf{Pearson}: associação linear; com $E$ binário é ponto-biserial. \textbf{Spearman}: associação monotônica (ranks).\\
+\textbf{IM}: informação mútua; dependência geral, não linear.\\
+\textbf{VIF}: fator de inflação de variância; mede colinearidade do item com os demais.\\
+\textbf{Contribuição} $|x w|$: magnitude típica com que a variável empurra a decisão.
+
+\end{document}

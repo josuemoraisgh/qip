@@ -5,3 +5,5 @@ CALL pip install matplotlib
 CALL pip install numpy 
 CALL pip install tensorflow
 CALL pip install scikit-learn
+CALL pip install scipy
+CALL pip install statsmodels 

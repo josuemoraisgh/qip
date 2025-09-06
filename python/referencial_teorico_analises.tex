@@ -1,0 +1,125 @@
+
+\documentclass[12pt,a4paper]{article}
+
+% ------- Packages -------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{csquotes}
+\usepackage{enumitem}
+
+\geometry{margin=2.5cm}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  citecolor=black
+}
+
+\title{Referencial Teórico das Análises Estatísticas Utilizadas no Relatório}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Objetivo e escopo}
+Este documento apresenta o \textbf{referencial teórico} das análises estatísticas empregadas no relatório de resultados do modelo heurístico com função \textit{softmax}. São descritos os conceitos, hipóteses, fórmulas principais, interpretações e limitações de cada técnica, com foco prático para a leitura crítica de relatórios semelhantes.
+
+\section{Modelos lineares, \textit{softmax} e probabilidade preditiva}
+Considere uma matriz de dados $X \in \mathbb{R}^{n \times m}$ (linhas: observações; colunas: variáveis) e uma matriz de pesos $W \in \mathbb{R}^{m \times K}$ (colunas: classes). O \emph{score} linear para a instância $i$ e classe $c$ é dado por
+\begin{equation}
+S_{ic} = \sum_{j=1}^{m} x_{ij}\,w_{jc} \;=\; (XW)_{ic}.
+\end{equation}
+As probabilidades preditas são obtidas pela função \textit{softmax}:
+\begin{equation}
+P_{ic} \;=\; \frac{\exp(S_{ic})}{\sum_{d=1}^{K} \exp(S_{id})}.
+\end{equation}
+A \textbf{entropia cruzada} é a perda mais usual para treinamento supervisionado multiclasse. Embora o relatório em questão analise um conjunto de pesos heurísticos (sem re-treinamento), os conceitos acima regem a interpretação das probabilidades e de sua distribuição entre as classes.
+
+\section{Métricas para classificação multiclasse}
+\subsection{Acurácia \texorpdfstring{\emph{top-$k$}}{top-k}}
+Para cada instância $i$, ordenam-se as classes por $P_{ic}$ em ordem decrescente. Define-se \emph{top-$k$} como o conjunto das $k$ classes mais prováveis. A acurácia \emph{top-$k$} é a fração de instâncias cuja classe verdadeira pertence ao \emph{top-$k$}. É uma métrica útil quando mais de uma predição pode ser considerada aceitável (cenários ambíguos ou rótulos múltiplos).
+
+\subsection{Médias \emph{macro} e \emph{micro}}
+Em dados desbalanceados, é conveniente distinguir:
+\begin{itemize}[leftmargin=1.2cm]
+  \item \textbf{Média micro}: agrega acertos e erros de todas as classes e calcula a métrica global (ponderação por suporte).
+  \item \textbf{Média macro}: calcula a métrica por classe e tira a média aritmética entre as classes com suporte positivo (ponderação igual entre classes).
+\end{itemize}
+A média \emph{macro} dá o \textbf{mesmo peso} a classes raras e frequentes, sendo preferível quando se busca equilíbrio entre classes.
+
+\subsection{Indicador de erro \emph{top-$k$}}
+Define-se $E_i=1$ se a classe verdadeira de $i$ não está no \emph{top-$k$}, e $E_i=0$ caso contrário. Este indicador permite estudar a \textbf{associação} entre variáveis $X_j$ e a ocorrência de erro (Seções~\ref{sec:pearson} e \ref{sec:spearman}).
+
+\section{Contribuição média de variáveis em modelos lineares}
+Em modelos lineares, uma medida intuitiva de \textbf{contribuição} do preditor $j$ para uma classe $c$ é o produto $x_{ij}\,w_{jc}$. Para sumarizar no conjunto de dados, pode-se utilizar a \textbf{contribuição média absoluta}:
+\begin{equation}
+\overline{C}_j \;=\; \mathbb{E}_i\,\mathbb{E}_{c \in Y_i}\,\bigl|\,x_{ij}\,w_{jc}\,\bigr|,
+\end{equation}
+na qual $Y_i$ representa o conjunto de classes verdadeiras da instância $i$ (no caso multirrótulo) ou o rótulo único (no caso multiclasse tradicional). Essa medida capta a \emph{magnitude} com que a variável participa das decisões; por ser absoluta, ignora o sinal (direção). \textbf{Limitações}: (i) não é uma medida causal; (ii) pode ser inflada por colinearidade; (iii) não substitui métodos de explicabilidade dedicados (e.g., \emph{SHAP}, LIME), mas é informativa em modelos lineares por sua transparência.
+
+\section{Correlação de Pearson (associação linear)}\label{sec:pearson}
+A correlação de Pearson entre duas variáveis contínuas $X$ e $Y$ é dada por
+\begin{equation}
+r \;=\; \frac{\mathrm{Cov}(X,Y)}{\sigma_X\,\sigma_Y},
+\end{equation}
+sendo $\sigma_X$ e $\sigma_Y$ os desvios-padrão. Seu valor varia em $[-1,1]$. Valores próximos de $+1$ indicam associação linear positiva forte; próximos de $-1$, associação linear negativa forte; próximos de $0$, fraca ou inexistente.
+\paragraph{Pressupostos e interpretação.} A inferência clássica (teste t e $p$-valor) assume linearidade e, idealmente, normalidade residual. Em prática aplicada, usa-se como \textbf{medida de efeito} (tamanho da associação) e não como prova causal. Quando $Y$ é \textbf{binária} (por exemplo, erro \emph{top-$k$}), o coeficiente de Pearson equivale à \textbf{correlação ponto-biserial}, que mede diferença de médias padronizada entre os grupos $Y=0$ e $Y=1$.
+
+\section{Correlação de Spearman (associação monotônica)}\label{sec:spearman}
+A correlação de Spearman $\rho_s$ é o coeficiente de Pearson aplicado aos \textbf{ranks} (ordenações) de $X$ e $Y$. É sensível a relações \textbf{monotônicas} (não necessariamente lineares) e é mais robusta a \emph{outliers}. Em presença de empates, utilizam-se ranks com média. Interpreta-se $\rho_s$ de modo análogo ao $r$ de Pearson, porém com foco em \emph{monotonicidade}.
+
+\section{Informação mútua (dependência geral)}
+A \textbf{informação mútua} (IM) mede a dependência \emph{de qualquer forma} entre duas variáveis aleatórias $X$ e $Y$:
+\begin{equation}
+I(X;Y) \;=\; H(X) + H(Y) - H(X,Y),
+\end{equation}
+em que $H(\cdot)$ denota entropia. $I(X;Y) \ge 0$, sendo $0$ apenas quando $X$ e $Y$ são independentes. Na prática, a IM é estimada por métodos que exigem \textbf{discretização} ou \textbf{suavização} (vizinhos mais próximos, \emph{kernels} etc.), o que traz viés de estimação. Interpreta-se como uma medida de \textbf{dependência geral}, complementar às correlações: pode detectar relações não lineares ou não monotônicas.
+\paragraph{Cuidados.} A IM \textbf{não tem escala fixa} entre $-1$ e $1$, e valores pequenos podem ser informativos dependendo do contexto e do tamanho da amostra. Deve-se comparar variáveis por \emph{ranqueamento} (ordem) mais do que por magnitude absoluta.
+
+\section{Multicolinearidade e VIF}
+\subsection{Definição e consequências}
+\textbf{Multicolinearidade} ocorre quando um preditor pode ser explicado por combinação linear de outros, produzindo instabilidade na estimação de pesos e inflando variâncias de coeficientes. Suas consequências incluem: (i) grande variação nos pesos com pequenas mudanças nos dados; (ii) dificuldades de interpretação de efeitos individuais; (iii) piora da generalização.
+
+\subsection{VIF: Fator de Inflação de Variância}
+Para o preditor $X_j$, estima-se $R_j^2$ a partir da regressão $X_j \sim X_{-j}$ (demais preditores). Define-se o \textbf{VIF} como
+\begin{equation}
+\mathrm{VIF}_j \;=\; \frac{1}{1 - R_j^2}.
+\end{equation}
+Valores de $\mathrm{VIF}_j \approx 1$ indicam baixa colinearidade; valores entre $5$ e $10$ são usualmente considerados altos; valores muito elevados (ou infinitos) sugerem colinearidade severa ou perfeita. A mitigação envolve: (i) remoção de duplicatas/quase-duplicatas; (ii) construção de índices compostos; (iii) regularização (e.g., ridge/Elastic Net); (iv) seleção por grupos.
+
+\section{Matriz de correlação e pares altamente correlacionados}
+A matriz de correlação (Pearson ou Spearman) resume associações bivariadas entre variáveis. Identificar pares com $|\rho| \ge 0{,}8$ ajuda a \textbf{detectar redundâncias}. Correlações iguais a $\pm 1$ indicam \textbf{duplicatas exatas} (ou transformações lineares simples), sendo candidatas naturais à redução.
+
+\section{Integração prática das análises}
+\begin{enumerate}[leftmargin=1.2cm]
+  \item \textbf{Leitura do desempenho}: usar \emph{top-$k$} macro para captar equilíbrio entre classes; observar concentração de probabilidades por classe.
+  \item \textbf{Triagem de variáveis}: cruzar \emph{contribuição média} (magnitude $|x w|$) com \textbf{correlações com erro} (Pearson/Spearman) e \textbf{IM}. Itens com alta contribuição e associação ao erro demandam revisão.
+  \item \textbf{Redução de redundância}: usar VIF e matriz de correlação para eliminar duplicatas e consolidar blocos colineares.
+  \item \textbf{Refino do modelo}: aplicar regularização (L1+L2), validação por macro \emph{top-$k$}, e considerar \textbf{abstenção} (classe neutra) e \textbf{calibração} de probabilidades quando houver concentração indevida.
+\end{enumerate}
+
+\section{Limitações e boas práticas}
+\begin{itemize}[leftmargin=1.2cm]
+  \item \textbf{Tamanho amostral}: correlações e IM podem ser instáveis em amostras pequenas; preferir intervalos de confiança e análises por reamostragem.
+  \item \textbf{Múltiplos testes}: ao inspecionar muitas variáveis, considerar controle de erro tipo I (e.g., FDR) para evitar falsos positivos.
+  \item \textbf{Escala e transformação}: padronização pode melhorar comparabilidade de pesos e estabilidade de VIF.
+  \item \textbf{Causalidade}: nenhuma das medidas discutidas é causal por si; inferências causais exigem delineamentos ou suposições adicionais.
+\end{itemize}
+
+\section*{Referências (seleção em estilo ABNT simplificado)}
+BISHOP, C. M. \textit{Pattern Recognition and Machine Learning}. Springer, 2006.\\
+COVER, T. M.; THOMAS, J. A. \textit{Elements of Information Theory}. 2. ed. Wiley, 2006.\\
+HASTIE, T.; TIBSHIRANI, R.; FRIEDMAN, J. \textit{The Elements of Statistical Learning}. 2. ed. Springer, 2009.\\
+KUTNER, M. H. et al. \textit{Applied Linear Statistical Models}. 5. ed. McGraw-Hill, 2005.\\
+MONTGOMERY, D. C.; PECK, E. A.; VINING, G. G. \textit{Introduction to Linear Regression Analysis}. 5. ed. Wiley, 2012.\\
+MURPHY, K. P. \textit{Machine Learning: A Probabilistic Perspective}. MIT Press, 2012.\\
+ZOU, H.; HASTIE, T. Regularization and variable selection via the Elastic Net. \textit{Journal of the Royal Statistical Society: Series B}, v. 67, n. 2, p. 301--320, 2005.
+
+\end{document}

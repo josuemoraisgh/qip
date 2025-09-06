@@ -1,0 +1,115 @@
+
+\documentclass[12pt,a4paper]{article}
+
+% ------- Packages -------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{csquotes}
+\usepackage{enumitem}
+
+\geometry{margin=2.5cm}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  citecolor=black
+}
+
+\title{Análise de Resultados (estilo ABNT) do Modelo Heurístico com \textit{Softmax} e Regularização}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\noindent
+A seguir, apresenta-se a \textbf{análise de resultados}, redigida em estilo acadêmico compatível com as normas da ABNT, tomando por base a planilha de resultados anexada (\texttt{analise\_W\_relatorio.xlsx}), gerada a partir do pipeline heurístico com \textit{softmax}. Para preservar a rastreabilidade, os valores citados foram obtidos diretamente das abas do arquivo (especialmente: \texttt{10\_Notas}, \texttt{01\_Feature\_Summary}, \texttt{02\_Error\_Correlation}, \texttt{03\_Mutual\_Info\_Error}, \texttt{04\_VIF}, \texttt{05\_HighCorr\_Pairs} e \texttt{07\_Class\_Contrib}).
+
+\section{Caracterização dos dados e do modelo empregado}
+O conjunto analisado é composto por \textbf{165 observações} e \textbf{394 variáveis} (conforme \texttt{10\_Notas}), distribuídas em \textbf{12 classes}. O modelo avaliado corresponde ao arranjo \textbf{heurístico} ($W_0$), sem ajustes posteriores (tuning), com decisão probabilística via função \textit{softmax}. As métricas computadas referem-se ao desempenho do arranjo ``como está'', e devem ser interpretadas como \textbf{linha de base} (\textit{baseline}).
+
+\section{Desempenho preditivo global}
+A métrica global de referência foi a \textbf{acurácia top-3} (proporção de instâncias cuja classe verdadeira aparece entre as três maiores probabilidades preditas). O valor observado foi de \textbf{0{,}1697} (\textbf{16{,}97\%}) segundo \texttt{10\_Notas}. Isto indica \textbf{desempenho aquém do desejável} para uso decisório direto, especialmente considerando o número de classes ($K=12$). A análise posterior sugere que tal desempenho está associado a (i) \textbf{concentração de probabilidade} em poucas classes e (ii) \textbf{redundâncias/colinearidades} relevantes no espaço de variáveis.
+
+\section{Contribuição das variáveis (importância estatística)}
+A síntese de contribuição média absoluta por variável, calculada como $\mathbb{E}\_i\,\mathbb{E}\_{c \in Y\_i} \{|x\_{ij}\cdot w\_{jc}|\}$, é apresentada em \texttt{01\_Feature\_Summary}. Destacam-se, entre as \textbf{variáveis com maior contribuição média}:
+\begin{itemize}[leftmargin=1.2cm]
+  \item \texttt{Tela 54\_part\_6} (0{,}629);
+  \item \texttt{Tela 31\_part\_6} (0{,}610);
+  \item \texttt{Tela 54\_part\_5} (0{,}559);
+  \item \texttt{Tela 70\_part\_9} (0{,}551);
+  \item \texttt{Tela 59\_part\_2} (0{,}551).
+\end{itemize}
+Observa-se que tais variáveis exibem, de forma recorrente, \textbf{pesos máximos absolutos} associados às classes ``Transtorno de Déficit de Atenção/Hiperatividade'', ``Transtornos de Ansiedade'' e ``Transtornos Depressivos''. Em termos metodológicos, isso sugere que o heurístico $W_0$ \textbf{direciona} parte substancial da massa preditiva a esses eixos clínicos, o que, como se verá adiante, está coerente com a distribuição média de probabilidades por classe.
+
+\section{Relação entre variáveis e erro de classificação}
+A aba \texttt{02\_Error\_Correlation} relaciona cada variável à \textbf{probabilidade de erro top-3} (correlações de Pearson e Spearman entre $X\_j$ e o indicador de erro). Entre as \textbf{maiores correlações positivas} (variáveis associadas a \textbf{maior risco de erro}), destacam-se:
+\begin{itemize}[leftmargin=1.2cm]
+  \item \texttt{Tela 62\_part\_4} ($r=0{,}218$; $p=0{,}0049$);
+  \item \texttt{Tela 25\_part\_10} ($r=0{,}181$; $p=0{,}0200$);
+  \item \texttt{Tela 63\_part\_11} ($r=0{,}174$; $p=0{,}0255$);
+  \item \texttt{Tela 02\_part\_12} ($r=0{,}173$; $p=0{,}0265$);
+  \item \texttt{Tela 62\_part\_11} ($r=0{,}171$; $p=0{,}0285$).
+\end{itemize}
+Por outro lado, \textbf{maiores correlações negativas} (variáveis associadas a \textbf{menor risco de erro}) incluem:
+\begin{itemize}[leftmargin=1.2cm]
+  \item \texttt{Tela 66\_part\_63} ($r=-0{,}325$; $p<0{,}0001$);
+  \item \texttt{Tela 44\_part\_4} ($r=-0{,}297$; $p=0{,}0002$);
+  \item \texttt{Tela 52\_part\_6} ($r=-0{,}268$; $p=0{,}0005$);
+  \item \texttt{Tela 66\_part\_57} ($r=-0{,}263$; $p=0{,}0006$);
+  \item \texttt{Tela 58\_part\_4} ($r=-0{,}257$; $p=0{,}0009$).
+\end{itemize}
+Esses achados são úteis para \textbf{higiene de dados} e \textbf{refino de questionários/itens}: variáveis reiteradamente associadas a erro podem demandar (i) revisão de enunciado/mensuração; (ii) normalização/transformações; ou (iii) atenuação de peso no modelo (via regularização ou \textit{shrinkage} centrado).
+
+\section{Informação mútua e dependências não lineares}
+A \texttt{03\_Mutual\_Info\_Error} traz a \textbf{informação mútua} (MI) de cada variável com o erro, capturando relações possivelmente não lineares. Os maiores valores identificados foram:
+\begin{itemize}[leftmargin=1.2cm]
+  \item \texttt{Tela 43\_part\_1} (MI=0{,}085);
+  \item \texttt{Tela 10\_part\_4} (0{,}085);
+  \item \texttt{Tela 63\_part\_3} (0{,}085);
+  \item \texttt{Tela 49\_part\_4} (0{,}077);
+  \item \texttt{Tela 58\_part\_7} (0{,}077).
+\end{itemize}
+Embora os valores absolutos de MI não sejam elevados, o \textbf{ranqueamento} aponta variáveis candidatas a inspeção qualitativa, pois podem repercutir no erro por mecanismos \textbf{não lineares} (ex.: limiares, saturações, codificação categórica).
+
+\section{Colinearidade e redundância interna}
+A \texttt{04\_VIF} evidencia \textbf{inflacionamento de variância} muito alto (\textbf{VIF=$\infty$} para um grande conjunto de variáveis), indicador de \textbf{colinearidade perfeita} entre algumas delas (e.g., ``Tela 70\_part\_2/3/4'' e ``Tela 69\_part\_5/\dots/11''). A \texttt{05\_HighCorr\_Pairs} confirma \textbf{pares altamente correlacionados} ($|\rho|\ge 0{,}8$), inclusive \textbf{correlações perfeitas} ($\rho=\pm 1{,}0$), por exemplo:
+\begin{itemize}[leftmargin=1.2cm]
+  \item \texttt{Tela 02\_part\_5} $\leftrightarrow$ \texttt{Tela 02\_part\_6} ($\rho=+1{,}00$);
+  \item \texttt{Tela 33\_part\_1} $\leftrightarrow$ \texttt{Tela 41\_part\_1} / \texttt{42\_part\_1} ($\rho=+1{,}00$);
+  \item \texttt{Tela 66\_part\_1} $\leftrightarrow$ \texttt{Tela 77\_part\_1} ($\rho=+1{,}00$);
+  \item \texttt{Tela 07\_part\_5} $\leftrightarrow$ \texttt{Tela 07\_part\_6} ($\rho=-1{,}00$);
+  \item \texttt{Tela 10\_part\_5} $\leftrightarrow$ \texttt{Tela 10\_part\_6} ($\rho=-1{,}00$).
+\end{itemize}
+Do ponto de vista inferencial, tal redundância \textbf{compromete a identificação estável dos pesos} e \textbf{piora a generalização}. Recomenda-se: (i) \textbf{agrupamento} e seleção de um representante por bloco colinear; (ii) \textbf{regularização mais intensa} (p.ex., incremento de $\lambda\_2$ para estabilização e $\lambda\_1$ para esparsidade), e (iii) eventuais \textbf{combinações lineares} (p.ex., médias/pontuações compostas) para reduzir dimensionalidade sem perder conteúdo semântico.
+
+\section{Distribuição de probabilidade por classe (viés de alocação)}
+A \texttt{07\_Class\_Contrib} mostra média e desvio-padrão de \textit{logits} e probabilidades por classe. Observa-se \textbf{concentração} pronunciada da probabilidade média nas classes:
+\begin{itemize}[leftmargin=1.2cm]
+  \item \textbf{Transtornos Depressivos} (média $\bar{p}=0{,}612$);
+  \item \textbf{Transtornos de Ansiedade} ($\bar{p}=0{,}320$).
+\end{itemize}
+Todas as demais classes apresentam \textbf{probabilidades médias muito baixas} (tipicamente $\bar{p} < 0{,}03$, muitas abaixo de $10^{-3}$). Em termos práticos, o heurístico $W_0$ está \textbf{polarizado} nestas duas classes, o que \textbf{reduz a diversidade} do \textit{top-k} e \textbf{explica parte da acurácia global modesta}. Esse padrão é compatível com o perfil de pesos (Seção 3) e sugere a necessidade de \textbf{recalibração} e \textbf{rebalanceamento} (por exemplo, ajuste fino de $W$ em torno de $W_0$, com penalização centrada e validação dirigida à macro top-k, e/ou regras de abstenção bem calibradas para ``Sem Transtorno'').
+
+\section{Implicações e recomendações metodológicas}
+Com base nas evidências acima, recomendam-se as seguintes ações:
+\begin{enumerate}[leftmargin=1.2cm]
+  \item \textbf{Redução de colinearidade}: (a) identificar blocos de variáveis com $\rho\approx\pm 1$ e \textbf{retirar duplicatas}; (b) aplicar \textbf{seleção por grupos} (group-lasso/Elastic Net) ou construir \textbf{índices compostos}.
+  \item \textbf{Refino do modelo}: (a) adotar \textbf{ajuste proximal} com penalização centrada em $W_0$ (L1+L2), visando \textbf{esparsidade} e \textbf{estabilidade}; (b) \textbf{monitorar macro top-k por classe}, preferindo critérios macro (menos sensíveis a desbalanceamentos).
+  \item \textbf{Calibração e abstenção}: (a) introduzir \textbf{regra de abstenção} (classe ``Sem Transtorno'') com busca de hiperparâmetros ($T\_1,T\_2,\gamma$) para \textbf{otimizar macro top-k}; (b) avaliar \textbf{calibração pós-treino} (p.ex., \textit{temperature scaling}) para reduzir picos espúrios de probabilidade em depressão/ansiedade.
+  \item \textbf{Higiene de itens/variáveis}: (a) revisar variáveis \textbf{positivamente associadas ao erro}; (b) padronizar escalas, evitar itens redundantes e \textbf{clarificar enunciados} potencialmente ambíguos.
+\end{enumerate}
+
+\section{Limitações e ameaças à validade}
+(i) O resultado reflete o \textbf{heurístico $W_0$} sem ajustes; melhorias esperadas decorrem do tuning controlado. (ii) O \textbf{desbalanceamento} de probabilidade por classe pode refletir \textbf{viés de mensuração} ou \textbf{viés do próprio $W_0$}. (iii) A presença de \textbf{colinearidade perfeita} limita a interpretação individual de pesos e requer pré-processamento específico. (iv) A análise de informação mútua foi usada como \textbf{rastreador} de não linearidade, não como prova causal.
+
+\section{Síntese}
+Em síntese, o arranjo heurístico $W_0$ apresenta \textbf{acurácia top-3 global de 16{,}97\%} e \textbf{concentração de probabilidade} em ``Transtornos Depressivos'' e ``Transtornos de Ansiedade''. Variáveis específicas mostram \textbf{associação sistemática com o erro}, enquanto a \textbf{colinearidade extensa} em subconjuntos de itens compromete a estabilidade inferencial. As recomendações centram-se em \textbf{redução de colinearidade}, \textbf{ajuste proximal com penalização centrada}, \textbf{calibração/abstenção} e \textbf{higiene de itens}, visando aumento de \textbf{macro top-k} e melhor \textbf{equilíbrio de probabilidade} entre as classes.
+
+\end{document}
