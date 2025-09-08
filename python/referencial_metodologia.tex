@@ -1,0 +1,93 @@
+
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{setspace}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+\setstretch{1.3}
+
+\title{Referencial Teórico e Metodologia do Sistema de Treinamento com Mutação e Regra de Classificação}
+\author{Projeto QIP}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Referencial Teórico}
+
+O objetivo deste trabalho é explicar, de maneira acessível até mesmo para pessoas sem formação técnica,
+como funciona um sistema de classificação baseado em aprendizado heurístico.
+De forma simplificada, o que se deseja é ensinar o computador a ``pesar'' diferentes características
+(dados de entrada) para chegar a uma probabilidade de cada possível resultado (classes).
+
+\subsection*{Classificação de Dados}
+Imagine que temos várias observações (como respostas de questionários ou medições clínicas) e queremos prever
+se cada pessoa pertence a uma ou mais categorias (como diferentes diagnósticos). O sistema analisa as colunas
+de dados e tenta aprender quais delas são mais importantes para cada categoria.
+
+\subsection*{Probabilidades e Softmax}
+O computador transforma a soma ponderada de cada característica em uma probabilidade.
+Para isso, utiliza-se uma função chamada \emph{softmax}, que garante que todas as probabilidades fiquem
+entre 0 e 1 e somem exatamente 1. Assim, podemos dizer, por exemplo, que para uma linha de dados a probabilidade
+é 70\% de pertencer à Classe A, 20\% à Classe B e 10\% à Classe C.
+
+\subsection*{Treino, Validação e Desconhecidos}
+Os dados foram separados em três grupos:
+\begin{itemize}
+    \item \textbf{Treino:} usado para ajustar os pesos do modelo;
+    \item \textbf{Validação:} usado para verificar se o ajuste está realmente funcionando em dados diferentes dos usados no treino;
+    \item \textbf{Desconhecidos:} linhas em que o alvo era ``não'' (ou vazio), ou seja, casos em que não sabemos a classe real. Eles não participam do treino nem da validação, mas recebem uma classificação final.
+\end{itemize}
+
+\subsection*{Classe ``Sem Transtorno''}
+Existe uma categoria especial chamada \textbf{Sem Transtorno}.
+Ela não é aprendida diretamente no treino, mas surge de uma \emph{regra} que observa quando o modelo está inseguro
+(em casos em que a maior probabilidade é baixa e a diferença para a segunda maior também é pequena). Nestes casos,
+o sistema aloca parte da probabilidade para a classe ``Sem Transtorno''.
+
+\subsection*{Mutação e Otimização}
+Para melhorar a busca por bons pesos, além do ajuste tradicional (gradiente), o sistema aplica \textbf{mutações aleatórias}
+em cinco colunas de cada vez. Isso ajuda a escapar de soluções ruins e explorar alternativas.
+Outras técnicas também são usadas para acelerar e estabilizar o aprendizado, como:
+\begin{itemize}
+    \item \textbf{Lookahead:} suaviza oscilações juntando soluções rápidas com uma versão mais estável;
+    \item \textbf{EMA (média exponencial):} mantém uma média dos melhores pesos ao longo do tempo;
+    \item \textbf{Pesos por classe:} dá mais importância a classes raras para não deixá-las esquecidas;
+    \item \textbf{Annealing:} começa mais flexível e vai ficando mais rígido com o tempo;
+    \item \textbf{Simulated Annealing:} permite aceitar pequenas piores soluções no início para não ficar preso em um ponto ruim;
+    \item \textbf{Dropout:} desliga temporariamente algumas colunas no treino, evitando dependência excessiva;
+    \item \textbf{Barzilai--Borwein:} ajusta automaticamente o tamanho do passo do aprendizado.
+\end{itemize}
+
+\section*{Metodologia}
+
+\subsection*{Etapas do Processo}
+O processo completo seguiu as etapas a seguir:
+
+\begin{enumerate}
+    \item \textbf{Preparação dos Dados:} leitura da planilha Excel, separando colunas de características (entradas) e a coluna Alvo (saídas desejadas).
+    Linhas com alvo ``não'' ou vazio foram marcadas como \emph{desconhecidas}.
+    \item \textbf{Definição das Classes:} foram consideradas as classes originais (como diferentes transtornos) e uma classe adicional ``Sem Transtorno'', que é ativada por regra e não por treino direto.
+    \item \textbf{Divisão dos Conjuntos:} os casos conhecidos foram divididos em treino e validação, garantindo que todas as classes estivessem representadas em ambos os grupos.
+    \item \textbf{Treinamento com Mutação:} o modelo foi ajustado por descida de gradiente proximal (técnica que combina aproximação suave e regularização), aliado a mutações em 5 colunas de cada vez. Foram aplicados os métodos auxiliares (Lookahead, EMA, etc.) para melhorar a convergência.
+    \item \textbf{Interrupção Manual:} o treinamento ocorre indefinidamente e só é interrompido quando o usuário pressiona a tecla ``q''. Nesse momento, são registrados os melhores parâmetros encontrados até então.
+    \item \textbf{Validação:} após o fim do treino, o modelo é avaliado no conjunto de validação, gerando métricas de desempenho (como macro top-3, F1 e perda de Hamming).
+    \item \textbf{Etapa Final:} são calculadas as probabilidades para todos os casos (incluindo os desconhecidos). A regra de ``Sem Transtorno'' é aprendida usando todas as linhas, definindo os parâmetros T1, T2 e $\gamma$. É gerada a aba ``Resultado\_Final'' na planilha com as probabilidades e o ranking top-3 para cada linha.
+\end{enumerate}
+
+\subsection*{Saídas Produzidas}
+O sistema grava várias abas no Excel, entre elas:
+\begin{itemize}
+    \item \textbf{Pontuação\_Tunada:} pesos ajustados por classe e característica;
+    \item \textbf{Resultado\_Heuristica\_Tunada:} probabilidades no treino;
+    \item \textbf{Metricas\_Heuristica\_Tunada:} métricas no treino;
+    \item \textbf{Resultado\_Validacao:} probabilidades no conjunto de validação;
+    \item \textbf{Metricas\_Validacao:} métricas no conjunto de validação;
+    \item \textbf{Split\_Info:} resumo de como foi feita a divisão treino/validação;
+    \item \textbf{Regras\_Normal:} parâmetros T1, T2, $\gamma$ aprendidos;
+    \item \textbf{Resultado\_Final:} probabilidades e top-3 para todas as linhas (incluindo as desconhecidas).
+\end{itemize}
+
+\end{document}
