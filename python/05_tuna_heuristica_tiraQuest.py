@@ -23,7 +23,7 @@ TOPK = 3
 LAMBDA_L1 = 1e-3
 LAMBDA_L2 = 1e-2
 LR        = 0.1
-MAX_ITERS = 800
+MAX_ITERS = 1000
 CHECK_EVERY = 10
 TARGET_MACRO_TOP3 = 0.99
 EPS_W = 1e-6
@@ -334,7 +334,7 @@ for it in range(1, MAX_ITERS+1):
         if best_macro >= TARGET_MACRO_TOP3:
             print("[PARAR] Atingiu meta de macro top-3 (com 'Sem Transtorno').")
             break
-        if no_improve >= 20:
+        if no_improve >= 100:
             print("[PARAR] Sem melhora por muito tempo (early stop).")
             break
 
