@@ -1,0 +1,33 @@
+OBJETIVO
+Usando o tensorflow e fazendo um modelo não linear de treinamento, faça:
+Separar os dados em TREINO/VALIDAÇÃO por classe, treinar a heurística (com mutação controlada em torno da aba “Pontuação”) e avaliar em 3 etapas:
+(1) treino Classes (Otimizar também a classe “Sem Transtorno” (ST) que não esta na aba pontuação seu valor W0), (3) validação, (4) predição nos “desconhecidos” (linhas com Alvo = “não/nao” ou vazio). Obs o treino das Classes que tem um peso inicial e o Treino da classe "Sem Transtorno" podem ser feitos em etapas diferentes, se assim achar melhor.
+
+DADOS DE ENTRADA
+- Usar a aba: TDados_clean (não usar TDados).
+- Coluna de rótulo: “Alvo”.
+- Tratar “não/nao” (e vazio/NaN) como DESCONHECIDO: NÃO entram no treino nem na validação; serão usados só na Etapa 3 (predição).
+- “Sem Transtorno” (ST) é uma CLASSE REAL que está explicitamente no Alvo.
+- As features X vêm de TDados_clean (colunas a partir da coluna B). Os pesos-base W0 vêm da aba “Pontuação”, que deve permanecer como âncora.
+
+SPLIT (por classe)
+- Para cada classe (incluindo ST quando explicitamente rotulada): enviar ~2/3 das linhas para TREINO e ~1/3 para VALIDAÇÃO, estratificado por classe.
+- Linhas DESCONHECIDAS (“não/nao”/vazio) ficam fora do split e serão usadas apenas na Etapa 3.
+- Classe com tamanho igual a 1 não entram no processo de treino/validação e são usadas apenas na Etapa 3 mas não entram no rankeamento
+- Classe com tamanho igual a 2 usa um para treino e o outro para validação
+
+CONSTRANGIMENTOS SOBRE OS PESOS (W)
+- Nunca alterar colunas W presente na aba cuja coluna inteira em X seja zero (colunas congeladas).
+- Não precisa manter projeção dos valores para se limitarem entre 0 e 1 e respeitar colunas congeladas.
+
+FUNÇÃO-OBJETIVO E PONDERAÇÃO
+- Otimizar TREINO visam que a classe Alvo fique entre os tres primeiros colocados, ou seja o alvo não precisa ser o mais expressivo e sim ficar entre os tres primeiros
+- Pesar mais as classes minoritárias, para evitar que sejam ignoradas.
+
+OTIMIZAÇÃO DA CLASSE “SEM TRANSTORNO” 
+- A classe "Sem Transtorno" não esta presente na aba Pontuação como as outras, porque ela é quando a classe apresenta uma baixa pontuação nas demais ou seja precisa ser criado um criterio que se a classe tem baixa influencia das demias então ele é "sem Transtorno"
+
+Lembre-se de procuar um modelos de treino não linear usando a ferramente Tensorflow
+
+
+

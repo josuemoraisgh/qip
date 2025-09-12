@@ -1,0 +1,17 @@
+{
+  "best_val_top3": 0.5192307829856873,
+  "config": {
+    "hidden": [
+      128,
+      64
+    ],
+    "dropout": 0.25,
+    "l2": 0.0,
+    "lr": 0.001,
+    "batch": 32
+  },
+  "tdados": "TDados_clean",
+  "pont": "Pontuação",
+  "target_resolved": "Alvo",
+  "features_count": 255
+}

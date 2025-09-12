@@ -1,0 +1,42 @@
+Prompt Final Incrementado
+
+Quero construir uma rede neural de classificação multiclasse com as seguintes condições:
+
+Seleção de Features:
+
+Utilizar como features todas as colunas da aba TDados_clean, desde que os valores correspondentes na aba Pontuação sejam diferentes de zero.
+
+Classes de Saída (Coluna Alvo):
+
+As classes a serem previstas são os transtornos definidos pelas colunas Pontuação A3 até A13.
+
+Deve haver uma classe adicional: "Sem Transtorno", representando os casos sem associação a nenhum transtorno listado.
+
+Critério de Avaliação:
+
+Uma previsão é considerada correta se a classe Alvo verdadeira estiver entre as 3 classes com maiores probabilidades previstas (top-3).
+
+Divisão de Dados:
+
+Para cada classe, utilizar 2/3 dos exemplos rotulados para treino e 1/3 para validação.
+
+Casos classificados como "Sem Transtorno" não devem ser usados no treino nem na validação.
+
+Etapa Final de Teste:
+
+Após o treino e a validação, aplicar o modelo em todos os elementos da aba TDados_clean.
+
+Para cada instância, apresentar as 3 classes mais prováveis (top-3), independentemente da Coluna Alvo.
+
+👉 Esse formato já está pronto para virar especificação de implementação.
+Se você quiser, posso traduzir isso direto para um roteiro em Keras/TensorFlow ou PyTorch com:
+
+carregamento do Excel,
+
+pré-processamento (filtro de colunas, divisão treino/validação),
+
+definição do modelo,
+
+métrica customizada de top-3 accuracy,
+
+e etapa final de inferência em todo o dataset.
