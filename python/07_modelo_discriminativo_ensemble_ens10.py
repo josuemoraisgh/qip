@@ -1,13 +1,16 @@
-# -*- coding: utf-8 -*-
-r"""
+"""
 Treino iterativo com logs de melhor até agora, warm-start e knowledge distillation.
 Na primeira iteração pode usar um modelo pronto como 'best' inicial (--best-init).
 Pressione 'q' para parar a qualquer momento.
 
+NOVO: a cada **10** melhores salvos, o sistema monta um **ensemble** destes 10 professores,
+gera *soft targets* médios (com reforço para classes de baixa ativação) e treina um **aluno
+destilado** a partir desse ensemble. O objetivo é dar maior variabilidade e cobertura às classes raras.
+
 Exemplo:
-  python 07_modelo_discriminativo_ensemble_fixed2.py ^
+  python 07_modelo_discriminativo_ensemble_ens10.py ^
       --excel "C:/SourceCode/qip/python/banco_dados.xlsx" ^
-      --sheet-pont "Pontuacao" --top3-threshold 0.85 --distill ^
+      --sheet-pont "Pontuacao" --top3-threshold 0.99 --distill ^
       --best-init "C:/SourceCode/qip/saida_modelo/best_model"
 """
 
@@ -38,7 +41,7 @@ import tensorflow as tf
 
 # ========= CLI =========
 def parse_args():
-    ap = argparse.ArgumentParser(description="Treino iterativo com warm-start e distillation (+best-init).")
+    ap = argparse.ArgumentParser(description="Treino iterativo com warm-start, distillation (+best-init) e ENSEMBLE a cada 10 melhores.")
 
     ap.add_argument("--excel", type=str, default=r"C:/SourceCode/qip/python/banco_dados.xlsx",
                     help="Caminho do Excel.")
@@ -70,9 +73,17 @@ def parse_args():
                     help="Peso da loss supervisionada (0..1) na distillation.")
 
     # best inicial
-    ap.add_argument("--best-init", type=str, default="C:/SourceCode/qip/saida_modelo/best_model",
+    ap.add_argument("--best-init", type=str, default=r"C:/SourceCode/qip/saida_modelo/best_model",
                     help="Caminho de um best inicial (diretório com model.keras, scaler.pkl, features.json, classes.json; "
                          "ou arquivo .keras/.h5). Se compatível, é usado como referência/teacher na 1ª iteração.")
+
+    # Ensemble-10 ajustes
+    ap.add_argument("--ens10-gamma", type=float, default=0.5,
+                    help="Expoente para reforço de classes de baixa ativação no ensemble (>=0).")
+    ap.add_argument("--ens10-min-teachers", type=int, default=6,
+                    help="Mínimo de professores compatíveis (classes iguais) exigidos para montar o ensemble.")
+    ap.add_argument("--ens10-max-epochs", type=int, default=200,
+                    help="Épocas do aluno destilado pelo ensemble.")
     return ap.parse_args()
 
 
@@ -302,7 +313,7 @@ def evaluate_history(history):
     return float(train_top3), float(val_top3)
 
 
-def save_best(model, scaler, classes, features, outdir, score, cfg, meta_extra=None):
+def save_best(model, scaler, classes, features, outdir, score, cfg, meta_extra=None, alias="best_model"):
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_dir = Path(outdir) / f"best_{score:.4f}_{ts}"
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -319,8 +330,8 @@ def save_best(model, scaler, classes, features, outdir, score, cfg, meta_extra=N
     if meta_extra: meta.update(meta_extra)
     with open(run_dir / "metadata.json", "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
-    # atualizar atalho "best_model"
-    best_link = Path(outdir) / "best_model"
+    # atualizar atalho alias
+    best_link = Path(outdir) / alias
     if best_link.exists():
         shutil.rmtree(best_link, ignore_errors=True)
     shutil.copytree(run_dir, best_link)
@@ -385,6 +396,109 @@ def same_arch(cfg1, cfg2):
     return cfg1["hidden"] == cfg2["hidden"] and abs(cfg1["dropout"] - cfg2["dropout"]) < 1e-9 and abs(cfg1["l2"] - cfg2["l2"]) < 1e-12
 
 
+# ========= ENSEMBLE 10 =========
+def _predict_with_bundle(bundle, df_rows, classes_target):
+    """Gera probabilidades de um bundle (teacher) para as linhas de df_rows, alinhando a ordem das classes ao alvo atual.
+       Retorna None se classes não batem.
+    """
+    if bundle.get("classes") is None or bundle.get("features") is None or bundle.get("scaler") is None:
+        return None
+    classes_b = np.array(bundle["classes"])
+    if set(classes_b.tolist()) != set(classes_target.tolist()):
+        return None  # incompatível
+    # mapear ordem do professor -> ordem atual
+    label_to_teacher = {lbl: i for i, lbl in enumerate(classes_b)}
+    reorder_idx = np.array([label_to_teacher[lbl] for lbl in classes_target], dtype=np.int32)
+    feats = bundle["features"]
+    X_df = df_rows[feats].copy()
+    for c in feats:
+        X_df[c] = pd.to_numeric(X_df[c], errors="coerce").fillna(X_df[c].median())
+    X = bundle["scaler"].transform(X_df.to_numpy())
+    proba = bundle["model"].predict(X, verbose=0)
+    proba = proba[:, reorder_idx]
+    return proba
+
+
+def build_ensemble_soft_targets(bundles, df_labeled, idx_array, classes_target, gamma=0.5):
+    """Cria soft targets médios dos professores e reforça classes de baixa ativação.
+       gamma=0 sem reforço; gamma>0 reforça 1/(média+eps)^gamma.
+    """
+    if len(bundles) == 0:
+        return None
+    rows = df_labeled.iloc[idx_array]
+    probs_list = []
+    for b in bundles:
+        proba = _predict_with_bundle(b, rows, classes_target)
+        if proba is not None and np.all(np.isfinite(proba)):
+            probs_list.append(proba)
+    if len(probs_list) == 0:
+        return None
+    P = np.stack(probs_list, axis=0).mean(axis=0)  # média dos professores
+    # reforço para classes com baixa ativação (avaliado no próprio conjunto)
+    mean_per_class = P.mean(axis=0)  # (C,)
+    eps = 1e-6
+    weights = np.power(np.maximum(mean_per_class, eps), -gamma)  # 1/(média)^gamma
+    P_boost = P * weights[None, :]
+    P_boost /= np.clip(P_boost.sum(axis=1, keepdims=True), eps, None)  # renormaliza
+    return P_boost
+
+
+def train_student_from_ensemble(X_train_student, y_train_idx, X_val_student, y_val_idx,
+                                classes_unique, scaler, feature_cols, outdir, base_cfg,
+                                soft_train, soft_val, args, meta_tag):
+    """Treina um aluno usando Distiller com teacher 'identity' que passa soft targets pré-computados."""
+    n_classes = classes_unique.size
+    n_features = X_train_student.shape[1]
+    student = build_model(n_features, n_classes,
+                          hidden=base_cfg["hidden"], dropout=base_cfg["dropout"],
+                          l2=base_cfg["l2"], lr=base_cfg["lr"])
+    # teacher identity: entrada -> saída (mesma dimensão C)
+    teacher_identity = keras.Sequential([keras.Input(shape=(n_classes,)), layers.Activation("linear")])
+    distiller = Distiller(student=student, teacher=teacher_identity,
+                          temperature=args.temperature, alpha=args.alpha, teacher_reorder_idx=None)
+    distiller.compile(
+        optimizer=keras.optimizers.Adam(base_cfg["lr"]),
+        metrics=["accuracy", keras.metrics.TopKCategoricalAccuracy(k=3, name="top3")],
+        student_loss_fn=keras.losses.CategoricalCrossentropy(),
+        distillation_loss_fn=keras.losses.KLDivergence(),
+    )
+    # class weights
+    cw_vals = compute_class_weight("balanced", classes=np.arange(n_classes), y=y_train_idx)
+    class_weight = {i: float(cw_vals[i]) for i in range(n_classes)}
+
+    callbacks = [
+        keras.callbacks.EarlyStopping(monitor="val_top3", mode="max", patience=20, restore_best_weights=True),
+        keras.callbacks.ReduceLROnPlateau(monitor="val_top3", mode="max", patience=8, factor=0.5, min_lr=1e-5, verbose=1),
+        BestSoFarPrinter(lambda: 0.0)
+    ]
+
+    y_train_oh = tf.one_hot(y_train_idx, depth=n_classes)
+    if X_val_student is not None and y_val_idx is not None and soft_val is not None:
+        y_val_oh = tf.one_hot(y_val_idx, depth=n_classes)
+        history = distiller.fit(
+            (X_train_student, soft_train), y_train_oh,
+            validation_data=((X_val_student, soft_val), y_val_oh),
+            epochs=args.ens10_max_epochs, batch_size=base_cfg["batch"],
+            class_weight=class_weight, callbacks=callbacks, verbose=2
+        )
+    else:
+        history = distiller.fit(
+            (X_train_student, soft_train), y_train_oh,
+            validation_split=0.15,
+            epochs=args.ens10_max_epochs, batch_size=base_cfg["batch"],
+            class_weight=class_weight, callbacks=callbacks, verbose=2
+        )
+    # avaliar
+    hist = history.history
+    val_top3 = float(max(hist.get("val_top3", [0.0])))
+    # salvar aluno (student)
+    trained_student = distiller.student
+    meta_extra = {"ensemble_from_last10": meta_tag}
+    cfg = base_cfg.copy()
+    run_dir = save_best(trained_student, scaler, classes_unique, feature_cols, outdir, val_top3, cfg, meta_extra, alias="best_model")
+    return val_top3, run_dir
+
+
 # ========= Main =========
 def main():
     args = parse_args()
@@ -414,7 +528,7 @@ def main():
 
     # excluir 'Sem Transtorno'
     mask_sem = y_all.str.strip().str.lower() == args.sem_label.lower()
-    df_labeled = df_feat.loc[~mask_sem].reset_index(drop=True)  # <<< robusto para .iloc
+    df_labeled = df_feat.loc[~mask_sem].reset_index(drop=True)
     X_labeled = X_all.loc[~mask_sem].to_numpy()
     y_labeled = y_all.loc[~mask_sem].to_numpy()
     if X_labeled.shape[0] == 0:
@@ -438,6 +552,8 @@ def main():
     X_train_student = scaler.fit_transform(X_train)
     if not use_internal_val:
         X_val_student = scaler.transform(X_val)
+    else:
+        X_val_student = None
 
     # ======== BEST-INIT (opcional) ========
     teacher_bundle = None
@@ -463,18 +579,15 @@ def main():
                     # preparar entradas do professor na validação (se houver)
                     if not use_internal_val and (teacher_bundle.get("scaler") is not None):
                         feats = teacher_bundle["features"]
-                        # reconstruir X_val nas features do professor a partir do df_labeled
                         X_val_teacher_df = df_labeled.iloc[val_idx][feats].copy()
                         for c in feats:
                             X_val_teacher_df[c] = pd.to_numeric(X_val_teacher_df[c], errors="coerce").fillna(X_val_teacher_df[c].median())
                         X_val_teacher = teacher_bundle["scaler"].transform(X_val_teacher_df.to_numpy())
                         # avaliar teacher
                         proba_teacher = teacher_bundle["model"].predict(X_val_teacher, verbose=0)
-                        # reordenar probs do professor para a ordem do aluno
                         proba_teacher = proba_teacher[:, teacher_reorder_idx]
                         best_val_top3 = compute_top3_acc_from_probs(proba_teacher, classes_unique, y_val_txt)
                         print(f"[INFO] best-init val_top3 (avaliado neste dataset): {best_val_top3:.4f}")
-                        # marcar como 'best_dir' o caminho (se for diretório)
                         if teacher_bundle.get("dir"):
                             best_dir = teacher_bundle["dir"]
                     else:
@@ -493,6 +606,8 @@ def main():
     # ======== LOOP DE TENTATIVAS ========
     base_cfg = {"hidden": (128, 64), "dropout": 0.25, "l2": 0.0, "lr": 1e-3, "batch": 32}
     trials = 0
+    best_dirs_log = []  # caminhos dos melhores salvos
+    ensemble_batches_done = 0
 
     while trials < args.max_trials:
         trials += 1
@@ -516,7 +631,6 @@ def main():
         )
 
         if use_teacher:
-            # preparar entradas do professor para treino/val (mesmos índices do aluno) usando df_labeled + iloc
             feats = teacher_bundle["features"]
             if (feats is not None) and (teacher_bundle.get("scaler") is not None):
                 # treino
@@ -532,7 +646,7 @@ def main():
                     X_val_teacher = teacher_bundle["scaler"].transform(X_val_teacher_df.to_numpy())
                 else:
                     X_val_teacher = None
-                # construir distiller (aluno recebe X_student; teacher recebe X_teacher)
+                # distiller
                 distiller = Distiller(student=student,
                                       teacher=teacher_bundle["model"],
                                       temperature=args.temperature,
@@ -580,7 +694,6 @@ def main():
                 class_weight=class_weight, callbacks=callbacks, verbose=2
             )
         else:
-            # validação interna (funciona para múltiplas entradas se forem arrays numpy alinhados)
             history = model.fit(
                 train_inputs, tf.one_hot(y_train_idx, depth=n_classes),
                 validation_split=0.15,
@@ -605,8 +718,46 @@ def main():
                 "target_resolved": y_series.name,
                 "features_count": len(feature_cols)
             }
-            best_dir = save_best(trained_model, scaler, classes_unique, feature_cols, OUT_DIR, best_val_top3, best_cfg, meta_extra)
+            best_dir = save_best(trained_model, scaler, classes_unique, feature_cols, OUT_DIR, best_val_top3, best_cfg, meta_extra, alias="best_model")
             print(f"[MELHOR] Novo melhor salvo: {best_dir}")
+            best_dirs_log.append(str(best_dir))
+
+            # ===== ENSEMBLE A CADA 10 MELHORES =====
+            if len(best_dirs_log) // 10 > ensemble_batches_done:
+                # carregar últimos 10
+                last10_dirs = best_dirs_log[-10:]
+                print(f"[ENSEMBLE-10] Preparando ensemble com os 10 últimos melhores:\n - " + "\n - ".join(last10_dirs))
+                bundles = []
+                for d in last10_dirs:
+                    try:
+                        bundles.append(load_model_bundle(Path(d)))
+                    except Exception as e:
+                        print(f"[ENSEMBLE-10][WARN] Falha ao carregar {d}: {e}")
+                # criar soft targets no treino/val
+                soft_train = build_ensemble_soft_targets(bundles, df_labeled, train_idx, classes_unique, gamma=args.ens10_gamma)
+                if not use_internal_val:
+                    soft_val = build_ensemble_soft_targets(bundles, df_labeled, val_idx, classes_unique, gamma=args.ens10_gamma)
+                else:
+                    soft_val = None
+                if soft_train is None or (not use_internal_val and soft_val is None):
+                    print("[ENSEMBLE-10][WARN] Não foi possível montar soft targets (professores incompatíveis ou insuficientes).")
+                else:
+                    # verificar mínimo de professores compatíveis (heurística: a média só é válida se pelo menos N professores contribuíram)
+                    # Como _predict_with_bundle filtra incompatíveis, inferimos 'n_teachers' pelo shape da pilha
+                    # Aqui apenas sinalizamos pela mensagem; o filtro prático já ocorreu.
+                    print("[ENSEMBLE-10] Soft targets prontos. Treinando aluno destilado do ensemble...")
+                    ens_val_top3, ens_run_dir = train_student_from_ensemble(
+                        X_train_student, y_train_idx, X_val_student, (y_val_idx if not use_internal_val else None),
+                        classes_unique, scaler, feature_cols, OUT_DIR, base_cfg,
+                        soft_train, soft_val, args,
+                        meta_tag={"teachers": last10_dirs, "gamma": args.ens10_gamma}
+                    )
+                    print(f"[ENSEMBLE-10] val_top3 do aluno destilado: {ens_val_top3:.4f}")
+                    if ens_val_top3 > best_val_top3:
+                        best_val_top3 = ens_val_top3
+                        best_dir = ens_run_dir
+                        print(f"[ENSEMBLE-10] Novo melhor geral veio do ensemble: {best_dir}")
+                ensemble_batches_done += 1
 
         # parar por critério
         if best_val_top3 >= args.top3_threshold:

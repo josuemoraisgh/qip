@@ -1,13 +1,13 @@
 {
-  "best_val_top3": 0.5192307829856873,
+  "best_val_top3": 0.6595744490623474,
   "config": {
     "hidden": [
       128,
       64
     ],
-    "dropout": 0.25,
-    "l2": 0.0,
-    "lr": 0.001,
+    "dropout": 0.6,
+    "l2": 0.0001,
+    "lr": 0.0016875000000000002,
     "batch": 32
   },
   "tdados": "TDados_clean",
