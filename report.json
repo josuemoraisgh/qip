@@ -11,7 +11,7 @@
   "l2": 0.02,
   "checks": 1001,
   "used_sheet": "Pontuação",
-  "output_file": "c:\\\\SourceCode\\\\qip\\\\python\\\\banco_dados_20250915_074645.xlsx",
+  "output_file": "c:\\\\SourceCode\\\\qip\\\\python\\\\banco_dados_20250915_111146.xlsx",
   "postrule": "none_softmax_ST",
   "n_jobs": 32,
   "mutations": true,

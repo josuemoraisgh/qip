@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-TDados Outlier Cleaner + Reclass (Jayne)
+TDados Outlier Cleaner + Reclass (Resia)
 - Lê classes válidas de Pontuação!A3:A13 (Excel, inclusivo).
 - Regras:
   (1) Rótulo fora das classes válidas -> "nao"
