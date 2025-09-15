@@ -1,17 +1,21 @@
 {
   "status": "ok",
-  "macro_valid_top1": 0.3541666666666667,
-  "macro_valid_top2": 0.43749999999999994,
-  "macro_valid_top3": 0.5833333333333333,
-  "bias_ST": 1.78786918345657,
-  "gamma_eff_VALID_mean": 8.266510044015054e-07,
+  "macro_valid_top1": 0.875,
+  "macro_valid_top2": 0.875,
+  "macro_valid_top3": 0.875,
+  "bias_ST": 1.9575314196622648,
+  "gamma_eff_VALID_mean": 1.7303260888682413e-05,
   "seed": 42,
   "lr": 0.02,
   "l1": 0.0025,
   "l2": 0.02,
   "checks": 1001,
   "used_sheet": "Pontuação",
-  "output_file": "c:\\\\SourceCode\\\\qip\\\\python\\\\banco_dados_20250915_073506.xlsx",
+  "output_file": "c:\\\\SourceCode\\\\qip\\\\python\\\\banco_dados_20250915_074645.xlsx",
   "postrule": "none_softmax_ST",
-  "n_jobs": 32
+  "n_jobs": 32,
+  "mutations": true,
+  "lambda_bias_prior": 0.05,
+  "lambda_gamma_target": 0.0,
+  "gamma_target": 0.3
 }
