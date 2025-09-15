@@ -1,0 +1,17 @@
+{
+  "status": "ok",
+  "macro_valid_top1": 0.3541666666666667,
+  "macro_valid_top2": 0.43749999999999994,
+  "macro_valid_top3": 0.5833333333333333,
+  "bias_ST": 1.78786918345657,
+  "gamma_eff_VALID_mean": 8.266510044015054e-07,
+  "seed": 42,
+  "lr": 0.02,
+  "l1": 0.0025,
+  "l2": 0.02,
+  "checks": 1001,
+  "used_sheet": "Pontuação",
+  "output_file": "c:\\\\SourceCode\\\\qip\\\\python\\\\banco_dados_20250915_073506.xlsx",
+  "postrule": "none_softmax_ST",
+  "n_jobs": 32
+}

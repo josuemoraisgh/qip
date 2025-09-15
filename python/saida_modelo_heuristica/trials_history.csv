@@ -1,2 +1,0 @@
-﻿round,seed,T1_min,T1_max,T1_steps,T2_min,T2_max,T2_steps,G_min,G_max,G_steps,macro_valid,hit_ST_train,report_json
-1,43,0.18,0.6,12,0.02,0.2,10,0.3,0.75,10,0.75625,0.0,c:\SourceCode\qip\python\banco_dados_report_round1.json

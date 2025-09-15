@@ -1,13 +1,29 @@
 """
-05_tuna_heuristica_TreinoValid.py (v2.3)
-- Checkpoint: reotimiza (T1,T2,γ) no TREINO e aplica TREINO/VALID.
-- Objetivo do grid configurável: st_top1 (padrão), macro, weighted (α·macro + (1-α)·st_top1).
-- Resultado_Heuristica_Tunada: adiciona colunas de auditoria (split, p1, p2, margin, st_rule_on).
-- Metricas_Heuristica_Tunada: inclui 'acertos_topk' por classe.
-- Regras_Normal: grava taxas de acionamento ST em TRAIN/VALID/ALL do último checkpoint.
+05_tuna_heuristica_TreinoValid.py (v2.9.1)
+Correções e ajustes:
+- Corrigido NameError em suportes_aug (variável 'labs' na compreensão).
+- Removido congelamento por X=0; permanece apenas a **Regra de Ouro**:
+  qualquer feature com TODOS os pesos = 0 na aba Pontuação/Pontuação_Tunada
+  fica congelada (não ajustável) e mantida 0 em todas as iterações.
+- Resultado_Heuristica_Tunada: sempre grava top1/top2/top3 (classe e prob).
+- Metricas_Heuristica_Tunada: agrega macro_top1_VALID, macro_top2_VALID, macro_top3_VALID.
+
+Snapshots 'best_K3_*.xlsx' continuam a cada melhora (VA1) e no diretório de --output (ou --input).
 """
 import os, sys, argparse, shutil, tempfile, json
 from datetime import datetime
+
+# ---------- Worker top-level para ProcessPool ----------
+def _grid_eval_chunk(payload):
+    (P_tr_core, y_train_aug, class_to_idx_aug, idx_to_class_aug, topk,
+     st_label, st_truth_mode, objective, alpha, chunk) = payload
+    best = (-1.0, None, None, None, None, None, None)
+    for (t1, t2, g) in chunk:
+        res = _eval_combo(P_tr_core, y_train_aug, class_to_idx_aug, idx_to_class_aug, topk,
+                          st_label, t1, t2, g, st_truth_mode, objective, alpha)
+        if res[0] > best[0] + 1e-12:
+            best = res
+    return best
 
 # ---------- Pré-parse para threads de BLAS ----------
 def _preparse_threads(argv):
@@ -34,7 +50,19 @@ _preparse_threads(sys.argv)
 
 import numpy as np
 import pandas as pd
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
+# --- Hotkey 'q' para interromper no Windows console ---
+try:
+    import msvcrt
+    def _user_requested_quit():
+        if msvcrt.kbhit():
+            ch = msvcrt.getwch()
+            return ch in ('q','Q')
+        return False
+except Exception:
+    def _user_requested_quit():
+        return False
 
 def _init_env_for_worker():
     for k in ("OMP_NUM_THREADS","MKL_NUM_THREADS","OPENBLAS_NUM_THREADS","NUMEXPR_NUM_THREADS"):
@@ -51,20 +79,37 @@ def softmax_rows(mat, axis=1, eps=1e-12):
     return e / (np.sum(e, axis=axis, keepdims=True) + eps)
 
 def save_preserving_sheets(target_path, dfs_and_sheets):
-    import openpyxl
+    import openpyxl  # garante engine
+    os.makedirs(os.path.dirname(target_path) or ".", exist_ok=True)
+
     tmpdir = tempfile.mkdtemp(); tmpfile = os.path.join(tmpdir, "tmp.xlsx")
     base_existed = False
     try:
         shutil.copyfile(target_path, tmpfile); base_existed = True
     except Exception:
-        with pd.ExcelWriter(tmpfile, engine="openpyxl", mode="w"): pass
+        base_existed = False  # arquivo de destino ainda não existe
+
     mode = "a" if base_existed else "w"
-    with pd.ExcelWriter(tmpfile, engine="openpyxl", mode=mode, if_sheet_exists="replace") as w:
-        for df, sheet in dfs_and_sheets: df.to_excel(w, sheet_name=sheet, index=False)
+    writer_args = dict(engine="openpyxl", mode=mode)
+    if mode == "a":
+        writer_args["if_sheet_exists"] = "replace"
+
+    with pd.ExcelWriter(tmpfile, **writer_args) as w:
+        wrote_any = False
+        for df, sheet in dfs_and_sheets:
+            dfx = pd.DataFrame(df)
+            if dfx.shape[0] == 0 and dfx.shape[1] == 0:
+                dfx = pd.DataFrame({"_": []})
+            dfx.to_excel(w, sheet_name=sheet, index=False)
+            wrote_any = True
+        if not wrote_any:
+            pd.DataFrame({"_": []}).to_excel(w, sheet_name="Sheet1", index=False)
+
     try:
         os.replace(tmpfile, target_path); saved = target_path
     except PermissionError:
-        carimbo = datetime.now().strftime("%Y%m%d_%H%M%S"); alt = target_path.replace(".xlsx", f"_{carimbo}.xlsx")
+        carimbo = datetime.now().strftime("%Y%m%d_%H%M%S")
+        alt = target_path.replace(".xlsx", f"_{carimbo}.xlsx")
         shutil.copyfile(tmpfile, alt); saved = alt
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
@@ -121,6 +166,7 @@ def macro_topk(y_lists, proba, class_to_idx, idx_to_class, k=3, st_truth_mode=No
 
 def project_bounds(W, adjustable_mask, W0, eps=1e-6):
     Wp = W.copy()
+    # congeladas: sempre iguais a W0 (que mantém 0 nas features bloqueadas)
     Wp[~adjustable_mask,:] = W0[~adjustable_mask,:]
     if np.any(adjustable_mask):
         Wp[adjustable_mask,:] = np.clip(Wp[adjustable_mask,:], eps, 1.0)
@@ -175,7 +221,6 @@ def save_diag_sheet(path, sheet_name, rows):
 def _score_tuple(macro_tr, st1_tr, objective, alpha):
     if objective == "macro": return macro_tr
     if objective == "st_top1": return st1_tr
-    # weighted
     return alpha*macro_tr + (1.0-alpha)*st1_tr
 
 def _eval_combo(P_tr_core, y_train_aug, class_to_idx_aug, idx_to_class_aug, topk, st_label,
@@ -190,36 +235,131 @@ def _eval_combo(P_tr_core, y_train_aug, class_to_idx_aug, idx_to_class_aug, topk
 def grid_search_postrule_threads(P_tr_core, y_train_aug, class_names_aug, topk,
                                  T1s, T2s, Gs, n_jobs, st_label, st_truth_mode,
                                  objective, alpha):
+    import math
     class_to_idx_aug = {c:i for i,c in enumerate(class_names_aug)}
     idx_to_class_aug = {i:c for i,c in enumerate(class_names_aug)}
     combos = [(t1,t2,g) for t1 in T1s for t2 in T2s for g in Gs]
-    best = (-1.0, None, None, None, None, None, None)  # score, macro_tr, st_tr, T1, T2, g, hit
-    workers = max(1, int(n_jobs))
-    from concurrent.futures import ThreadPoolExecutor, as_completed
-    with ThreadPoolExecutor(max_workers=workers) as ex:
-        futs = [ex.submit(_eval_combo, P_tr_core, y_train_aug, class_to_idx_aug, idx_to_class_aug, topk,
-                          st_label, *c, st_truth_mode, objective, alpha) for c in combos]
+    total = len(combos)
+    if total == 0:
+        return (-1.0, 0.0, 0.0, None, None, None, 0.0)
+
+    workers = max(1, min(int(n_jobs), os.cpu_count() or 1, total))
+    chunk_size = max(1, math.ceil(total / workers))
+    chunks = [combos[i:i+chunk_size] for i in range(0, total, chunk_size)]
+
+    if workers == 1:
+        return _grid_eval_chunk((P_tr_core, y_train_aug, class_to_idx_aug, idx_to_class_aug, topk,
+                                 st_label, st_truth_mode, objective, alpha, combos))
+
+    best = (-1.0, None, None, None, None, None, None)
+    with ProcessPoolExecutor(max_workers=workers, initializer=_init_env_for_worker) as ex:
+        futs = [ex.submit(_grid_eval_chunk,
+                          (P_tr_core, y_train_aug, class_to_idx_aug, idx_to_class_aug, topk,
+                           st_label, st_truth_mode, objective, alpha, ch))
+                for ch in chunks]
         for fut in as_completed(futs):
             res = fut.result()
-            if res[0] > best[0] + 1e-9: best = res
-    return best  # (score, macro_tr, st_tr, T1, T2, g, hit_tr)
+            if res[0] > best[0] + 1e-12:
+                best = res
+    return best
 
-def _ga_worker_eval(Wm, X_train_grid, X_val_grid, y_train_aug, y_val_aug,
-                    class_names_aug, class_to_idx_aug, idx_to_class_aug, TOPK,
-                    GRID_T1, GRID_T2, GRID_G, ST_LABEL, ST_MODE, OBJECTIVE, ALPHA):
-    def grid_eval_local(W_current):
-        P_tr_core = softmax_rows(X_train_grid @ W_current)
-        score, macro_tr, st_tr, T1b, T2b, Gb, hit_tr = grid_search_postrule_threads(
-            P_tr_core, y_train_aug, class_names_aug, TOPK, GRID_T1, GRID_T2, GRID_G,
-            n_jobs=1, st_label=ST_LABEL, st_truth_mode=ST_MODE, objective=OBJECTIVE, alpha=ALPHA
-        )
-        P_v_core = softmax_rows(X_val_grid @ W_current)
-        P_v_aug, hits_v, _, _ = add_normal_by_rule(P_v_core, T1b, T2b, Gb, st_name=ST_LABEL)
-        macro_val = macro_topk(y_val_aug, P_v_aug, class_to_idx_aug, idx_to_class_aug, k=TOPK,
-                               st_truth_mode=ST_MODE, st_label=ST_LABEL)
-        st_v, st_hits_v, st_sup_v = st_top1_metric(y_val_aug, P_v_aug, ST_LABEL, mode=ST_MODE)
-        return (macro_val, T1b, T2b, Gb, st_v, st_hits_v, st_sup_v, float(hits_v.mean()))
-    return grid_eval_local(Wm)
+def _snapshot_save(base_input_path, output_path, W_best, T1, T2, G, ST_LABEL,
+                   df_all, cols_dados, class_core, class_names_aug, split,
+                   X_all, X_val_grid, y_val_aug, class_to_idx_aug, idx_to_class_aug,
+                   ABA_PONTOS_TUNADA, ABA_RES_HEUR_TUN, ABA_MET_HEUR_TUN, ABA_REGRAS_NORMAL,
+                   ABA_EXPLICAO, ABA_DIAG, ABA_COMPARATIVO_TUDO, diag_rows, K0, args, adjustable_mask, W0):
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+
+    W_tuned = project_bounds(W_best, adjustable_mask, W0, args.eps_w)
+    P_all_core = softmax_rows(X_all @ W_tuned)
+    P_all_aug, hits_all, p1_all, p2_all = add_normal_by_rule(P_all_core, T1, T2, G, st_name=ST_LABEL)
+
+    P_val_core = softmax_rows(X_val_grid @ W_tuned)
+    P_val_aug, hits_val, p1_val, p2_val = add_normal_by_rule(P_val_core, T1, T2, G, st_name=ST_LABEL)
+
+    macro_val_top1 = macro_topk(y_val_aug, P_val_aug, class_to_idx_aug, idx_to_class_aug, k=1,
+                                st_truth_mode=args.st_truth_mode, st_label=ST_LABEL)
+    macro_val_top2 = macro_topk(y_val_aug, P_val_aug, class_to_idx_aug, idx_to_class_aug, k=2,
+                                st_truth_mode=args.st_truth_mode, st_label=ST_LABEL)
+    macro_val_top3 = macro_topk(y_val_aug, P_val_aug, class_to_idx_aug, idx_to_class_aug, k=3,
+                                st_truth_mode=args.st_truth_mode, st_label=ST_LABEL)
+
+    df_pont_tun = pd.DataFrame(W_tuned.T, columns=cols_dados)
+    df_pont_tun.insert(0, "Tipo de Transtorno", class_core)
+
+    df_res = df_all[[df_all.columns[0]]].copy()
+    if args.col_alvo in df_all.columns: df_res[args.col_alvo] = df_all[args.col_alvo]
+    for j, name in enumerate(class_names_aug): df_res[f"p_{name}"] = P_all_aug[:, j]
+
+    order_all = np.argsort(-P_all_core, axis=1)
+    p1 = P_all_core[np.arange(P_all_core.shape[0]), order_all[:,0]]
+    p2 = P_all_core[np.arange(P_all_core.shape[0]), order_all[:,1] if K0>1 else np.zeros(P_all_core.shape[0],int)]
+    margin = p1 - p2
+    df_res["split"] = split
+    df_res["p1_core"] = p1
+    df_res["p2_core"] = p2
+    df_res["margin_core"] = margin
+    df_res["st_rule_on"] = hits_all.astype(int)
+
+    order_all_aug = np.argsort(-P_all_aug, axis=1)
+    tops_rec = []
+    for i in range(P_all_aug.shape[0]):
+        rec = {}
+        for t in range(min(3, P_all_aug.shape[1])):
+            c = order_all_aug[i, t]
+            rec[f"top{t+1}_classe"] = class_names_aug[c]
+            rec[f"top{t+1}_prob"]   = float(P_all_aug[i, c])
+        tops_rec.append(rec)
+    df_res = pd.concat([df_res, pd.DataFrame(tops_rec)], axis=1)
+
+    rows = []
+    for c_idx, c_name in enumerate(class_names_aug):
+        if c_name == ST_LABEL:
+            mask = st_truth_mask(y_val_aug, ST_LABEL, mode=args.st_truth_mode)
+        else:
+            mask = np.array([c_name in labs for labs in y_val_aug], bool)
+        sup = int(mask.sum())
+        if sup == 0:
+            rows.append({"classe": c_name, f"top{args.topk}_rate": np.nan, "acertos_topk": 0, "suporte": 0})
+            continue
+        ord_c = np.argsort(-P_val_aug[mask], axis=1)[:, :args.topk]
+        hits = sum(c_idx in ord_c[r] for r in range(ord_c.shape[0]))
+        rows.append({"classe": c_name, f"top{args.topk}_rate": hits / sup, "acertos_topk": hits, "suporte": sup})
+    df_met_cls = pd.DataFrame(rows)
+
+    df_met_sum = pd.DataFrame([{
+        "macro_top1_VALID": macro_val_top1,
+        "macro_top2_VALID": macro_val_top2,
+        "macro_top3_VALID": macro_val_top3,
+        f"macro_top{args.topk}_VALID": df_met_cls[f"top{args.topk}_rate"].mean(skipna=True),
+        "observacao": "Macro VALID com pós-regra (top1..3 e por-classe no topk escolhido)."
+    }])
+
+    df_metricas_tun = pd.concat([pd.DataFrame([{"secao":"agregado_VALID", **df_met_sum.iloc[0].to_dict()}]),
+                                 df_met_cls.assign(secao="por_classe_VALID")], ignore_index=True)
+
+    df_regras = pd.DataFrame([
+        {"param": "T1", "value": T1},
+        {"param": "T2", "value": T2},
+        {"param": "gamma", "value": G},
+        {"param": "macro_valid_top1", "value": float(macro_val_top1)},
+        {"param": "macro_valid_top2", "value": float(macro_val_top2)},
+        {"param": "macro_valid_top3", "value": float(macro_val_top3)},
+        {"param": "colunas_congeladas_pontuacao_zero", "value": int(np.all(np.isclose(W0, 0.0, atol=1e-12), axis=1).sum())},
+    ])
+
+    df_expl_add = pd.DataFrame([{"Aba": ABA_RES_HEUR_TUN, "Descricao": "Snapshot a cada melhor VALID; top1..top3 gravados; hotkey 'q'."}])
+    df_comp_tudo = df_res.copy()
+
+    saved_path = save_preserving_sheets(output_path,
+        [(df_pont_tun, ABA_PONTOS_TUNADA),
+         (df_res, ABA_RES_HEUR_TUN),
+         (df_metricas_tun, ABA_MET_HEUR_TUN),
+         (df_regras, ABA_REGRAS_NORMAL),
+         (df_expl_add, ABA_EXPLICAO),
+         (pd.DataFrame(diag_rows), ABA_DIAG),
+         (df_comp_tudo, ABA_COMPARATIVO_TUDO)])
+    return saved_path, float(macro_val_top3)
 
 def main(args):
     try:
@@ -245,8 +385,6 @@ def main(args):
     GRID_T2 = np.linspace(args.grid_t2_min, args.grid_t2_max, args.grid_t2_steps)
     GRID_G  = np.linspace(args.grid_g_min,  args.grid_g_max,  args.grid_g_steps)
 
-    GA_NUM = args.ga_num_mutants; GA_COLS = args.ga_mutate_cols; GA_SCALE = args.ga_mutation_scale
-
     REPORT_JSON = args.report_json; N_JOBS = max(1, args.n_jobs); N_PROCS = max(0, args.procs)
 
     print("[INFO] Configuração:")
@@ -257,9 +395,9 @@ def main(args):
     print(f"  grid T1=[{args.grid_t1_min},{args.grid_t1_max}]x{args.grid_t1_steps}  "
           f"T2=[{args.grid_t2_min},{args.grid_t2_max}]x{args.grid_t2_steps}  "
           f"gamma=[{args.grid_g_min},{args.grid_g_max}]x{args.grid_g_steps}")
-    print(f"  GA: num_mutants={GA_NUM} mutate_cols={GA_COLS} scale={GA_SCALE}")
     print(f"  REPORT_JSON={REPORT_JSON} | ST_MODE={ST_MODE} | OBJECTIVE={OBJECTIVE} α={ALPHA}")
 
+    # ----- Entrada principal -----
     df_all = pd.read_excel(INPUT, sheet_name=ABA_DADOS)
     xl = pd.ExcelFile(INPUT)
     usar_tunada = args.prefer_tunada and (ABA_PONTOS_TUNADA in xl.sheet_names)
@@ -279,9 +417,9 @@ def main(args):
     if faltantes: raise ValueError(f"Colunas de {ABA_DADOS} ausentes em '{aba_pontos_usada}': {faltantes[:10]}{'...' if len(faltantes)>10 else ''}")
 
     W_block = df_pont.loc[linhas_modelos, cols_dados]
-    W0 = W_block.apply(pd.to_numeric, errors="coerce").fillna(0.0).values.T
-    K0 = W0.shape[1]; 
-    if K0 != COLUNA_TAM: raise ValueError(f"Dimensão inesperada de W core: {W0.shape}, esperado K0={COLUNA_TAM}.")
+    W0_sheet = W_block.apply(pd.to_numeric, errors="coerce").fillna(0.0).values.T  # (features x K0)
+    K0 = W0_sheet.shape[1]
+    if K0 != COLUNA_TAM: raise ValueError(f"Dimensão inesperada de W core: {W0_sheet.shape}, esperado K0={COLUNA_TAM}.")
     class_core = df_pont.loc[linhas_modelos, "Tipo de Transtorno"].astype(str).tolist() if "Tipo de Transtorno" in df_pont.columns else [f"Classe_{i+1}" for i in range(COLUNA_TAM)]
 
     X_all = np.clip(np.nan_to_num(X_all, nan=0.0, neginf=0.0, posinf=1.0), 0.0, 1.0)
@@ -296,7 +434,8 @@ def main(args):
     y_core_all = [[c for c in labs if c in CORE] for labs in y_lists_all]
     class_names_aug = class_core + [ST_LABEL]
 
-    suportes_aug = {c: sum(c in labs for labs in y_lists_all) for c in class_names_aug}
+    # ---- FIX: usar variável 'labs' corretamente na compreensão ----
+    suportes_aug = {c: sum((c in labs) for labs in y_lists_all) for c in class_names_aug}
     eligible_labels_aug = {c for c,s in suportes_aug.items() if s >= args.min_support_val}
     minor_labels_aug = set(class_names_aug) - eligible_labels_aug
 
@@ -318,7 +457,8 @@ def main(args):
 
     for i in order_idx:
         labs = [c for c in y_tv_aug[i] if c in eligible_labels_aug]
-        if not labs: assign_train_local[i] = True; continue
+        if not labs:
+            assign_train_local[i] = True; continue
         needs = any(counts_train[c] < targets_train[c] for c in labs)
         if needs:
             assign_train_local[i] = True
@@ -330,7 +470,6 @@ def main(args):
     idx_train_grid = np.unique(np.concatenate([idx_tv_pool[np.where(assign_train_local)[0]], idx_minor_train_for_grid]))
     idx_val_grid   = np.setdiff1d(np.unique(idx_tv_pool[np.where(assign_val_local)[0]]), idx_train_grid)
 
-    # Split tag: train/valid/minor_train
     split = np.array(["other"]*n_all, dtype=object)
     split[idx_train_grid] = "train"
     split[idx_val_grid] = "valid"
@@ -339,9 +478,19 @@ def main(args):
     has_core_label = np.array([len([c for c in labs if c in CORE])>0 for labs in y_lists_all], bool)
     idx_train_grad = idx_train_grid[has_core_label[idx_train_grid]]
 
-    adjustable_mask = (X_all.max(axis=0) > 0)
-    print(f"[INFO] Colunas congeladas (X coluna toda = 0): {int((~adjustable_mask).sum())}")
-    print(f"[INFO] Colunas ajustáveis (X tem algum valor >0): {int(adjustable_mask.sum())}")
+    # ---------- REGRA DE OURO (somente): colunas cujo W=0 em TODAS as classes ficam congeladas ----------
+    mask_w_all_zero = np.all(np.isclose(W0_sheet, 0.0, atol=1e-12), axis=1)  # shape (features,)
+    # W0 base mantém exatamente zeros nessas colunas
+    W0_base = W0_sheet.copy()
+    W0_base[mask_w_all_zero, :] = 0.0
+    # W0 efetivo para otimização: clipe SOMENTE colunas ajustáveis
+    W0_eff = W0_base.copy()
+    adjustable_mask = (~mask_w_all_zero)
+    if np.any(adjustable_mask):
+        W0_eff[adjustable_mask,:] = np.clip(W0_eff[adjustable_mask,:], args.eps_w, 1.0)
+
+    print(f"[INFO] Colunas congeladas pela 'Regra de Ouro' (Pontuação=0 em TODAS as classes): {int(mask_w_all_zero.sum())}")
+    print(f"[INFO] Colunas ajustáveis (usáveis): {int(adjustable_mask.sum())}")
 
     class_to_idx_core = {c:i for i,c in enumerate(class_core)}
     idx_to_class_core = {i:c for i,c in enumerate(class_core)}
@@ -356,8 +505,7 @@ def main(args):
     K0 = len(class_core)
     Ydist_train = y_distribution(y_train_core, class_to_idx_core, K0)
 
-    W0 = np.clip(W0, args.eps_w, 1.0)
-    W = W0.copy()
+    W = W0_eff.copy()
     diag_rows = []
 
     def grid_eval(W_current):
@@ -367,33 +515,48 @@ def main(args):
             st_label=ST_LABEL, st_truth_mode=ST_MODE, objective=OBJECTIVE, alpha=ALPHA
         )
         P_tr_aug, hits_tr_mask, p1_tr, p2_tr = add_normal_by_rule(P_tr_core, T1_b, T2_b, G_b, st_name=ST_LABEL)
+
         P_v_core  = softmax_rows(X_val_grid @ W_current)
         P_v_aug, hits_v_mask, p1_v, p2_v = add_normal_by_rule(P_v_core,  T1_b, T2_b, G_b, st_name=ST_LABEL)
+
         macro_val = macro_topk(y_val_aug, P_v_aug, class_to_idx_aug, idx_to_class_aug, k=args.topk,
                                st_truth_mode=ST_MODE, st_label=ST_LABEL)
+        macro_val_k3 = macro_topk(y_val_aug, P_v_aug, class_to_idx_aug, idx_to_class_aug, k=3,
+                                  st_truth_mode=ST_MODE, st_label=ST_LABEL)
+
         st_v, st_hits_v, st_sup_v = st_top1_metric(y_val_aug, P_v_aug, ST_LABEL, mode=ST_MODE)
-        return (macro_tr, macro_val, (T1_b, T2_b, G_b), float(hits_tr_mask.mean()), float(hits_v_mask.mean()),
+        return (macro_tr, macro_val, macro_val_k3, (T1_b, T2_b, G_b),
+                float(hits_tr_mask.mean()), float(hits_v_mask.mean()),
                 st_tr, st_v, st_hits_v, st_sup_v)
 
-    # baseline
-    macro_tr0, macro_val0, (best_T1, best_T2, best_G), hit_tr0, hit_v0, st_tr0, st_v0, _, _ = grid_eval(W)
+    macro_tr0, macro_val0, macro_val0_k3, (best_T1, best_T2, best_G), hit_tr0, hit_v0, st_tr0, st_v0, _, _ = grid_eval(W)
     best_macro_val = macro_val0; best_W = W.copy()
-    print(f"[INFO] Baseline: VALID macro top-{args.topk}={best_macro_val:.3%} | "
+    print(f"[INFO] Baseline: macro(TR/VA_VA3)={macro_tr0:.3%}/{macro_val0:.3%}_{macro_val0_k3:.3%} | "
           f"T1={best_T1:.3f} T2={best_T2:.3f} γ={best_G:.3f} | "
-          f"ST_top1(TR/VL)={st_tr0:.3%}/{st_v0:.3%} | acionamento(TR/VL)={hit_tr0:.1%}/{hit_v0:.1%}")
+          f"ST_top1(TR/VA)={st_tr0:.3%}/{st_v0:.3%} | "
+          f"aciona(TR/VA1_VA3)={hit_tr0:.3%}/{hit_v0:.3%}_{macro_val0_k3:.3%}")
+
+    ST_LABEL = args.normal_label; ST_MODE = args.st_truth_mode
+    OBJECTIVE = args.grid_objective; ALPHA = args.grid_alpha
+    N_JOBS = max(1, args.n_jobs)
 
     no_improve = 0; total_checks = 0
+    snapshot_count = 0; last_k3_saved = None
+
     for it in range(1, args.max_iters+1):
+        if _user_requested_quit():
+            print("[PARAR] Interrompido pelo usuário (tecla 'q')."); break
+
         if X_train_grad.shape[0] > 0:
             P_tr = softmax_rows(X_train_grad @ W)
             n_tr = max(X_train_grad.shape[0], 1)
             Gs   = (P_tr - Ydist_train) / n_tr
             Gw   = X_train_grad.T @ Gs
-            W = proximal_step(W, Gw, W0, args.lr, args.l1, args.l2, adjustable_mask, args.eps_w)
+            W = proximal_step(W, Gw, W0_eff, args.lr, args.l1, args.l2, adjustable_mask, args.eps_w)
 
         if it % args.check_every == 0 or it == 1 or it == args.max_iters:
             total_checks += 1
-            macro_tr, macro_val, (T1_c,T2_c,G_c), hit_tr, hit_v, st_tr, st_v, st_hits_v, st_sup_v = grid_eval(W)
+            macro_tr, macro_val, macro_val_k3, (T1_c,T2_c,G_c), hit_tr, hit_v, st_tr, st_v, st_hits_v, st_sup_v = grid_eval(W)
 
             improved = False
             if macro_val > best_macro_val + 1e-6:
@@ -403,20 +566,43 @@ def main(args):
 
             diag_rows.append({
                 "iter": it, "T1": T1_c, "T2": T2_c, "gamma": G_c,
-                "macro_top{}_TRAIN".format(args.topk): macro_tr,
-                "macro_top{}_VALID".format(args.topk): macro_val,
+                f"macro_top{TOPK}_TRAIN": macro_tr,
+                f"macro_top{TOPK}_VALID": macro_val,
                 "ST_top1_TRAIN": st_tr, "ST_top1_VALID": st_v,
                 "ST_aciona_rate_TRAIN": hit_tr, "ST_aciona_rate_VALID": hit_v,
                 "ST_hits_VALID": st_hits_v, "ST_sup_VALID": st_sup_v,
+                "VA_macro_top3": macro_val_k3,
                 "improved": improved
             })
 
-            print(f"[IT {it:03d}] macro(TR/VA)={macro_tr:.3%}/{macro_val:.3%}  "
+            print(f"[IT {it:03d}] macro(TR/VA_VA3)={macro_tr:.3%}/{macro_val:.3%}_{macro_val_k3:.3%}  "
                   f"T1={T1_c:.3f} T2={T2_c:.3f} γ={G_c:.3f}  "
                   f"ST_top1(TR/VA)={st_tr:.3%}/{st_v:.3%}  "
-                  f"aciona(TR/VA)={hit_tr:.1%}/{hit_v:.1%}  bestVA={best_macro_val:.3%}")
+                  f"aciona(TR/VA1_VA3)={hit_tr:.3%}/{hit_v:.3%}_{macro_val_k3:.3%}  "
+                  f"bestVA={best_macro_val:.3%}")
 
-            if best_macro_val >= args.target_macro_topk: print("[PARAR] Atingiu meta."); break
+            if improved:
+                k3_int = int(round(macro_val_k3 * 1000))  # ex.: 47.917% -> 47917
+                carimbo = datetime.now().strftime("%Y%m%d_%H%M%S")
+                base_dir = os.path.dirname(OUTPUT) if (OUTPUT and os.path.dirname(OUTPUT)) else os.path.dirname(INPUT)
+                base_dir = base_dir or "."
+                os.makedirs(base_dir, exist_ok=True)
+                snap_name = f"best_K3_{k3_int}_{carimbo}.xlsx"
+                snap_path = os.path.join(base_dir, snap_name)
+
+                saved_snap, k3_saved = _snapshot_save(INPUT, snap_path, best_W, best_T1, best_T2, best_G, ST_LABEL,
+                                                      df_all, cols_dados, class_core, class_names_aug, split,
+                                                      X_all, X_val_grid, y_val_aug, class_to_idx_aug, idx_to_class_aug,
+                                                      ABA_PONTOS_TUNADA, ABA_RES_HEUR_TUN, ABA_MET_HEUR_TUN, ABA_REGRAS_NORMAL,
+                                                      ABA_EXPLICAO, ABA_DIAG, ABA_COMPARATIVO_TUDO, diag_rows, K0, args, adjustable_mask, W0_eff)
+                snapshot_count += 1; last_k3_saved = k3_saved
+                print(f"[SNAPSHOT] Salvo '{snap_name}'  (VA3={k3_saved:.3%})")
+
+            if _user_requested_quit():
+                print("[PARAR] Interrompido pelo usuário (tecla 'q')."); break
+
+            if best_macro_val >= args.target_macro_topk:
+                print("[PARAR] Atingiu meta."); break
             if not improved:
                 no_improve += 1
                 if no_improve >= args.early_stop_patience:
@@ -424,21 +610,26 @@ def main(args):
             else:
                 no_improve = 0
 
-    # --- Final: aplica melhor trio em TODOS ---
-    W_tuned = project_bounds(best_W, adjustable_mask, W0, args.eps_w)
+    # ---------- métricas finais + persistência ----------
+    W_tuned = project_bounds(best_W, adjustable_mask, W0_eff, args.eps_w)
     P_all_core = softmax_rows(X_all @ W_tuned)
     P_all_aug, hits_all, p1_all, p2_all = add_normal_by_rule(P_all_core, best_T1, best_T2, best_G, st_name=ST_LABEL)
 
-    # VAL para relatório final (com mesmo trio)
     P_val_core = softmax_rows(X_val_grid @ W_tuned)
     P_val_aug, hits_val, p1_val, p2_val = add_normal_by_rule(P_val_core, best_T1, best_T2, best_G, st_name=ST_LABEL)
-    macro_final_valid = macro_topk(y_val_aug, P_val_aug, class_to_idx_aug, idx_to_class_aug, k=args.topk,
-                                   st_truth_mode=ST_MODE, st_label=ST_LABEL)
+    macro_final_valid_k1 = macro_topk(y_val_aug, P_val_aug, class_to_idx_aug, idx_to_class_aug, k=1,
+                                      st_truth_mode=ST_MODE, st_label=ST_LABEL)
+    macro_final_valid_k2 = macro_topk(y_val_aug, P_val_aug, class_to_idx_aug, idx_to_class_aug, k=2,
+                                      st_truth_mode=ST_MODE, st_label=ST_LABEL)
+    macro_final_valid_k3 = macro_topk(y_val_aug, P_val_aug, class_to_idx_aug, idx_to_class_aug, k=3,
+                                      st_truth_mode=ST_MODE, st_label=ST_LABEL)
     st_top1_final_valid, st_hits_valid, st_sup_valid = st_top1_metric(y_val_aug, P_val_aug, ST_LABEL, mode=ST_MODE)
 
-    print(f"[RESULTADO] VALID macro top-{args.topk} = {macro_final_valid:.3%}  | ST_top1_VALID={st_top1_final_valid:.3%}  (hits={st_hits_valid}/{st_sup_valid})")
+    print(f"[RESULTADO] VALID macro top-1/2/3 = {macro_final_valid_k1:.3%}/{macro_final_valid_k2:.3%}/{macro_final_valid_k3:.3%}  | ST_top1_VALID={st_top1_final_valid:.3%}  (hits={st_hits_valid}/{st_sup_valid})")
+    if snapshot_count:
+        print(f"[RESUMO] Snapshots criados: {snapshot_count}  (último VA3={last_k3_saved:.3%})")
 
-    # ---- Abas de saída ----
+    # ----- planilhas -----
     df_pont_tun = pd.DataFrame(W_tuned.T, columns=cols_dados)
     df_pont_tun.insert(0, "Tipo de Transtorno", class_core)
 
@@ -446,7 +637,6 @@ def main(args):
     if COL_ALVO in df_all.columns: df_res[COL_ALVO] = df_all[COL_ALVO]
     for j, name in enumerate(class_names_aug): df_res[f"p_{name}"] = P_all_aug[:, j]
 
-    # Auditoria por linha
     order_all = np.argsort(-P_all_core, axis=1)
     p1 = P_all_core[np.arange(n_all), order_all[:,0]]
     p2 = P_all_core[np.arange(n_all), order_all[:,1] if K0>1 else np.zeros(n_all,int)]
@@ -457,49 +647,51 @@ def main(args):
     df_res["margin_core"] = margin
     df_res["st_rule_on"] = hits_all.astype(int)
 
-    tops_rec = []
     order_all_aug = np.argsort(-P_all_aug, axis=1)
+    tops_rec = []
     for i in range(P_all_aug.shape[0]):
         rec = {}
-        for t in range(min(args.topk, P_all_aug.shape[1])):
-            c = order_all_aug[i, t]; rec[f"top{t+1}_classe"] = class_names_aug[c]; rec[f"top{t+1}_prob"] = float(P_all_aug[i, c])
+        for t in range(min(3, P_all_aug.shape[1])):
+            c = order_all_aug[i, t]
+            rec[f"top{t+1}_classe"] = class_names_aug[c]
+            rec[f"top{t+1}_prob"]   = float(P_all_aug[i, c])
         tops_rec.append(rec)
     df_res = pd.concat([df_res, pd.DataFrame(tops_rec)], axis=1)
 
-    # Métricas VALID por classe (inclui ST) + acertos
     rows = []
     for c_idx, c_name in enumerate(class_names_aug):
-        # máscara com regra especial para ST (exclusive/contains)
         if c_name == ST_LABEL:
             mask = st_truth_mask(y_val_aug, ST_LABEL, mode=ST_MODE)
         else:
             mask = np.array([c_name in labs for labs in y_val_aug], bool)
         sup = int(mask.sum())
         if sup == 0:
-            rows.append({"classe": c_name, f"top{args.topk}_rate": np.nan, "acertos_topk": 0, "suporte": 0})
-            continue
-        ord_c = np.argsort(-P_val_aug[mask], axis=1)[:, :args.topk]
+            rows.append({"classe": c_name, f"top{TOPK}_rate": np.nan, "acertos_topk": 0, "suporte": 0}); continue
+        ord_c = np.argsort(-P_val_aug[mask], axis=1)[:, :TOPK]
         hits = sum(c_idx in ord_c[r] for r in range(ord_c.shape[0]))
-        rows.append({"classe": c_name, f"top{args.topk}_rate": hits / sup, "acertos_topk": hits, "suporte": sup})
+        rows.append({"classe": c_name, f"top{TOPK}_rate": hits / sup, "acertos_topk": hits, "suporte": sup})
     df_met_cls = pd.DataFrame(rows)
-    df_met_sum = pd.DataFrame([{f"macro_top{args.topk}_VALID": df_met_cls[f"top{args.topk}_rate"].mean(skipna=True),
-                                "observacao": ("Macro top-k na VALID com pós-regra ST ajustada no TREINO.")}])
+
+    df_met_sum = pd.DataFrame([{
+        "macro_top1_VALID": float(macro_final_valid_k1),
+        "macro_top2_VALID": float(macro_final_valid_k2),
+        "macro_top3_VALID": float(macro_final_valid_k3),
+        f"macro_top{TOPK}_VALID": df_met_cls[f"top{TOPK}_rate"].mean(skipna=True),
+        "observacao": "Macro VALID: top1..3 (agregado) e por-classe no topk escolhido."
+    }])
+
     df_metricas_tun = pd.concat([pd.DataFrame([{"secao":"agregado_VALID", **df_met_sum.iloc[0].to_dict()}]),
                                  df_met_cls.assign(secao="por_classe_VALID")], ignore_index=True)
 
-    # Regras / resumo final
     df_regras = pd.DataFrame([
         {"param": "T1", "value": best_T1},
         {"param": "T2", "value": best_T2},
         {"param": "gamma", "value": best_G},
-        {"param": "taxa_acionamento_regra_no_TREINO", "value": float(np.nan if not diag_rows else diag_rows[-1]["ST_aciona_rate_TRAIN"])},
-        {"param": "taxa_acionamento_regra_na_VALID", "value": float(np.nan if not diag_rows else diag_rows[-1]["ST_aciona_rate_VALID"])},
         {"param": "taxa_acionamento_regra_no_ALL", "value": float(hits_all.mean())},
-        {"param": "aba_pesos_utilizada", "value": aba_pontos_usada},
-        {"param": "ST_top1_VALID_final", "value": st_top1_final_valid},
+        {"param": "colunas_congeladas_pontuacao_zero", "value": int(mask_w_all_zero.sum())},
     ])
 
-    df_expl_add = pd.DataFrame([{"Aba": ABA_RES_HEUR_TUN, "Descricao": "ST na pós-regra; métricas por checkpoint em Diagnostico_ST_SUM; objetivo de grid configurável."}])
+    df_expl_add = pd.DataFrame([{"Aba": ABA_RES_HEUR_TUN, "Descricao": "ST pós-regra; snapshots a cada melhor; top1..top3 gravados; hotkey 'q'."}])
     df_comp_tudo = df_res.copy()
     saved_path = save_preserving_sheets(OUTPUT,
         [(df_pont_tun, ABA_PONTOS_TUNADA),
@@ -510,22 +702,18 @@ def main(args):
          (pd.DataFrame(diag_rows), ABA_DIAG),
          (df_comp_tudo, ABA_COMPARATIVO_TUDO)])
 
-    report = {"status":"ok","converged": bool(best_macro_val >= args.target_macro_topk - 1e-12),
-              "macro_valid": float(macro_final_valid), "target_macro": float(args.target_macro_topk),
+    report = {"status":"ok","converged": bool(best_macro_val >= TARGET_MACRO_TOPK - 1e-12),
+              "macro_valid_top1": float(macro_final_valid_k1),
+              "macro_valid_top2": float(macro_final_valid_k2),
+              "macro_valid_top3": float(macro_final_valid_k3),
               "best_T1": float(best_T1), "best_T2": float(best_T2), "best_gamma": float(best_G),
-              "hit_rate_train": float(np.nan if not diag_rows else diag_rows[-1]["ST_aciona_rate_TRAIN"]),
               "seed": int(RANDOM_STATE),
               "grid": {"t1_min": float(GRID_T1.min()), "t1_max": float(GRID_T1.max()), "t1_steps": int(len(GRID_T1)),
                        "t2_min": float(GRID_T2.min()), "t2_max": float(GRID_T2.max()), "t2_steps": int(len(GRID_T2)),
                        "g_min": float(GRID_G.min()), "g_max": float(GRID_G.max()), "g_steps": int(len(GRID_G))},
-              "lr": float(args.lr), "l1": float(args.l1), "l2": float(args.l2),
-              "ga": {"num_mutants": int(GA_NUM), "mutate_cols": int(GA_COLS), "mutation_scale": float(GA_SCALE)},
+              "lr": float(LR), "l1": float(LAMBDA_L1), "l2": float(LAMBDA_L2),
               "checks": int(total_checks), "used_sheet": aba_pontos_usada, "output_file": saved_path,
-              "postrule_on": True, "st_in_W": False, "n_jobs": int(N_JOBS), "procs": int(N_PROCS),
-              "st_top1_train": float(np.nan if not diag_rows else diag_rows[-1]["ST_top1_TRAIN"]),
-              "st_top1_valid": float(np.nan if not diag_rows else diag_rows[-1]["ST_top1_VALID"]),
-              "st_hit_valid": float(np.nan if not diag_rows else diag_rows[-1]["ST_aciona_rate_VALID"]),
-              "st_mode": ST_MODE, "grid_objective": OBJECTIVE, "grid_alpha": ALPHA}
+              "postrule_on": True, "st_in_W": False, "n_jobs": int(N_JOBS)}
     try:
         base = os.path.splitext(OUTPUT or INPUT)[0]
         rep_path = args.report_json or base + "_report.json"
@@ -536,10 +724,10 @@ def main(args):
 
     print("✅ Abas criadas/atualizadas:", ABA_PONTOS_TUNADA, ABA_RES_HEUR_TUN, ABA_MET_HEUR_TUN, ABA_REGRAS_NORMAL, ABA_EXPLICAO, ABA_DIAG, ABA_COMPARATIVO_TUDO)
     print(f"💾 Arquivo salvo em: {saved_path}")
-    print(f"➡️ VALID macro top-{args.topk} final: {macro_final_valid:.3%} | ST_top1_VALID={st_top1_final_valid:.3%}")
+    print(f"➡️ VALID macro top-1/2/3 final: {macro_final_valid_k1:.3%}/{macro_final_valid_k2:.3%}/{macro_final_valid_k3:.3%} | ST_top1_VALID={st_top1_final_valid:.3%}")
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Heurística com ST na pós-regra; grid/GA paralelos + diagnóstico por checkpoint + objetivo configurável.")
+    p = argparse.ArgumentParser(description="Heurística com ST na pós-regra; grid paralelo; diag; hotkey 'q'; log VA1_VA3; snapshots; regra de ouro; top1..3 no output.")
     p.add_argument("--input", default=r"c:\\SourceCode\\qip\\python\\banco_dados.xlsx")
     p.add_argument("--output", default=None)
     p.add_argument("--sheet-dados", default="TDados_clean")
@@ -559,12 +747,12 @@ if __name__ == "__main__":
     p.add_argument("--min-support-val", type=int, default=2)
     p.add_argument("--topk", type=int, default=1)
     p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--l1", type=float, default=1e-3)
-    p.add_argument("--l2", type=float, default=1e-2)
-    p.add_argument("--lr", type=float, default=0.1)
+    p.add_argument("--l1", type=float, default=0.005)
+    p.add_argument("--l2", type=float, default=0.05)
+    p.add_argument("--lr", type=float, default=0.02)
     p.add_argument("--max-iters", type=int, default=10000)
     p.add_argument("--check-every", type=int, default=10)
-    p.add_argument("--early-stop-patience", type=int, default=100)
+    p.add_argument("--early-stop-patience", type=int, default=1000)
     p.add_argument("--target-macro-topk", type=float, default=0.99)
     p.add_argument("--eps-w", type=float, default=1e-6)
     p.add_argument("--normal-label", default="Sem Transtorno")
@@ -577,16 +765,13 @@ if __name__ == "__main__":
     p.add_argument("--grid-g-min", type=float, default=0.10)
     p.add_argument("--grid-g-max", type=float, default=0.95)
     p.add_argument("--grid-g-steps", type=int, default=100)
-    p.add_argument("--ga-num-mutants", type=int, default=50)
-    p.add_argument("--ga-mutate-cols", type=int, default=2)
-    p.add_argument("--ga-mutation-scale", type=float, default=0.05)
-    p.add_argument("--report-json", default=None)
-    p.add_argument("--n-jobs", type=int, default=os.cpu_count() or 4, help="Threads para grid/GA.")
-    p.add_argument("--blas-threads", type=int, default=None, help="Threads de BLAS (MKL/OMP).")
-    p.add_argument("--procs", type=int, default=0, help="Processos para GA (0=threads).")
-    p.add_argument("--st-truth-mode", dest="st_truth_mode", choices=["exclusive","contains"], default="exclusive",
-                   help="Como considerar rótulo verdadeiro de ST: 'exclusive' (padrão) ou 'contains'.")
+    p.add_argument("--report-json", default="report.json")
+    p.add_argument("--n-jobs", type=int, default=os.cpu_count(), help="Processos para o grid (chunks).")
+    p.add_argument("--blas-threads", type=int, default=1, help="Threads de BLAS (MKL/OMP).")
+    p.add_argument("--procs", type=int, default=32, help="(Reservado) Processos para GA (0=threads).")
+    p.add_argument("--st-truth-mode", dest="st_truth_mode", choices=["exclusive","contains"], default="contains",
+                   help="Como considerar rótulo verdadeiro de ST: 'exclusive' ou 'contains'.")
     p.add_argument("--grid-objective", choices=["st_top1","macro","weighted"], default="weighted",
-                   help="Critério para escolher (T1,T2,γ) no grid (padrão: st_top1).")
+                   help="Critério para escolher (T1,T2,γ) no grid.")
     p.add_argument("--grid-alpha", type=float, default=0.5, help="α do objetivo 'weighted'.")
     args = p.parse_args(); main(args)
