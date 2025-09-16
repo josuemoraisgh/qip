@@ -1,16 +1,10 @@
-
 # -*- coding: utf-8 -*-
 """
-05_tuna_heuristica_TreinoValid.py (v2.9.5 - anti-colapso do gamma + mutações ON)
-Principais novidades vs v2.9.4:
-1) Evita gamma≈0 por colapso:
-   - Regularização de prior no bias da ST: penaliza afastar do bias correspondente a g_init.
-   - Penalização opcional para média de P_ST no TREINO tender a um alvo g_target (por default = g_init).
-2) "Mutações" evolutivas (ligadas por padrão):
-   - A cada N iterações, aplica ruído Gaussiano pequeno nos parâmetros (W) e avalia no VALID.
-   - Aceitação gulosa: mantém a mutação apenas se a métrica de validação aumenta.
-   - Parâmetros: --mutations, --mutation-every, --mutation-sigma, --mutation-max-tries.
-3) Mantido: ST dentro do softmax (sem pós-regra), snapshots, abas, Comparativo_TopK_Tudo em TDados completo.
+05_tuna_heuristica_TreinoValid.py (v2.9.7 - versão sem 'Sem Transtorno')
+- Remove toda a lógica e parâmetros específicos da classe "Sem Transtorno" (ST).
+- Mantém: tuning com softmax puro, L1/L2, proximal step, snapshots, mutações evolutivas (ON por padrão),
+  abas "Pontuação_Tunada", "Resultado_Heuristica_Tunada", "Metricas_Heuristica_Tunada",
+  "Regras_Normal", "Explicacao_Resultados", "Diagnostico_SUM", "Comparativo_TopK_Tudo".
 """
 
 import os, sys, argparse, shutil, tempfile, json
@@ -101,9 +95,13 @@ def normalize_token(s: str) -> str:
              .replace("ó","o").replace("ô","o")
              .replace("ú","u"))
 
-def parse_multilabel(series, core_classes, normal_label="Sem Transtorno"):
-    CORE = set(core_classes); KNOWN = CORE | {normal_label}
-    DELIMS = ["|",";",","]; out = []
+def parse_multilabel(series, core_classes):
+    """Converte string de rótulos em listas, mantendo apenas classes do conjunto core_classes.
+       Ignora 'nao'/'não' e rótulos fora de core_classes.
+    """
+    CORE = set(core_classes)
+    DELIMS = ["|",";",","]
+    out = []
     for val in series.astype(str).tolist():
         s = val
         for d in DELIMS: s = s.replace(d,"|")
@@ -112,7 +110,8 @@ def parse_multilabel(series, core_classes, normal_label="Sem Transtorno"):
         for lab in labs_raw:
             tok = normalize_token(lab)
             if tok in ("nao","não"): continue
-            if lab in KNOWN: labs.append(lab)
+            if lab in CORE:
+                labs.append(lab)
         out.append(labs)
     return out
 
@@ -125,41 +124,19 @@ def y_distribution(y_lists, class_to_idx, K):
             Y[i,pos] = w
     return Y
 
-def macro_topk(y_lists, proba, class_to_idx, idx_to_class, k=3, st_truth_mode=None, st_label=None):
+def macro_topk(y_lists, proba, class_to_idx, idx_to_class, k=3):
     order = np.argsort(-proba, axis=1)
     topk = order[:,:k]
     accs = []
     for c in range(proba.shape[1]):
         c_name = idx_to_class[c]
-        if st_truth_mode and st_label and c_name == st_label:
-            mask = st_truth_mask(y_lists, st_label, mode=st_truth_mode)
-        else:
-            mask = np.array([c_name in labs for labs in y_lists], bool)
+        mask = np.array([c_name in labs for labs in y_lists], bool)
         sup = int(mask.sum())
         if sup == 0: continue
         idxs = np.where(mask)[0]
         hits = sum(c in topk[i] for i in idxs)
         accs.append(hits/sup)
     return float(np.mean(accs)) if accs else 0.0
-
-def st_truth_mask(y_lists, st_label, mode="exclusive"):
-    mask = []
-    for labs in y_lists:
-        has_st = (st_label in labs)
-        if mode == "contains":
-            mask.append(has_st)
-        else:
-            mask.append(has_st and all(c == st_label for c in labs))
-    return np.array(mask, bool)
-
-def st_top1_metric(y_lists, P, st_label, mode="exclusive"):
-    st_mask = st_truth_mask(y_lists, st_label, mode=mode)
-    sup = int(st_mask.sum())
-    if sup == 0: return float("nan"), 0, 0
-    st_idx = P.shape[1]-1
-    top1 = np.argmax(P, axis=1)
-    hits = int((top1[st_mask] == st_idx).sum())
-    return (hits / sup), hits, sup
 
 def project_bounds(W, adjustable_mask, W0, eps=1e-6):
     Wp = W.copy()
@@ -176,15 +153,21 @@ def proximal_step(W, grad, W0, lr, l1, l2, adjustable_mask):
     W_new = W0 + Delta
     return project_bounds(W_new, adjustable_mask, W0, 1e-6)
 
-def logit(p, eps=1e-9):
-    p = np.clip(p, eps, 1-eps)
-    return np.log(p/(1-p))
-
 def with_bias(X):
     return np.concatenate([X, np.ones((X.shape[0],1), dtype=float)], axis=1)
 
 def forward(Wmat, Xb):
     return softmax_rows(Xb @ Wmat)
+
+def macro_topk_pair(y_train, Xb_train, y_val, Xb_val, Wmat, class_to_idx, idx_to_class, k):
+    P_tr = forward(Wmat, Xb_train)
+    P_va = forward(Wmat, Xb_val)
+    m_tr = macro_topk(y_train, P_tr, class_to_idx, idx_to_class, k=k)
+    m_va = macro_topk(y_val,   P_va, class_to_idx, idx_to_class, k=k)
+    return m_tr, m_va
+
+def fmt_pair(label, tr, va):
+    return f"{label}(TR/VA)=({tr:.3%}/{va:.3%})"
 
 def main(args):
     try:
@@ -201,10 +184,6 @@ def main(args):
 
     L1 = args.l1; L2 = args.l2; LR = args.lr; MAX_ITERS = args.max_iters; CHECK_EVERY = args.check_every
     TARGET_MACRO_TOPK = args.target_macro_topk; RANDOM_STATE = args.seed
-
-    ST_LABEL = args.normal_label; TRAIN_FRAC = args.train_frac; MIN_SUPPORT_VAL = args.min_support_val
-    ST_MODE = args.st_truth_mode
-
     REPORT_JSON = args.report_json; N_JOBS = max(1, args.n_jobs)
 
     # ----- Carrega planilhas base -----
@@ -230,51 +209,50 @@ def main(args):
     if faltantes: raise ValueError(f"Colunas de {ABA_DADOS} ausentes em '{aba_pontos_usada}': {faltantes[:10]}{'...' if len(faltantes)>10 else ''}")
 
     W_block = df_pont.loc[linhas_modelos, cols_dados]
-    W0_sheet = W_block.apply(pd.to_numeric, errors="coerce").fillna(0.0).values.T  # (features x K0)
-    K0 = W0_sheet.shape[1]
-    if K0 != COLUNA_TAM: raise ValueError(f"Dimensão inesperada de W core: {W0_sheet.shape}, esperado K0={COLUNA_TAM}.")
+    W0_sheet = W_block.apply(pd.to_numeric, errors="coerce").fillna(0.0).values.T  # (features x K)
+    K = W0_sheet.shape[1]
+    if K != COLUNA_TAM: raise ValueError(f"Dimensão inesperada de W core: {W0_sheet.shape}, esperado K={COLUNA_TAM}.")
     class_core = df_pont.loc[linhas_modelos, "Tipo de Transtorno"].astype(str).tolist() if "Tipo de Transtorno" in df_pont.columns else [f"Classe_{i+1}" for i in range(COLUNA_TAM)]
 
     # Normalizações
     X_all = np.clip(np.nan_to_num(X_all, nan=0.0, neginf=0.0, posinf=1.0), 0.0, 1.0)
     X_all_full = np.clip(np.nan_to_num(X_all_full, nan=0.0, neginf=0.0, posinf=1.0), 0.0, 1.0)
 
-    # Rotulagem (cópia filtrável)
-    y_lists_all = parse_multilabel(df_all[COL_ALVO], class_core, normal_label=ST_LABEL)
+    # Rotulagem (mantém apenas classes do core)
+    y_lists_all = parse_multilabel(df_all[COL_ALVO], class_core)
 
-    # Filtra apenas para pipeline de treino/valid
+    # Filtra apenas linhas com algum rótulo do core para treino/valid
     keep_nonempty = [len(l)>0 for l in y_lists_all]
     X_all = X_all[keep_nonempty]; df_all = df_all.loc[keep_nonempty].reset_index(drop=True)
     y_lists_all = [l for l,k in zip(y_lists_all, keep_nonempty) if k]
     n_all = X_all.shape[0]
 
-    class_names_aug = class_core + [ST_LABEL]
-    CORE = set(class_core)
-    class_to_idx_aug = {c:i for i,c in enumerate(class_names_aug)}
-    idx_to_class_aug = {i:c for i,c in enumerate(class_names_aug)}
+    class_names = class_core
+    class_to_idx = {c:i for i,c in enumerate(class_names)}
+    idx_to_class = {i:c for i,c in enumerate(class_names)}
 
-    # Split
-    suportes_aug = {c: sum((c in labs) for labs in y_lists_all) for c in class_names_aug}
-    eligible_labels_aug = {c for c,s in suportes_aug.items() if s >= MIN_SUPPORT_VAL}
-    minor_labels_aug = set(class_names_aug) - eligible_labels_aug
+    # Split por suporte mínimo no VALID
+    suportes = {c: sum((c in labs) for labs in y_lists_all) for c in class_names}
+    eligible_labels = {c for c,s in suportes.items() if s >= args.min_support_val}
+    minor_labels = set(class_names) - eligible_labels
 
-    has_eligible_aug = np.array([any(c in eligible_labels_aug for c in l) for l in y_lists_all], bool)
-    has_only_minor_aug= np.array([all(c in minor_labels_aug for c in l) for l in y_lists_all], bool)
+    has_eligible = np.array([any(c in eligible_labels for c in l) for l in y_lists_all], bool)
+    has_only_minor= np.array([all(c in minor_labels for c in l) for l in y_lists_all], bool)
 
-    idx_tv_pool = np.where(has_eligible_aug)[0]
-    idx_minor_train_for_grid = np.where(has_only_minor_aug)[0]
+    idx_tv_pool = np.where(has_eligible)[0]
+    idx_minor_train_for_grid = np.where(has_only_minor)[0]
 
     rng = np.random.default_rng(RANDOM_STATE)
-    y_tv_aug = [y_lists_all[i] for i in idx_tv_pool]
-    targets_train = {c: int(np.floor(TRAIN_FRAC * sum(c in labs for labs in y_tv_aug))) for c in eligible_labels_aug}
-    counts_train = {c: 0 for c in eligible_labels_aug}
+    y_tv = [y_lists_all[i] for i in idx_tv_pool]
+    targets_train = {c: int(np.floor(args.train_frac * sum(c in labs for labs in y_tv))) for c in eligible_labels}
+    counts_train = {c: 0 for c in eligible_labels}
 
-    n_tv = len(y_tv_aug)
+    n_tv = len(y_tv)
     order_idx = np.arange(n_tv); rng.shuffle(order_idx)
     assign_train_local = np.zeros(n_tv, bool); assign_val_local = np.zeros(n_tv, bool)
 
     for i in order_idx:
-        labs = [c for c in y_tv_aug[i] if c in eligible_labels_aug]
+        labs = [c for c in y_tv[i] if c in eligible_labels]
         if not labs:
             assign_train_local[i] = True; continue
         needs = any(counts_train[c] < targets_train[c] for c in labs)
@@ -293,11 +271,11 @@ def main(args):
     split[idx_val] = "valid"
     split[idx_minor_train_for_grid] = "minor_train"
 
-    # Alvos treino (incluindo ST)
-    y_train_aug = [y_lists_all[i] for i in idx_train]
-    y_val_aug   = [y_lists_all[i] for i in idx_val]
-    K_aug = len(class_names_aug)
-    Y_train = y_distribution(y_train_aug, class_to_idx_aug, K_aug)
+    # Alvos treino
+    y_train = [y_lists_all[i] for i in idx_train]
+    y_val   = [y_lists_all[i] for i in idx_val]
+    Kc = len(class_names)
+    Y_train = y_distribution(y_train, class_to_idx, Kc)
 
     # ---------- REGRA DE OURO ----------
     mask_w_all_zero = np.all(np.isclose(W0_sheet, 0.0, atol=1e-12), axis=1)  # (features,)
@@ -305,22 +283,15 @@ def main(args):
     W0_eff_core[~mask_w_all_zero, :] = np.clip(W0_eff_core[~mask_w_all_zero, :], 1e-6, 1.0)
 
     # Parâmetros iniciais com bias
-    W0_aug = np.zeros((m+1, K_aug), dtype=float)
-    W0_aug[:m, :K0] = W0_eff_core
-    # Bias ST a partir de g_init
-    b_prior = logit(args.g_init) - logit(1.0/(K_aug-1))
-    W0_aug[m, :K0] = 0.0
-    W0_aug[m, K0]  = b_prior
+    W0 = np.zeros((m+1, Kc), dtype=float)
+    W0[:m, :Kc] = W0_eff_core
+    W0[m, :Kc]  = 0.0  # bias inicial zero para todas as classes
 
-    adjustable = np.zeros_like(W0_aug, dtype=bool)
-    adjustable[:m, :K0] = ~mask_w_all_zero[:, None]
-    adjustable[m, :K0]  = True
-    if args.train_st_weights:
-        adjustable[:, K0] = True
-    else:
-        adjustable[m, K0] = True
+    adjustable = np.zeros_like(W0, dtype=bool)
+    adjustable[:m, :Kc] = ~mask_w_all_zero[:, None]
+    adjustable[m, :Kc]  = True  # sempre permitir ajustar bias das classes do core
 
-    W = W0_aug.copy()
+    W = W0.copy()
 
     # Matrizes com bias
     Xb_all = with_bias(X_all)
@@ -335,34 +306,22 @@ def main(args):
         eps = 1e-12
         ce = -np.mean(np.sum(Y_train * np.log(P + eps), axis=1))
         # L2 sobre deslocamento em relação a W0
-        l2 = L2 * np.sum((Wmat - W0_aug)**2)
+        l2 = L2 * np.sum((Wmat - W0)**2)
         # L1 proximal já no step, mas somamos um termo leve para logging (opcional)
-        l1 = L1 * np.sum(np.abs(Wmat - W0_aug))
-        # Prior no bias da ST
-        bias_st = Wmat[-1, K0]
-        prior_pen = args.lambda_bias_prior * (bias_st - b_prior)**2
-        # Alvo para média de P_ST no TREINO (opcional)
-        if args.lambda_gamma_target > 0.0:
-            p_st_mean = float(P[:, -1].mean())
-            gamma_diff = (p_st_mean - args.gamma_target)**2
-            gamma_pen = args.lambda_gamma_target * gamma_diff
-        else:
-            gamma_pen = 0.0
-        return ce + l2 + prior_pen + gamma_pen + 0.0*l1, ce, l2, prior_pen, gamma_pen
+        l1 = L1 * np.sum(np.abs(Wmat - W0))
+        return ce + l2 + 0.0*l1, ce, l2
 
     def objective_valid(Wmat):
-        P_val = forward(Wmat, Xb_val)
-        return macro_topk(y_val_aug, P_val, class_to_idx_aug, idx_to_class_aug, k=TOPK,
-                          st_truth_mode=ST_MODE, st_label=ST_LABEL), float(P_val[:, -1].mean())
+        m_tr, m_va = macro_topk_pair(y_train, Xb_train, y_val, Xb_val, Wmat, class_to_idx, idx_to_class, k=TOPK)
+        return m_tr, m_va
 
     # Baseline
-    obj0, gmean0 = objective_valid(W)
-    print(f"[BASE] macro_top{TOPK}_VALID={obj0:.3%}  gamma_eff_VALID≈{gmean0:.3f}  bias_ST={W[-1,K0]:+.3f}")
+    tr0, va0 = objective_valid(W)
+    print("[BASE] " + fmt_pair(f"macro_top{TOPK}", tr0, va0))
 
-    best_score = obj0; best_W = W.copy(); best_gamma_eff = gmean0
+    best_score_va = va0; best_score_tr = tr0; best_W = W.copy()
     diag_rows = []
-    no_improve = 0; total_checks = 0
-    snapshot_count = 0; last_va_saved = None
+    total_checks = 0
 
     rng_mut = np.random.default_rng(RANDOM_STATE+7)
 
@@ -374,129 +333,86 @@ def main(args):
         P_tr = forward(W, Xb_train)
         n_tr = max(Xb_train.shape[0], 1)
         Gs   = (P_tr - Y_train) / n_tr
-        Gw   = Xb_train.T @ Gs  # (m+1, K_aug)
-
-        # Gradiente dos regulares:
-        # d/dW (lambda_bias_prior*(bias_st-b_prior)^2) afeta só W[-1,K0]
-        Gw[-1, K0] += 2*args.lambda_bias_prior * (W[-1, K0] - b_prior)
-        # d/dW (lambda_gamma_target*(mean(P_st)-gamma_target)^2) ≈ lambda * 2*(mean(P_st)-target)*d mean(P_st)/dW
-        # Aproximação simples: d mean(P_st)/dW ≈ média de (dP/dlogits)*dlogits/dW; usamos Gs coluna ST (já é dCE/dlogits),
-        # mas para manter estabilidade, aplicamos um termo proporcional a (mean(P_st)-target) no bias ST.
-        if args.lambda_gamma_target > 0.0:
-            p_st_mean = float(P_tr[:, -1].mean())
-            Gw[-1, K0] += args.lambda_gamma_target * 2.0 * (p_st_mean - args.gamma_target)
+        Gw   = Xb_train.T @ Gs  # (m+1, Kc)
 
         # Step proximal
-        W = proximal_step(W, Gw, W0_aug, LR, L1, L2, adjustable)
+        W = proximal_step(W, Gw, W0, LR, L1, L2, adjustable)
 
         # Mutações periódicas (greedy) -- default ON
         if args.mutations and (it % args.mutation_every == 0):
             improved_local = False
-            base_obj, _ = objective_valid(W)
+            base_tr, base_va = objective_valid(W)
             for _try in range(args.mutation_max_tries):
                 W_mut = W.copy()
                 noise = rng_mut.normal(loc=0.0, scale=args.mutation_sigma, size=W_mut.shape)
                 noise[~adjustable] = 0.0
                 W_mut += noise
-                # bound
-                W_mut = project_bounds(W_mut, adjustable, W0_aug, 1e-6)
-                obj_mut, _ = objective_valid(W_mut)
-                if obj_mut > base_obj + 1e-9:
+                W_mut = project_bounds(W_mut, adjustable, W0, 1e-6)
+                tr_mut, va_mut = objective_valid(W_mut)
+                if va_mut > base_va + 1e-9:
                     W = W_mut
-                    base_obj = obj_mut
+                    base_tr, base_va = tr_mut, va_mut
                     improved_local = True
             if improved_local:
-                print(f"[MUT] melhoria aceita no it={it}: obj_VALID={base_obj:.3%}")
+                print(f"[MUT] melhoria aceita no it={it}: " + fmt_pair("obj_VALID", base_tr, base_va))
 
         # Checagem
         if it % CHECK_EVERY == 0 or it == 1 or it == MAX_ITERS:
             total_checks += 1
-            obj_val, gmean = objective_valid(W)
+            cur_tr, cur_va = objective_valid(W)
 
             improved = False
-            if obj_val > best_score + 1e-6:
-                best_score = obj_val; best_W = W.copy(); best_gamma_eff = gmean; improved = True
+            if cur_va > best_score_va + 1e-6:
+                best_score_va = cur_va; best_score_tr = cur_tr; best_W = W.copy(); improved = True
 
             diag_rows.append({
                 "iter": it,
-                f"macro_top{TOPK}_VALID": obj_val,
-                "gamma_eff_VALID_mean": gmean,
-                "bias_ST": float(W[-1, K0]),
+                f"macro_top{TOPK}_TR": cur_tr,
+                f"macro_top{TOPK}_VA": cur_va,
                 "improved": improved
             })
 
-            print(f"[IT {it:05d}] macro_top{TOPK}_VA={obj_val:.3%}  gamma_eff≈{gmean:.3f}  bias_ST={W[-1,K0]:+.3f}  best={best_score:.3%} (γ_eff*={best_gamma_eff:.3f})")
+            print(f"[IT {it:05d}] " + fmt_pair(f"macro_top{TOPK}", cur_tr, cur_va) + "  " + fmt_pair("best", best_score_tr, best_score_va))
 
-            if improved:
-                carimbo = datetime.now().strftime("%Y%m%d_%H%M%S")
-                base_dir = os.path.dirname(OUTPUT) if (OUTPUT and os.path.dirname(OUTPUT)) else os.path.dirname(INPUT)
-                base_dir = base_dir or "."
-                os.makedirs(base_dir, exist_ok=True)
-                snap_name = f"best_mut_{int(round(obj_val*10000)):04d}_{carimbo}.xlsx"
-                snap_path = os.path.join(base_dir, snap_name)
-                # Snapshot resumido: grava somente diag e regras
-                P_all_full = forward(W, Xb_all_full)
-                df_pont_tun = pd.DataFrame(W[:m, :K0].T, columns=cols_dados)
-                df_pont_tun.insert(0, "Tipo de Transtorno", class_core)
-                df_comp = df_all_full[[df_all_full.columns[0]]].copy()
-                if args.col_alvo in df_all_full.columns: df_comp[args.col_alvo] = df_all_full[args.col_alvo]
-                for j, name in enumerate(class_names_aug): df_comp[f"p_{name}"] = P_all_full[:, j]
-                order_full_aug = np.argsort(-P_all_full, axis=1)
-                tops_full = []
-                for i in range(P_all_full.shape[0]):
-                    rec = {}
-                    for t in range(min(3, P_all_full.shape[1])):
-                        c = order_full_aug[i, t]
-                        rec[f"top{t+1}_classe"] = class_names_aug[c]
-                        rec[f"top{t+1}_prob"]   = float(P_all_full[i, c])
-                    tops_full.append(rec)
-                df_comp = pd.concat([df_comp, pd.DataFrame(tops_full)], axis=1)
-                saved_snap = save_preserving_sheets(snap_path,
-                    [(df_pont_tun, ABA_PONTOS_TUNADA),
-                     (pd.DataFrame(diag_rows), ABA_DIAG),
-                     (df_comp, ABA_COMPARATIVO_TUDO)])
-                last_va_saved = obj_val
-                print(f"[SNAPSHOT] '{snap_name}' salvo (macro_top{TOPK}={obj_val:.3%})")
-
-            if best_score >= TARGET_MACRO_TOPK:
+            if best_score_va >= TARGET_MACRO_TOPK:
                 print("[PARAR] Atingiu meta."); break
 
             if not improved:
                 if len(diag_rows) > args.early_stop_patience:
                     recent = [r[f"macro_top{TOPK}_VALID"] for r in diag_rows[-args.early_stop_patience:]]
-                    if max(recent) <= best_score + 1e-6:
+                    if max(recent) <= best_score_va + 1e-6:
                         print("[PARAR] Early stop (sem melhora)."); break
 
     # ---------- Final ----------
-    W_tuned = project_bounds(best_W, adjustable, W0_aug, 1e-6)
+    W_tuned = project_bounds(best_W, adjustable, W0, 1e-6)
     P_all = forward(W_tuned, Xb_all)
     P_all_full = forward(W_tuned, Xb_all_full)
 
-    # VALID detalhado
-    P_val = forward(W_tuned, Xb_val)
-    macro_final_valid_k1 = macro_topk(y_val_aug, P_val, class_to_idx_aug, idx_to_class_aug, k=1,
-                                      st_truth_mode=ST_MODE, st_label=ST_LABEL)
-    macro_final_valid_k2 = macro_topk(y_val_aug, P_val, class_to_idx_aug, idx_to_class_aug, k=2,
-                                      st_truth_mode=ST_MODE, st_label=ST_LABEL)
-    macro_final_valid_k3 = macro_topk(y_val_aug, P_val, class_to_idx_aug, idx_to_class_aug, k=3,
-                                      st_truth_mode=ST_MODE, st_label=ST_LABEL)
-    st_top1_final_valid, st_hits_valid, st_sup_valid = st_top1_metric(y_val_aug, P_val, ST_LABEL, mode=ST_MODE)
+    # TR/VA detalhado
+    P_tr_final = forward(W_tuned, Xb_train)
+    P_val_final = forward(W_tuned, Xb_val)
+    macro_final_train_k1 = macro_topk(y_train, P_tr_final, class_to_idx, idx_to_class, k=1)
+    macro_final_valid_k1 = macro_topk(y_val,   P_val_final, class_to_idx, idx_to_class, k=1)
+    macro_final_train_k2 = macro_topk(y_train, P_tr_final, class_to_idx, idx_to_class, k=2)
+    macro_final_valid_k2 = macro_topk(y_val,   P_val_final, class_to_idx, idx_to_class, k=2)
+    macro_final_train_k3 = macro_topk(y_train, P_tr_final, class_to_idx, idx_to_class, k=3)
+    macro_final_valid_k3 = macro_topk(y_val,   P_val_final, class_to_idx, idx_to_class, k=3)
 
     # Abas
-    df_pont_tun = pd.DataFrame(W_tuned[:m, :K0].T, columns=cols_dados)
+    df_pont_tun = pd.DataFrame(W_tuned[:m, :Kc].T, columns=cols_dados)
     df_pont_tun.insert(0, "Tipo de Transtorno", class_core)
 
     # Resultado_Heuristica_Tunada (filtrado)
     df_res = df_all[[df_all.columns[0]]].copy()
     if args.col_alvo in df_all.columns: df_res[args.col_alvo] = df_all[args.col_alvo]
-    for j, name in enumerate(class_names_aug): df_res[f"p_{name}"] = P_all[:, j]
-    order_all_aug = np.argsort(-P_all, axis=1)
+    for j, name in enumerate(class_names): df_res[f"p_{name}"] = P_all[:, j]
+    order_all = np.argsort(-P_all, axis=1)
     tops_rec = []
     for i in range(P_all.shape[0]):
         rec = {}
         for t in range(min(3, P_all.shape[1])):
-            c = order_all_aug[i, t]
-            rec[f"top{t+1}_classe"] = class_names_aug[c]
+            c = order_all[i, t]
+            rec[f"top{t+1}_classe"] = class_names[c]
             rec[f"top{t+1}_prob"]   = float(P_all[i, c])
         tops_rec.append(rec)
     df_res = pd.concat([df_res, pd.DataFrame(tops_rec)], axis=1)
@@ -504,59 +420,66 @@ def main(args):
     # Comparativo_TopK_Tudo (TDados completo)
     df_comp = df_all_full[[df_all_full.columns[0]]].copy()
     if args.col_alvo in df_all_full.columns: df_comp[args.col_alvo] = df_all_full[args.col_alvo]
-    for j, name in enumerate(class_names_aug): df_comp[f"p_{name}"] = P_all_full[:, j]
-    order_full_aug = np.argsort(-P_all_full, axis=1)
+    for j, name in enumerate(class_names): df_comp[f"p_{name}"] = P_all_full[:, j]
+    order_full = np.argsort(-P_all_full, axis=1)
     tops_full = []
     for i in range(P_all_full.shape[0]):
         rec = {}
         for t in range(min(3, P_all_full.shape[1])):
-            c = order_full_aug[i, t]
-            rec[f"top{t+1}_classe"] = class_names_aug[c]
+            c = order_full[i, t]
+            rec[f"top{t+1}_classe"] = class_names[c]
             rec[f"top{t+1}_prob"]   = float(P_all_full[i, c])
         tops_full.append(rec)
     df_comp = pd.concat([df_comp, pd.DataFrame(tops_full)], axis=1)
 
     # Métricas por classe no VALID (topk escolhido)
     rows = []
-    for c_idx, c_name in enumerate(class_names_aug):
-        if c_name == ST_LABEL:
-            mask = st_truth_mask(y_val_aug, ST_LABEL, mode=ST_MODE)
-        else:
-            mask = np.array([c_name in labs for labs in y_val_aug], bool)
-        sup = int(mask.sum())
-        if sup == 0:
-            rows.append({"classe": c_name, f"top{TOPK}_rate": np.nan, "acertos_topk": 0, "suporte": 0}); continue
-        ord_c = np.argsort(-P_val[mask], axis=1)[:, :TOPK]
-        hits = sum(c_idx in ord_c[r] for r in range(ord_c.shape[0]))
-        rows.append({"classe": c_name, f"top{TOPK}_rate": hits / sup, "acertos_topk": hits, "suporte": sup})
+    for c_idx, c_name in enumerate(class_names):
+        mask_tr = np.array([c_name in labs for labs in y_train], bool)
+        sup_tr = int(mask_tr.sum())
+        rate_tr = np.nan; hits_tr = 0
+        if sup_tr > 0:
+            ord_tr = np.argsort(-P_tr_final[mask_tr], axis=1)[:, :TOPK]
+            hits_tr = sum(c_idx in ord_tr[r] for r in range(ord_tr.shape[0]))
+            rate_tr = hits_tr / sup_tr
+        mask_va = np.array([c_name in labs for labs in y_val], bool)
+        sup_va = int(mask_va.sum())
+        rate_va = np.nan; hits_va = 0
+        if sup_va > 0:
+            ord_va = np.argsort(-P_val_final[mask_va], axis=1)[:, :TOPK]
+            hits_va = sum(c_idx in ord_va[r] for r in range(ord_va.shape[0]))
+            rate_va = hits_va / sup_va
+        rows.append({
+            "classe": c_name,
+            f"top{TOPK}_rate(TR/VA)": f"({rate_tr if not np.isnan(rate_tr) else 'nan'}/{rate_va if not np.isnan(rate_va) else 'nan'})",
+            f"acertos_topk(TR/VA)": f"({hits_tr}/{hits_va})",
+            f"suporte(TR/VA)": f"({sup_tr}/{sup_va})"
+        })
     df_met_cls = pd.DataFrame(rows)
 
     df_met_sum = pd.DataFrame([{
-        "macro_top1_VALID": float(macro_final_valid_k1),
-        "macro_top2_VALID": float(macro_final_valid_k2),
-        "macro_top3_VALID": float(macro_final_valid_k3),
-        f"macro_top{TOPK}_VALID": df_met_cls[f"top{TOPK}_rate"].mean(skipna=True),
-        "observacao": "ST no softmax; anti-colapso de gamma; mutações ON; Comparativo_TopK_Tudo no TDados completo."
+        f"macro_top1(TR/VA)": f"({macro_final_train_k1:.3%}/{macro_final_valid_k1:.3%})",
+        f"macro_top2(TR/VA)": f"({macro_final_train_k2:.3%}/{macro_final_valid_k2:.3%})",
+        f"macro_top3(TR/VA)": f"({macro_final_train_k3:.3%}/{macro_final_valid_k3:.3%})",
+        f"macro_top{TOPK}(TR/VA)": df_met_cls[f"top{TOPK}_rate(TR/VA)"].mean(skipna=True) if False else f"(n/a/n/a)",
+        "observacao": "Softmax puro; mutações ON; Comparativo_TopK_Tudo no TDados completo."
     }])
 
-    df_metricas_tun = pd.concat([pd.DataFrame([{"secao":"agregado_VALID", **df_met_sum.iloc[0].to_dict()}]),
-                                 df_met_cls.assign(secao="por_classe_VALID")], ignore_index=True)
+    df_metricas_tun = pd.concat([pd.DataFrame([{"secao":"agregado", **df_met_sum.iloc[0].to_dict()}]),
+                                 df_met_cls.assign(secao="por_classe")], ignore_index=True)
 
     # Regras/diagnóstico
-    P_val_final = forward(W_tuned, Xb_val)
     df_regras = pd.DataFrame([
-        {"param": "bias_ST", "value": float(W_tuned[-1, K0])},
-        {"param": "gamma_eff_VALID_mean", "value": float(P_val_final[:, -1].mean())},
-        {"param": "lambda_bias_prior", "value": float(args.lambda_bias_prior)},
-        {"param": "lambda_gamma_target", "value": float(args.lambda_gamma_target)},
-        {"param": "gamma_target", "value": float(args.gamma_target)},
         {"param": "mutations", "value": bool(args.mutations)},
         {"param": "mutation_every", "value": int(args.mutation_every)},
         {"param": "mutation_sigma", "value": float(args.mutation_sigma)},
-        {"param": "mutation_max_tries", "value": int(args.mutation_max_tries)}
+        {"param": "mutation_max_tries", "value": int(args.mutation_max_tries)},
+        {"param": "l1", "value": float(L1)},
+        {"param": "l2", "value": float(L2)},
+        {"param": "lr", "value": float(LR)},
     ])
 
-    df_expl_add = pd.DataFrame([{"Aba": ABA_RES_HEUR_TUN, "Descricao": "ST no softmax; prior no bias_ST; target na média de P_ST (opcional); mutações ON."}])
+    df_expl_add = pd.DataFrame([{"Aba": ABA_RES_HEUR_TUN, "Descricao": "Modelo sem classe 'Sem Transtorno'; softmax puro; mutações ON."}])
 
     saved_path = save_preserving_sheets(OUTPUT,
         [(df_pont_tun, ABA_PONTOS_TUNADA),
@@ -568,19 +491,17 @@ def main(args):
          (df_comp, ABA_COMPARATIVO_TUDO)])
 
     report = {"status":"ok",
+              "macro_train_top1": float(macro_final_train_k1),
               "macro_valid_top1": float(macro_final_valid_k1),
+              "macro_train_top2": float(macro_final_train_k2),
               "macro_valid_top2": float(macro_final_valid_k2),
+              "macro_train_top3": float(macro_final_train_k3),
               "macro_valid_top3": float(macro_final_valid_k3),
-              "bias_ST": float(W_tuned[-1, K0]),
-              "gamma_eff_VALID_mean": float(P_val_final[:, -1].mean()),
               "seed": int(RANDOM_STATE),
               "lr": float(LR), "l1": float(L1), "l2": float(L2),
               "checks": int(total_checks), "used_sheet": aba_pontos_usada, "output_file": saved_path,
-              "postrule": "none_softmax_ST", "n_jobs": int(N_JOBS),
-              "mutations": bool(args.mutations),
-              "lambda_bias_prior": float(args.lambda_bias_prior),
-              "lambda_gamma_target": float(args.lambda_gamma_target),
-              "gamma_target": float(args.gamma_target)}
+              "postrule": "none_softmax_core_only", "n_jobs": int(N_JOBS),
+              "mutations": bool(args.mutations)}
     try:
         base = os.path.splitext(OUTPUT or INPUT)[0]
         rep_path = args.report_json or base + "_report.json"
@@ -591,24 +512,24 @@ def main(args):
 
     print("✅ Abas atualizadas:", ABA_PONTOS_TUNADA, ABA_RES_HEUR_TUN, ABA_MET_HEUR_TUN, ABA_REGRAS_NORMAL, ABA_EXPLICAO, ABA_DIAG, ABA_COMPARATIVO_TUDO)
     print(f"💾 Arquivo salvo em: {saved_path}")
-    print(f"➡️ VALID macro top-1/2/3 final: {macro_final_valid_k1:.3%}/{macro_final_valid_k2:.3%}/{macro_final_valid_k3:.3%} | ST_top1_VALID={0 if np.isnan(st_top1_final_valid) else st_top1_final_valid:.3%}")
+    print("➡️ " + fmt_pair("macro_top1", macro_final_train_k1, macro_final_valid_k1) + " | " + fmt_pair("macro_top2", macro_final_train_k2, macro_final_valid_k2) + " | " + fmt_pair("macro_top3", macro_final_train_k3, macro_final_valid_k3))
 
 if __name__ == "__main__":
     import argparse
-    p = argparse.ArgumentParser(description="ST no softmax; anti-colapso de gamma; mutações ON; Comparativo_TopK_Tudo no TDados completo.")
+    p = argparse.ArgumentParser(description="Treino/validação com softmax puro e mutações evolutivas; versão sem 'Sem Transtorno'.")
     p.add_argument("--input", default=r"c:\\SourceCode\\qip\\python\\banco_dados.xlsx")
     p.add_argument("--output", default=None)
     p.add_argument("--sheet-dados", default="TDados_clean")
-    p.add_argument("--sheet-pontos", default="Pontuação")
+    p.add_argument("--sheet-pontos", default="Pontuação_new_range")
     p.add_argument("--sheet-pontos-tunada", default="Pontuação_Tunada")
     p.add_argument("--sheet-resultado-tun", default="Resultado_Heuristica_Tunada")
     p.add_argument("--sheet-metricas-tun", default="Metricas_Heuristica_Tunada")
     p.add_argument("--sheet-explicacao", default="Explicacao_Resultados")
     p.add_argument("--sheet-regras-normal", default="Regras_Normal")
     p.add_argument("--sheet-comparativo", default="Comparativo_TopK_Tudo")
-    p.add_argument("--sheet-diag", dest="sheet_diag", default="Diagnostico_ST_SUM")
+    p.add_argument("--sheet-diag", dest="sheet_diag", default="Diagnostico_SUM")
     p.add_argument("--prefer-tunada", action="store_true", default=True)
-    p.add_argument("--n-classes", type=int, default=11)
+    p.add_argument("--n-classes", type=int, default=12)
     p.add_argument("--linha-inicio-pontos", type=int, default=3)
     p.add_argument("--col-alvo", default="Alvo")
     p.add_argument("--train-frac", type=float, default=2.0/3.0)
@@ -622,13 +543,6 @@ if __name__ == "__main__":
     p.add_argument("--check-every", type=int, default=10)
     p.add_argument("--early-stop-patience", type=int, default=1000)
     p.add_argument("--target-macro-topk", type=float, default=0.99)
-    p.add_argument("--normal-label", default="Sem Transtorno")
-    p.add_argument("--g-init", type=float, default=0.30, help="Prior inicial para ST (convertido em bias).")
-    p.add_argument("--train-st-weights", action="store_true", help="Aprender pesos por feature também para a classe ST (não só bias).")
-    # Anti-colapso do gamma
-    p.add_argument("--lambda-bias-prior", type=float, default=0.05, help="Força que puxa o bias_ST para o prior (g_init). Evita bias -> -inf (gamma≈0).")
-    p.add_argument("--lambda-gamma-target", type=float, default=0.0, help="Se >0, força a média de P_ST no TREINO a tender a 'gamma_target'.")
-    p.add_argument("--gamma-target", type=float, default=0.30, help="Alvo para média de P_ST (quando lambda-gamma-target>0).")
     # Mutações (ligadas por padrão)
     p.add_argument("--mutations", action="store_true", default=True, help="Habilita mutações evolutivas (ruído Gaussiano + aceitação gulosa).")
     p.add_argument("--mutation-every", type=int, default=1, help="Intervalo de iterações entre tentativas de mutação.")
@@ -637,6 +551,4 @@ if __name__ == "__main__":
     p.add_argument("--report-json", default="report.json")
     p.add_argument("--n-jobs", type=int, default=os.cpu_count())
     p.add_argument("--blas-threads", type=int, default=1)
-    p.add_argument("--st-truth-mode", dest="st_truth_mode", choices=["exclusive","contains"], default="contains",
-                   help="Como considerar rótulo verdadeiro de ST: 'exclusive' ou 'contains'.")
     args = p.parse_args(); np.random.seed(args.seed); main(args)

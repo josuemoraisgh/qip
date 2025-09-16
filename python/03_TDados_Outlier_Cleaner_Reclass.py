@@ -30,7 +30,7 @@ MIN_PER_CLASS  = 8
 RIDGE_MIN_VAR  = 1e-3
 
 # "Sem Transtorno" somente se houver amostra suficiente de "nao"
-NAO_LOW_ENERGY_PERC = 5.0   # 5% mais baixo
+NAO_LOW_ENERGY_PERC = 10.0   # 5% mais baixo
 NAO_MIN_FOR_ST      = 10    # mínimo de linhas "nao" para habilitar ST
 ABS_MIN_ENERGY      = 0.0   # piso absoluto opcional (desligado)
 
