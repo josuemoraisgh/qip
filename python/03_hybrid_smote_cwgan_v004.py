@@ -7,7 +7,7 @@ Híbrido SMOTE + cWGAN-GP para dados clínicos tabulares (condicionado por class
 - Geração de N amostras por classe com filtro de privacidade e CDF matching (opcional)
 - Excel final com:
     * 'TDados' (sintéticos)
-    * 'HOLDOUT_UNUSED' (originais não usados no treino)
+    * 'DATA_UNUSED' (originais não usados no treino)
     * 'Pontuação' (cópia literal da aba original, se existir)
     * 'REPORT' (métricas, se --save-excel-report)
 - Descarta das FEATURES toda coluna que, na aba "Pontuação", for totalmente ZERO (para aliviar o modelo)
@@ -73,6 +73,32 @@ def onehot(idx: torch.Tensor, n_classes: int) -> torch.Tensor:
     oh = torch.zeros((idx.size(0), n_classes), device=idx.device)
     oh.scatter_(1, idx.view(-1,1), 1.0)
     return oh
+
+def user_pressed_q_nonblocking() -> bool:
+    """Retorna True se o usuário pressionou 'q' (lowercase) desde a última checagem.
+    - Em Windows usa msvcrt.kbhit() / getwch()
+    - Em POSIX tenta select() em sys.stdin (ignorado se não disponível)
+    """
+    if '_HAS_MSVCRT' in globals() and _HAS_MSVCRT:
+        try:
+            pressed = False
+            while msvcrt.kbhit():
+                ch = msvcrt.getwch() if hasattr(msvcrt, "getwch") else msvcrt.getch().decode("utf-8", errors="ignore")
+                if ch.lower() == "q":
+                    pressed = True
+            return pressed
+        except Exception:
+            return False
+    try:
+        import select
+        dr, _, _ = select.select([sys.stdin], [], [], 0)
+        if dr:
+            ch = sys.stdin.read(1)
+            if ch.lower() == "q":
+                return True
+    except Exception:
+        pass
+    return False
 
 # -----------------------------------------------------
 # Modelos condicionais (cWGAN-GP)
@@ -183,8 +209,12 @@ class CWGAN_GP:
             if stop_now:
                 break
             if ep % log_every == 0 or ep == 1:
-                print(f"[{ep:04d}/{epochs}] D_loss={{d_loss.item():.4f}}  G_loss={{g_loss.item():.4f}}  D(real)={{d_real.item():.4f}} D(fake)={{d_fake.item():.4f}}", flush=True)
-
+                print(
+                    f"[{ep:04d}/{epochs}] D_loss={d_loss.item():.4f}  "
+                    f"G_loss={g_loss.item():.4f}  "
+                    f"D(real)={d_real.item():.4f} D(fake)={d_fake.item():.4f}",
+                    flush=True
+                )
 def load_tabular(excel_path: Path, sheet: str, target: str, ignore_labels: str, return_full_df=False):
     df = pd.read_excel(excel_path, sheet_name=sheet).copy()
     if target not in df.columns:
@@ -346,7 +376,7 @@ def main():
 
     # Half-split: padrão ligado; pode desativar com --no-half-split
     ap.add_argument("--half-split", action=argparse.BooleanOptionalAction, default=True,
-                    help="Por padrão, usa 50% (+1 se ímpar) por classe para treino e exporta o restante na aba HOLDOUT_UNUSED. Desligue com --no-half-split.")
+                    help="Por padrão, usa 50% (+1 se ímpar) por classe para treino e exporta o restante na aba DATA_UNUSED. Desligue com --no-half-split.")
     ap.add_argument("--split-perc", type=float, default=100.0,
                 help="Porcentagem por classe destinada ao TREINO (0–100). Ex.: 60 usa ~60% por classe; para contagens ímpares, arredonda para cima.")
     ap.add_argument("--save-excel-report", action="store_true",
@@ -354,7 +384,7 @@ def main():
 
     # SMOTE
     ap.add_argument("--smote-min-per-class", type=int, default=400,
-                    help="Número mínimo de amostras por classe após SMOTE (padrão: 200).")
+                    help="Número mínimo de amostras por classe após SMOTE (padrão: 400).")
     ap.add_argument("--smote-k", type=int, default=5,
                     help="k_neighbors do SMOTE; reduzido automaticamente conforme necessário (padrão: 5).")
     ap.add_argument("--seed", type=int, default=42,
@@ -556,11 +586,11 @@ def main():
 
         # 3.2) HOLDOUT (a metade que NÃO foi usada no treino)
         if df_holdout is not None:
-            df_holdout.to_excel(writer, index=False, sheet_name='DATA_UNUSED')
+            df_holdout.to_excel(writer, index=False, sheet_name='DATAUNUSED')
 
         # 3.3) Cópia literal da aba 'Pontuação' do Excel original, se existir
         if 'df_pontuacao' in locals() and df_pontuacao is not None:
-            df_pontuacao.to_excel(writer, index=False, sheet_name='Pontuação/')
+            df_pontuacao.to_excel(writer, index=False, sheet_name='Pontuação')
 
         # 3.4) Relatório (opcional)
         if args.save_excel_report:
