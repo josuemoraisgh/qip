@@ -1,0 +1,92 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+
+\title{Revisão Bibliográfica e Metodologia de Geração de Pacientes Virtuais com SMOTE e cWGAN-GP}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Revisão Bibliográfica}
+
+O uso de dados sintéticos em saúde e psicologia permite ampliar bases pequenas e preservar privacidade. Entre as principais técnicas:
+
+\begin{itemize}
+    \item \textbf{SMOTE}: (Chawla et al., 2002) cria novas amostras minoritárias por interpolação:
+    \[
+        x_{\text{new}} = x_i + \delta \cdot (x_{nn} - x_i), \quad \delta \sim U(0,1)
+    \]
+
+    \item \textbf{GANs}: (Goodfellow et al., 2014) jogo entre Gerador $G(z)$ e Discriminador $D(x)$:
+    \[
+        \min_G \max_D \; V(D,G) = \mathbb{E}_{x \sim p_{\text{data}}}[\log D(x)] + \mathbb{E}_{z \sim p_z}[\log(1 - D(G(z)))]
+    \]
+
+    \item \textbf{WGAN-GP}: (Arjovsky et al., 2017; Gulrajani et al., 2017) substitui divergência por distância de Wasserstein e adiciona penalização de gradiente:
+    \[
+        L_{GP} = \lambda \; \mathbb{E}_{\hat{x}} \left[ \left(\|\nabla_{\hat{x}} D(\hat{x})\|_2 - 1 \right)^2 \right]
+    \]
+
+    \item \textbf{cWGAN}: (Mirza \& Osindero, 2014) adiciona condicionamento no rótulo $y$.
+
+    \item \textbf{Abordagem híbrida (SMOTE + WGAN-GP)}: Wang \& Pai (2023) combinaram SMOTE e WGAN-GP para melhorar dados clínicos tabulares.
+
+    \item \textbf{Privacidade}: (Jordon et al., 2019) destacam filtros de proximidade e ajustes marginais (CDF matching).
+\end{itemize}
+
+\section{Metodologia}
+
+(… aqui vai a mesma descrição detalhada que já construímos, com as equações …)
+
+\section{Ferramentas Python Utilizadas}
+\begin{itemize}
+    \item \textbf{Pandas}, \textbf{NumPy}, \textbf{Scikit-learn}, \textbf{Imbalanced-learn}, \textbf{SciPy}, \textbf{PyTorch}, \textbf{OpenPyXL}.
+\end{itemize}
+
+\section{Referências}
+
+\begin{thebibliography}{9}
+
+\bibitem{smote2002}
+N.~V. Chawla, K.~W. Bowyer, L.~O. Hall, and W.~P. Kegelmeyer,
+\newblock ``SMOTE: Synthetic Minority Over-sampling Technique,''
+\newblock \emph{Journal of Artificial Intelligence Research}, vol. 16, pp. 321--357, 2002.
+
+\bibitem{gan2014}
+I.~Goodfellow, J.~Pouget-Abadie, M.~Mirza, B.~Xu, D.~Warde-Farley, S.~Ozair, A.~Courville, and Y.~Bengio,
+\newblock ``Generative adversarial nets,''
+\newblock in \emph{Advances in Neural Information Processing Systems}, 2014.
+
+\bibitem{wgan2017}
+M.~Arjovsky, S.~Chintala, and L.~Bottou,
+\newblock ``Wasserstein GAN,''
+\newblock \emph{arXiv preprint arXiv:1701.07875}, 2017.
+
+\bibitem{wgangp2017}
+I.~Gulrajani, F.~Ahmed, M.~Arjovsky, V.~Dumoulin, and A.~Courville,
+\newblock ``Improved training of Wasserstein GANs,''
+\newblock \emph{Advances in Neural Information Processing Systems}, 2017.
+
+\bibitem{cwgan2014}
+M.~Mirza and S.~Osindero,
+\newblock ``Conditional Generative Adversarial Nets,''
+\newblock \emph{arXiv preprint arXiv:1411.1784}, 2014.
+
+\bibitem{wang2023}
+W.~Wang and Y.~Pai,
+\newblock ``Enhancing Small Tabular Clinical Trial Dataset through Hybrid Data Augmentation: Combining SMOTE and WCGAN-GP,''
+\newblock \emph{Journal of Healthcare Engineering}, 2023.
+
+\bibitem{jordon2019}
+J.~Jordon, J.~Yoon, and M.~van der Schaar,
+\newblock ``PATE-GAN: Generating Synthetic Data with Differential Privacy Guarantees,''
+\newblock \emph{International Conference on Learning Representations}, 2019.
+
+\end{thebibliography}
+
+\end{document}
