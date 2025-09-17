@@ -1,33 +1,25 @@
 
 """
-Hybrid Data Augmentation for Small Tabular Clinical Data
-(After Wang & Pai, 2023: Hybrid SMOTE + WCGAN-GP)
+Híbrido SMOTE + cWGAN-GP para dados clínicos tabulares (condicionado por classe)
+- Half-split por classe (50% ou 50%+1) ATIVADO POR PADRÃO (desligável com --no-half-split)
+- SMOTE com bootstrap (RandomOverSampler) para classes com 1 amostra
+- Treino cWGAN-GP condicional
+- Geração de N amostras por classe com filtro de privacidade e CDF matching (opcional)
+- Excel final com:
+    * 'TDados' (sintéticos)
+    * 'HOLDOUT_UNUSED' (originais não usados no treino)
+    * 'Pontuação' (cópia literal da aba original, se existir)
+    * 'REPORT' (métricas, se --save-excel-report)
+- Descarta das FEATURES toda coluna que, na aba "Pontuação", for totalmente ZERO (para aliviar o modelo)
 
-- Step 1 (SMOTE): Upsample each class to a minimum training size for stable GAN training.
-- Step 2 (cWGAN-GP): Train a conditional WGAN-GP on the SMOTE-augmented dataset.
-- Step 3 (Generation): Sample exactly N synthetic rows per class (e.g., 50).
-- Optional Post-processing:
-    * CDF match per feature (monotone rank mapping) to better align marginals.
-    * Privacy filter: drop synthetic rows too close to any original row (L2 min distance).
-
-Assumptions:
-- Input sheet TDados_clean; values in [0, 1] for numerical features.
-- Target column is categorical (string or numeric class id). Only numerical features (excluding target) are used as X.
-
-Usage examples:
-    python hybrid_smote_cwgan.py --excel Banco_dados.xlsx --sheet TDados_clean --target alvo \
-        --per-class-count 50 --smote-min-per-class 200 --balance --cdf-match --ignore-labels "nao,não,desconhecido"
-
-Install (if needed):
-    pip install pandas numpy scikit-learn imbalanced-learn torch openpyxl
-
-Outputs:
-- pacientes_virtuais_hybrid_<timestamp>.xlsx    (synthetic data with target column first)
-- hybrid_aug_report_<timestamp>.csv             (KS tests, correlation gap, C2ST AUC, privacy stats)
+Uso rápido (sem args pega defaults úteis):
+    python 03_hybrid_smote_cwgan_final.py
+equivale a:
+    python 03_hybrid_smote_cwgan_final.py --excel Banco_dados.xlsx --sheet TDados --target Alvo \
+      --per-class-count 50 --smote-min-per-class 200 --balance --cdf-match --save-excel-report
 """
-import os
-os.environ["LOKY_MAX_CPU_COUNT"] = "1"
 
+import os
 import argparse
 from pathlib import Path
 from datetime import datetime
@@ -36,13 +28,14 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
+from scipy.stats import ks_2samp
+
 from sklearn.neighbors import NearestNeighbors
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils import check_random_state
-from scipy.stats import ks_2samp
+from sklearn.impute import SimpleImputer
 
 import torch
 import torch.nn as nn
@@ -51,10 +44,9 @@ from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 
-
-# -----------------------------
-# Utils
-# -----------------------------
+# -----------------------------------------------------
+# Utilitários
+# -----------------------------------------------------
 
 def ts() -> str:
     return datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -63,15 +55,12 @@ def find_excel_case_insensitive(path_str: str) -> Path:
     p = Path(path_str)
     if p.exists():
         return p
+    # tenta achar por case-insensitive na mesma pasta
     if p.parent.exists():
-        stem_lower = p.stem.lower()
         for child in p.parent.iterdir():
-            if child.suffix.lower() in ('.xlsx', '.xls'):
-                if child.stem.lower() == stem_lower:
-                    return child
-    alt = p.with_name(p.name.lower())
-    if alt.exists():
-        return alt
+            if child.suffix.lower() in ('.xlsx', '.xls') and child.stem.lower() == p.stem.lower():
+                return child
+    # fallback
     return p
 
 def onehot(idx: torch.Tensor, n_classes: int) -> torch.Tensor:
@@ -79,29 +68,9 @@ def onehot(idx: torch.Tensor, n_classes: int) -> torch.Tensor:
     oh.scatter_(1, idx.view(-1,1), 1.0)
     return oh
 
-def cdf_match_column(x_synth: np.ndarray, x_real: np.ndarray) -> np.ndarray:
-    """Monotone rank-based mapping of synthetic to real marginal distribution."""
-    n = len(x_synth)
-    if len(x_real) < 2 or n == 0:
-        return x_synth
-    # ranks in [0,1]
-    ranks = (pd.Series(x_synth).rank(method='average') - 0.5) / len(x_synth)
-    # quantile mapping using real
-    q = np.quantile(x_real, ranks, method='linear')
-    return q
-
-def privacy_filter(X_synth: np.ndarray, X_real: np.ndarray, min_nn_dist: float) -> np.ndarray:
-    """Return boolean mask keeping only rows whose NN distance to original >= min_nn_dist."""
-    if len(X_real) == 0 or len(X_synth) == 0:
-        return np.ones(len(X_synth), dtype=bool)
-    nbrs = NearestNeighbors(n_neighbors=1, algorithm='auto').fit(X_real)
-    dists, _ = nbrs.kneighbors(X_synth, n_neighbors=1, return_distance=True)
-    dists = dists.reshape(-1)
-    return dists >= float(min_nn_dist)
-
-# -----------------------------
-# Conditional WGAN-GP models
-# -----------------------------
+# -----------------------------------------------------
+# Modelos condicionais (cWGAN-GP)
+# -----------------------------------------------------
 
 class GenC(nn.Module):
     def __init__(self, z_dim: int, y_dim: int, out_dim: int, hidden=256, depth=3):
@@ -113,7 +82,7 @@ class GenC(nn.Module):
             layers += [nn.Linear(in_dim, h), nn.LeakyReLU(0.2, inplace=True)]
             in_dim = h
             h = max(h // 1, 64)
-        layers += [nn.Linear(in_dim, out_dim), nn.Sigmoid()]  # ensure [0,1]
+        layers += [nn.Linear(in_dim, out_dim), nn.Sigmoid()]  # garante [0,1]
         self.net = nn.Sequential(*layers)
 
     def forward(self, z, y_oh):
@@ -137,11 +106,10 @@ class CriticC(nn.Module):
 
 class CWGAN_GP:
     def __init__(self, x_dim, y_dim, z_dim=64, g_hidden=256, d_hidden=256, g_depth=3, d_depth=3,
-                 lr=1e-4, betas=(0.0, 0.9), n_critic=5, gp_lambda=10.0, device=None, seed=42):
+                 lr=1e-4, betas=(0.0, 0.9), n_critic=5, gp_lambda=10.0, seed=42, device=None):
         self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
         torch.manual_seed(seed)
         np.random.seed(seed)
-
         self.z_dim = z_dim
         self.n_critic = n_critic
         self.gp_lambda = gp_lambda
@@ -166,7 +134,7 @@ class CWGAN_GP:
     def sample(self, n, y_idx=None, n_classes=None):
         device = self.device
         if y_idx is None:
-            assert n_classes is not None, "n_classes required when y_idx not provided."
+            assert n_classes is not None, "Defina n_classes ao amostrar sem y_idx."
             y_idx = torch.randint(0, n_classes, (n,), device=device)
         else:
             y_idx = y_idx.to(device)
@@ -182,7 +150,7 @@ class CWGAN_GP:
                 y_idx = y_idx.to(self.device)
                 y_oh = onehot(y_idx, n_classes)
 
-                # Critic steps
+                # passos do crítico
                 for _ in range(self.n_critic):
                     z = torch.randn(x_real.size(0), self.z_dim, device=self.device)
                     with torch.no_grad():
@@ -196,7 +164,7 @@ class CWGAN_GP:
                     d_loss.backward()
                     self.opt_D.step()
 
-                # Generator step
+                # passo do gerador
                 z = torch.randn(x_real.size(0), self.z_dim, device=self.device)
                 x_gen = self.G(z, y_oh)
                 g_loss = -self.D(x_gen, y_oh).mean()
@@ -209,34 +177,29 @@ class CWGAN_GP:
                 print(f"[{ep:04d}/{epochs}] D_loss={d_loss.item():.4f}  G_loss={g_loss.item():.4f}  "
                       f"D(real)={d_real.item():.4f} D(fake)={d_fake.item():.4f}", flush=True)
 
-# -----------------------------
-# Data pipeline
-# -----------------------------
+# -----------------------------------------------------
+# Dados e utilitários específicos
+# -----------------------------------------------------
 
 def load_tabular(excel_path: Path, sheet: str, target: str, ignore_labels: str, return_full_df=False):
     df = pd.read_excel(excel_path, sheet_name=sheet).copy()
     if target not in df.columns:
-        raise ValueError(f"Target column '{target}' not found in sheet '{sheet}'.")
-
+        raise ValueError(f"Coluna alvo '{target}' não encontrada na aba '{sheet}'.")
     y_raw = df[target].astype(str).str.strip()
+
     if ignore_labels:
         ignore = {s.strip().lower() for s in ignore_labels.split(",") if s.strip()}
         keep_mask = ~y_raw.str.lower().isin(ignore)
         df = df.loc[keep_mask]
         y_raw = y_raw.loc[keep_mask]
 
-    # Only numeric features EXCLUDING target
+    # apenas colunas numéricas (exceto target)
     num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
     if target in num_cols:
         num_cols.remove(target)
     X_df = df[num_cols].copy()
 
-    # drop any rows with NaN in X
-    nan_mask = X_df.isna().any(axis=1)
-    if nan_mask.any():
-        X_df = X_df.loc[~nan_mask]
-        y_raw = y_raw.loc[X_df.index]
-
+    # ALVO: não alteramos NaNs aqui; trataremos no treino (após split)
     X = np.clip(X_df.to_numpy(dtype=np.float32), 0.0, 1.0)
     classes = sorted(y_raw.unique().tolist())
     label_to_idx = {lbl: i for i, lbl in enumerate(classes)}
@@ -247,34 +210,37 @@ def load_tabular(excel_path: Path, sheet: str, target: str, ignore_labels: str, 
     else:
         return X_df.columns.tolist(), X, y, classes, label_to_idx
 
-
-def per_class_half_split(df_filtered, target, seed=42):
-    """Return train_mask (bool array) selecting 50% per class (ceil if odd)."""
+def per_class_split(df_filtered, target, perc=50.0, seed=42):
+    """Seleciona ceil(perc% de N_c) por classe para treino; retorna máscara booleana.
+       Ex.: perc=50 -> ~metade (para N_c ímpar vira 50%+1).
+    """
     rng = np.random.RandomState(seed)
     y = df_filtered[target].astype(str).str.strip().to_numpy()
     idx_all = np.arange(len(df_filtered))
     train_mask = np.zeros(len(df_filtered), dtype=bool)
-    # group by class
     classes = pd.Series(y).unique().tolist()
+    frac = float(perc) / 100.0
     for c in classes:
         cls_idx = idx_all[y == c]
         if len(cls_idx) == 0:
             continue
         rng.shuffle(cls_idx)
-        k = len(cls_idx)//2 + (1 if len(cls_idx)%2==1 else 0)  # 50% (+1 if odd)
+        # ceil(N_c * perc/100). Para N_c ímpar em 50%, vira 50%+1; generaliza o mesmo comportamento
+        k = int(np.ceil(len(cls_idx) * frac))
         sel = cls_idx[:k]
         train_mask[sel] = True
     return train_mask
 
+
 def run_smote(X: np.ndarray, y: np.ndarray, n_classes: int,
               min_per_class: int, k_neighbors: int, random_state: int):
     """Upsample para pelo menos min_per_class por classe.
-       1) Se alguma classe tiver só 1 amostra, faz bootstrap p/ 2 com RandomOverSampler.
-       2) Depois aplica SMOTE nas classes elegíveis (>=2 amostras).
+       1) Se classe com 1 amostra: bootstrap p/ 2 com RandomOverSampler.
+       2) Depois, SMOTE nas classes elegíveis (>=2 amostras) com k ajustado.
     """
     counts = np.bincount(y, minlength=n_classes)
 
-    # 1) Pré-bootstrap: classes com 1 amostra
+    # 1) Bootstrap prévio
     need_bootstrap = {ci: 2 for ci, cnt in enumerate(counts)
                       if cnt == 1 and max(int(min_per_class), int(cnt)) > cnt}
     X_work, y_work = X, y
@@ -283,7 +249,7 @@ def run_smote(X: np.ndarray, y: np.ndarray, n_classes: int,
         X_work, y_work = ros.fit_resample(X_work, y_work)
         counts = np.bincount(y_work, minlength=n_classes)
 
-    # 2) Estratégia de SMOTE apenas p/ classes com >=2 amostras
+    # 2) SMOTE apenas para classes com >=2 amostras
     strategy = {}
     for ci, cnt in enumerate(counts):
         target_cnt = max(int(min_per_class), int(cnt))
@@ -301,9 +267,9 @@ def run_smote(X: np.ndarray, y: np.ndarray, n_classes: int,
     X_sm, y_sm = sm.fit_resample(X_work, y_work)
     return X_sm.astype(np.float32), y_sm.astype(np.int64)
 
-# -----------------------------
-# Evaluation helpers
-# -----------------------------
+# -----------------------------------------------------
+# Métricas
+# -----------------------------------------------------
 
 def ks_report(X_real: np.ndarray, X_syn: np.ndarray, feat_cols):
     rows = []
@@ -313,7 +279,6 @@ def ks_report(X_real: np.ndarray, X_syn: np.ndarray, feat_cols):
     return pd.DataFrame(rows)
 
 def corr_gap(X_real: np.ndarray, X_syn: np.ndarray):
-    # Pearson correlation gap (Frobenius norm of difference)
     if X_real.shape[1] < 2:
         return np.nan
     C_r = np.corrcoef(X_real, rowvar=False)
@@ -322,12 +287,11 @@ def corr_gap(X_real: np.ndarray, X_syn: np.ndarray):
     return float(gap)
 
 def c2st_auc(X_real: np.ndarray, X_syn: np.ndarray, seed=42):
-    # Classifier Two-Sample Test using Logistic Regression
-    rng = check_random_state(seed)
     n_r = len(X_real); n_s = len(X_syn)
     n = min(n_r, n_s)
     if n < 50:
         return np.nan
+    rng = np.random.RandomState(seed)
     Xr = X_real[rng.choice(n_r, n, replace=False)]
     Xs = X_syn[rng.choice(n_s, n, replace=False)]
     X_all = np.vstack([Xr, Xs])
@@ -340,12 +304,12 @@ def c2st_auc(X_real: np.ndarray, X_syn: np.ndarray, seed=42):
     proba = clf.predict_proba(Xte)[:,1]
     return float(roc_auc_score(yte, proba))
 
-# -----------------------------
+# -----------------------------------------------------
 # Main
-# -----------------------------
+# -----------------------------------------------------
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description="Híbrido SMOTE + cWGAN-GP para geração de pacientes virtuais condicionados por classe.")
     # Parâmetros principais
     ap.add_argument("--excel", type=str, default=r"c:\\SourceCode\\qip\\python\\banco_dados.xlsx",
                     help="Caminho do arquivo Excel de entrada (padrão: Banco_dados.xlsx).")
@@ -355,7 +319,7 @@ def main():
                     help="Nome da coluna alvo (classe) usada para condicionamento (padrão: Alvo).")
     ap.add_argument("--ignore-labels", type=str, default="nao,não,desconhecido",
                     help="Lista de rótulos a ignorar no treino, separados por vírgula (padrão: 'nao,não,desconhecido').")
-    ap.add_argument("--epochs", type=int, default=15000,
+    ap.add_argument("--epochs", type=int, default=50000,
                     help="Número de épocas de treinamento do modelo GAN (padrão: 15000).")
     ap.add_argument("--batch-size", type=int, default=256,
                     help="Tamanho do lote (batch) para treinamento (padrão: 256).")
@@ -364,11 +328,11 @@ def main():
     ap.add_argument("--g-hidden", type=int, default=256,
                     help="Número de neurônios na camada oculta do gerador (padrão: 256).")
     ap.add_argument("--d-hidden", type=int, default=256,
-                    help="Número de neurônios na camada oculta do discriminador/critic (padrão: 256).")
+                    help="Número de neurônios na camada oculta do critic (padrão: 256).")
     ap.add_argument("--g-depth", type=int, default=3,
                     help="Número de camadas ocultas no gerador (padrão: 3).")
     ap.add_argument("--d-depth", type=int, default=3,
-                    help="Número de camadas ocultas no discriminador/critic (padrão: 3).")
+                    help="Número de camadas ocultas no critic (padrão: 3).")
     ap.add_argument("--n-critic", type=int, default=5,
                     help="Número de passos de treino do critic por passo do gerador (padrão: 5).")
     ap.add_argument("--gp-lambda", type=float, default=10.0,
@@ -376,30 +340,34 @@ def main():
     ap.add_argument("--log-every", type=int, default=100,
                     help="Frequência (em épocas) para exibir logs durante o treinamento (padrão: 100).")
 
-    # Divisão de treino/holdout
-    ap.add_argument("--no-half-split", action="store_false", dest="half_split",
-                    help="Desativa o uso padrão do half-split (que é 50%+1 por classe).")
-    ap.set_defaults(half_split=True)
-
+    # Half-split: padrão ligado; pode desativar com --no-half-split
+    ap.add_argument("--half-split", action=argparse.BooleanOptionalAction, default=True,
+                    help="Por padrão, usa 50% (+1 se ímpar) por classe para treino e exporta o restante na aba HOLDOUT_UNUSED. Desligue com --no-half-split.")
+    ap.add_argument("--split-perc", type=float, default=100.0,
+                help="Porcentagem por classe destinada ao TREINO (0–100). Ex.: 60 usa ~60% por classe; para contagens ímpares, arredonda para cima.")
     ap.add_argument("--save-excel-report", action="store_true",
                     help="Inclui o relatório de métricas (KS, correlação, privacidade) como aba extra no Excel de saída.")
 
-    # Controle do SMOTE
-    ap.add_argument("--smote-min-per-class", type=int, default=200,
-                    help="Número mínimo de amostras por classe após SMOTE para estabilizar o treino do GAN (padrão: 200).")
+    # SMOTE
+    ap.add_argument("--smote-min-per-class", type=int, default=400,
+                    help="Número mínimo de amostras por classe após SMOTE (padrão: 200).")
     ap.add_argument("--smote-k", type=int, default=5,
-                    help="Número de vizinhos para o SMOTE; reduzido automaticamente se necessário (padrão: 5).")
+                    help="k_neighbors do SMOTE; reduzido automaticamente conforme necessário (padrão: 5).")
     ap.add_argument("--seed", type=int, default=42,
                     help="Semente aleatória para reprodutibilidade (padrão: 42).")
 
-    # Controle da geração
+    # Imputação de NaN no treino
+    ap.add_argument("--impute", type=str, choices=["median", "mean", "zero", "drop"], default="median",
+                    help="Tratamento de NaN nas features do treino antes do SMOTE: 'median' (padrão), 'mean', 'zero' (0.0) ou 'drop' (remove linhas com NaN).")
+
+    # Geração
     ap.add_argument("--per-class-count", type=int, default=50,
                     help="Número de amostras sintéticas a gerar por classe (padrão: 50).")
     ap.add_argument("--cdf-match", action="store_true",
                     help="Aplica ajuste marginal (CDF matching) por feature para alinhar com a distribuição original.")
-    ap.add_argument("--min-nn-distance", type=float, default=0.10,
+    ap.add_argument("--min-nn-distance", type=float, default=0.01,
                     help="Distância mínima (L2) de cada amostra sintética para as reais, garantindo privacidade (padrão: 0.10).")
-    ap.add_argument("--max-gen-tries", type=int, default=10,
+    ap.add_argument("--max-gen-tries", type=int, default=50,
                     help="Número máximo de tentativas de reamostragem por classe para atingir a contagem desejada (padrão: 10).")
     ap.add_argument("--balance", action="store_true",
                     help="Ativa balanceamento de classes no DataLoader durante o treino (útil para classes desbalanceadas).")
@@ -407,38 +375,74 @@ def main():
 
     excel_path = find_excel_case_insensitive(args.excel)
     print(f"[INFO] Reading: {excel_path} (sheet='{args.sheet}') target='{args.target}'")
-    df_full, feat_cols, X_all, y_all, classes, label_to_idx = load_tabular(excel_path, args.sheet, args.target, args.ignore_labels, return_full_df=True)
-        # --- tentar carregar a aba "Pontuação" do Excel original (opcional) ---
+
+    # Tentar carregar "Pontuação" para copiar e detectar colunas zero
     try:
         df_pontuacao = pd.read_excel(excel_path, sheet_name="Pontuação")
         print("[INFO] Aba 'Pontuação' encontrada e será copiada para o arquivo de saída.")
+        zero_cols = []
+        for col in df_pontuacao.columns:
+            if pd.api.types.is_numeric_dtype(df_pontuacao[col]):
+                if df_pontuacao[col].fillna(0).abs().sum() == 0:
+                    zero_cols.append(col)
+        if zero_cols:
+            print("[INFO] Colunas com todos os valores 0 na aba Pontuação (serão descartadas na geração):", zero_cols)
     except Exception:
         df_pontuacao = None
-        print("[INFO] Aba 'Pontuação' não encontrada no arquivo de entrada; ignorando cópia.")
+        zero_cols = []
+        print("[INFO] Aba 'Pontuação' não encontrada no arquivo de entrada; ignorando cópia e descarte por zero.")
+
+    # Carregar dados principais
+    df_full, feat_cols, X_all, y_all, classes, label_to_idx = load_tabular(excel_path, args.sheet, args.target, args.ignore_labels, return_full_df=True)
     n_classes = len(classes)
     print(f"[INFO] Found {n_classes} classes: {classes}")
 
-    # ------------- per-class 50% (+1) split -------------
+    # Remover features que são colunas zeradas em Pontuação
+    if zero_cols:
+        cols_to_drop = [c for c in zero_cols if c in feat_cols]
+        if cols_to_drop:
+            keep_idx = [i for i,c in enumerate(feat_cols) if c not in cols_to_drop]
+            feat_cols = [feat_cols[i] for i in keep_idx]
+            X_all = X_all[:, keep_idx]
+            print(f"[INFO] Features descartadas por serem zero em Pontuação: {cols_to_drop}")
+
+    # Split half-split (padrão ligado)
     if args.half_split:
-        train_mask = per_class_half_split(df_full, args.target, seed=args.seed)
+        train_mask = per_class_split(df_full, args.target, seed=args.seed)
         df_train = df_full.loc[train_mask].reset_index(drop=True)
         df_holdout = df_full.loc[~train_mask].reset_index(drop=True)
-        # rebuild X,y from df_train to keep alignment after filtering
+        # reconstruir X,y de treino respeitando feat_cols atuais
         num_cols = df_train.select_dtypes(include=[np.number]).columns.tolist()
         if args.target in num_cols:
             num_cols.remove(args.target)
+        if zero_cols:
+            num_cols = [c for c in num_cols if c in feat_cols]  # mantem alinhado após prune
         X = np.clip(df_train[num_cols].to_numpy(dtype=np.float32), 0.0, 1.0)
         y_series = df_train[args.target].astype(str).str.strip()
-        y = y_series.map({lbl:i for i,lbl in enumerate(sorted(y_series.unique().tolist()))})
-        # remap to original label_to_idx to keep class order consistent
-        y = df_train[args.target].map(label_to_idx).to_numpy(dtype=np.int64)
+        y = y_series.map(label_to_idx).to_numpy(dtype=np.int64)
         print(f"[INFO] Half-split: train={len(df_train)}  holdout={len(df_holdout)}")
     else:
-        # use all filtered
         X = X_all; y = y_all
         df_holdout = None
 
-    # ----- SMOTE upsample on training only -----
+    # Tratamento de NaN nas features do treino (antes do SMOTE)
+    if np.isnan(X).any():
+        print("[INFO] Foram encontrados NaNs no conjunto de treino. Aplicando estratégia de imputação:", args.impute)
+        if args.impute == "drop":
+            mask = ~np.isnan(X).any(axis=1)
+            removed = int((~mask).sum())
+            X = X[mask]; y = y[mask]
+            print(f"[INFO] Linhas removidas por NaN no treino: {removed}  |  Restantes: {len(X)}")
+        elif args.impute == "median":
+            imputer = SimpleImputer(strategy="median")
+            X = imputer.fit_transform(X)
+        elif args.impute == "mean":
+            imputer = SimpleImputer(strategy="mean")
+            X = imputer.fit_transform(X)
+        elif args.impute == "zero":
+            X = np.nan_to_num(X, nan=0.0)
+
+    # SMOTE no treino
     X_sm, y_sm = run_smote(X, y, n_classes, min_per_class=args.smote_min_per_class,
                            k_neighbors=args.smote_k, random_state=args.seed)
     print(f"[INFO] SMOTE: {X.shape[0]} -> {X_sm.shape[0]} rows (training set)")
@@ -450,75 +454,70 @@ def main():
         counts = np.bincount(y_sm, minlength=n_classes).astype(float)
         class_weights = (counts.sum() / np.maximum(counts, 1.0))
         weights = class_weights[y_sm]
-        sampler = WeightedRandomSampler(weights=weights, num_samples=len(weights), replacement=True)
-        loader = DataLoader(TensorDataset(X_t, y_t), batch_size=args.batch_size, sampler=sampler)
+        loader = DataLoader(TensorDataset(X_t, y_t), batch_size=args.batch_size,
+                            sampler=WeightedRandomSampler(weights=weights, num_samples=len(weights), replacement=True))
     else:
         loader = DataLoader(TensorDataset(X_t, y_t), batch_size=args.batch_size, shuffle=True)
 
-    # ----- Train cWGAN-GP -----
+    # Treino do cWGAN-GP
     model = CWGAN_GP(
-        x_dim=X.shape[1], y_dim=n_classes, z_dim=args.z_dim,
+        x_dim=X_sm.shape[1], y_dim=n_classes, z_dim=args.z_dim,
         g_hidden=args.g_hidden, d_hidden=args.d_hidden,
         g_depth=args.g_depth, d_depth=args.d_depth,
         n_critic=args.n_critic, gp_lambda=args.gp_lambda, seed=args.seed
     )
     model.train(loader, n_classes=n_classes, epochs=args.epochs, log_every=args.log_every)
 
-    # ----- Generate per class with privacy filter & optional CDF match -----
-    all_Xs = []
-    all_Ys = []
+    # Geração por classe
+    all_Xs = []; all_Ys = []
     for name in classes:
         target_idx = label_to_idx[name]
         needed = int(args.per_class_count)
-        got = 0
-        tries = 0
+        got = 0; tries = 0
         col_buffer = []
 
-        # Real subset for this class for CDF match (marginal)
+        # Real por classe (para CDF matching)
         idx_this = (y == target_idx)
         X_real_cls = X[idx_this] if idx_this.any() else X
 
         while got < needed and tries < args.max_gen_tries:
-            # sample batch for this class
             batch = max(needed - got, args.batch_size)
             y_idx_tensor = torch.full((batch,), target_idx, dtype=torch.long)
             Xs, Ys = model.sample(batch, y_idx=y_idx_tensor, n_classes=n_classes)
 
-            # privacy filter vs ORIGINAL X (not SMOTE)
-            keep_mask = privacy_filter(Xs, X, min_nn_dist=args.min_nn_distance)
-            Xs = Xs[keep_mask]
-            Ys = Ys[keep_mask]
+            # filtro de privacidade vs X original do TREINO (não SMOTE)
+            keep_mask = np.ones(len(Xs), dtype=bool)
+            if len(X) > 0:
+                nbrs = NearestNeighbors(n_neighbors=1).fit(X)
+                dists, _ = nbrs.kneighbors(Xs)
+                keep_mask = (dists.reshape(-1) >= float(args.min_nn_distance))
+            Xs = Xs[keep_mask]; Ys = Ys[keep_mask]
             if len(Xs) == 0:
-                tries += 1
-                continue
+                tries += 1; continue
 
-            # optional CDF match per feature, using real of same class (fallback all real)
+            # CDF match (opcional)
             if args.cdf_match:
                 Xs_adj = Xs.copy()
                 for j in range(Xs.shape[1]):
-                    Xs_adj[:, j] = cdf_match_column(
-                        Xs[:, j],
-                        X_real_cls[:, j] if len(X_real_cls) > 0 else X[:, j]
-                    )
+                    # ranks -> quantis reais (por classe; fallback para todo treino)
+                    ranks = (pd.Series(Xs[:, j]).rank(method='average') - 0.5) / len(Xs)
+                    ref = X_real_cls[:, j] if len(X_real_cls) > 0 else X[:, j]
+                    q = np.quantile(ref, ranks, method='linear') if len(ref) > 0 else Xs[:, j]
+                    Xs_adj[:, j] = q
                 Xs = np.clip(Xs_adj, 0, 1)
 
-
-            # accumulate
             take = min(needed - got, len(Xs))
-            col_buffer.append(Xs[:take])
-            got += take
-            tries += 1
+            col_buffer.append(Xs[:take]); got += take; tries += 1
 
         if got < needed:
             print(f"[WARN] Could only produce {got}/{needed} for class '{name}' with current filters.")
         if col_buffer:
             X_final = np.vstack(col_buffer)
             Y_final = np.full((X_final.shape[0],), target_idx, dtype=np.int64)
-            all_Xs.append(X_final)
-            all_Ys.append(Y_final)
+            all_Xs.append(X_final); all_Ys.append(Y_final)
 
     if not all_Xs:
-        raise RuntimeError("No synthetic rows produced; try relaxing --min-nn-distance or increasing --max-gen-tries.")
+        raise RuntimeError("Nenhuma linha sintética produzida; reduza --min-nn-distance ou aumente --max-gen-tries.")
 
     X_syn = np.vstack(all_Xs)
     Y_syn = np.concatenate(all_Ys)
@@ -527,23 +526,23 @@ def main():
 
     df_out = pd.DataFrame(X_syn, columns=feat_cols)
     df_out.insert(0, args.target, labels)
+
+    # Relatórios
+    ks_df = ks_report(X, X_syn, feat_cols); ks_df["metric"] = "KS"
+    gap = corr_gap(X, X_syn); auc = c2st_auc(X, X_syn, seed=args.seed)
+    rep = ks_df.copy()
+    rep.loc[len(rep.index)] = {"feature": "__summary_corr_gap__", "ks_stat": gap, "ks_pvalue": np.nan, "metric":"corr_gap_fro"}
+    rep.loc[len(rep.index)] = {"feature": "__summary_c2st_auc__", "ks_stat": auc, "ks_pvalue": np.nan, "metric":"c2st_auc"}
+    if len(X) > 0:
+        nbrs_all = NearestNeighbors(n_neighbors=1).fit(X)
+        dists_all, _ = nbrs_all.kneighbors(X_syn)
+        rep.loc[len(rep.index)] = {"feature": "__privacy_nn_mean__", "ks_stat": float(np.mean(dists_all)), "ks_pvalue": np.nan, "metric":"privacy_nn_mean"}
+        rep.loc[len(rep.index)] = {"feature": "__privacy_nn_std__",  "ks_stat": float(np.std(dists_all)),  "ks_pvalue": np.nan, "metric":"privacy_nn_std"}
+
     timestamp_str = ts()
     out_xlsx = Path(f"saida_modelo\\banco_dados_vt{timestamp_str}.xlsx").absolute()
     # garantir diretório de saída
     out_xlsx.parent.mkdir(parents=True, exist_ok=True)
-
-    # Build report
-    ks_df = ks_report(X, X_syn, feat_cols)
-    ks_df['metric'] = 'KS'
-    gap = corr_gap(X, X_syn)
-    auc = c2st_auc(X, X_syn)
-    rep = ks_df.copy()
-    rep.loc[len(rep.index)] = {"feature": "__summary_corr_gap__", "ks_stat": gap, "ks_pvalue": np.nan, "metric":"corr_gap_fro"}
-    rep.loc[len(rep.index)] = {"feature": "__summary_c2st_auc__", "ks_stat": auc, "ks_pvalue": np.nan, "metric":"c2st_auc"}
-    nbrs = NearestNeighbors(n_neighbors=1).fit(X)
-    dists, _ = nbrs.kneighbors(X_syn)
-    rep.loc[len(rep.index)] = {"feature": "__privacy_nn_mean__", "ks_stat": float(np.mean(dists)), "ks_pvalue": np.nan, "metric":"privacy_nn_mean"}
-    rep.loc[len(rep.index)] = {"feature": "__privacy_nn_std__",  "ks_stat": float(np.std(dists)),  "ks_pvalue": np.nan, "metric":"privacy_nn_std"}
 
     # Save to Excel with multiple sheets
     with pd.ExcelWriter(out_xlsx, engine='openpyxl') as writer:
@@ -571,4 +570,6 @@ def main():
     print(f"[OK] Report saved: {out_csv}")
 
 if __name__ == "__main__":
+    # *Opcional* para evitar ruído do loky no Windows muito restrito:
+    os.environ.setdefault("LOKY_MAX_CPU_COUNT", "1")
     main()
