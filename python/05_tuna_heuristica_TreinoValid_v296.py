@@ -485,7 +485,7 @@ def main(args):
 if __name__ == "__main__":
     import argparse
     p = argparse.ArgumentParser(description="Treino/validação com softmax puro e mutações evolutivas; versão sem 'Sem Transtorno'.")
-    p.add_argument("--input", default=r"c:\\SourceCode\\qip\\saida_modelo\\banco_dados_vt20250917_075859.xlsx")
+    p.add_argument("--input", default=r"c:\\SourceCode\\qip\\saida_modelo\\banco_dados_vt20250917_162151.xlsx")
     p.add_argument("--output", default=None)
     p.add_argument("--sheet-dados", default="TDados")
     p.add_argument("--sheet-pontos", default="Pontuação")

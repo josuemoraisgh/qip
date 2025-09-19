@@ -32,6 +32,8 @@ except Exception:
     _HAS_MSVCRT = False
 warnings.filterwarnings("ignore")
 
+from collections import deque
+
 import numpy as np
 import pandas as pd
 from scipy.stats import ks_2samp
@@ -39,7 +41,7 @@ from scipy.stats import ks_2samp
 from sklearn.neighbors import NearestNeighbors
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, f1_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 
@@ -175,46 +177,131 @@ class CWGAN_GP:
         x = self.G(z, y_oh).clamp(0, 1)
         return x.cpu().numpy(), y_idx.cpu().numpy()
 
-    def train(self, loader, n_classes, epochs=2000, log_every=100):
-        stop_now = False
-        for ep in range(1, epochs+1):
+    
+def train(self, loader, n_classes, epochs=2000, log_every=100,
+          eval_every=0, eval_fn=None,
+          early_cfg=None):
+    """
+    Treinamento com:
+      - Log do gap de Wasserstein (D(real)-D(fake)) e sua média móvel
+      - Avaliação periódica (TSTR/KS/Correlação) via eval_fn
+      - Parada antecipada por plateau + gap estável
+
+    Parâmetros:
+      eval_every: int (0 desativa)
+      eval_fn: callable(model) -> dict com métricas
+      early_cfg: dict com chaves:
+        - patience: int
+        - gap_window: int
+        - gap_low: float
+        - gap_high: float
+        - tstr_tol: float  (pontos percentuais)
+        - min_epochs: int
+    Retorna:
+      eval_history: list[dict]
+    """
+    stop_now = False
+    last_gap = None
+    gaps = deque(maxlen=(early_cfg['gap_window'] if early_cfg else 500))
+    eval_history = []
+    best_tstr = None
+    plateau = 0
+    stable_gap = 0
+
+    for ep in range(1, epochs+1):
+        if user_pressed_q_nonblocking():
+            print("[INFO] Stop solicitado pelo usuário ('q'). Encerrando treino antecipadamente.", flush=True)
+            break
+        for x_real, y_idx in loader:
             if user_pressed_q_nonblocking():
                 print("[INFO] Stop solicitado pelo usuário ('q'). Encerrando treino antecipadamente.", flush=True)
+                stop_now = True
                 break
-            for x_real, y_idx in loader:
-                if user_pressed_q_nonblocking():
-                    print("[INFO] Stop solicitado pelo usuário ('q'). Encerrando treino antecipadamente.", flush=True)
-                    stop_now = True
-                    break
-                x_real = x_real.to(self.device)
-                y_idx = y_idx.to(self.device)
-                y_oh = onehot(y_idx, n_classes)
-                for _ in range(self.n_critic):
-                    z = torch.randn(x_real.size(0), self.z_dim, device=self.device)
-                    with torch.no_grad():
-                        x_fake = self.G(z, y_oh)
-                    d_real = self.D(x_real, y_oh).mean()
-                    d_fake = self.D(x_fake, y_oh).mean()
-                    gp = self.gradient_penalty(x_real, x_fake, y_oh)
-                    d_loss = -(d_real - d_fake) + self.gp_lambda * gp
-                    self.opt_D.zero_grad(set_to_none=True)
-                    d_loss.backward()
-                    self.opt_D.step()
+            x_real = x_real.to(self.device)
+            y_idx = y_idx.to(self.device)
+            y_oh = onehot(y_idx, n_classes)
+
+            # --- Critic ---
+            for _ in range(self.n_critic):
                 z = torch.randn(x_real.size(0), self.z_dim, device=self.device)
-                x_gen = self.G(z, y_oh)
-                g_loss = -self.D(x_gen, y_oh).mean()
-                self.opt_G.zero_grad(set_to_none=True)
-                g_loss.backward()
-                self.opt_G.step()
-            if stop_now:
-                break
-            if ep % log_every == 0 or ep == 1:
-                print(
-                    f"[{ep:04d}/{epochs}] D_loss={d_loss.item():.4f}  "
-                    f"G_loss={g_loss.item():.4f}  "
-                    f"D(real)={d_real.item():.4f} D(fake)={d_fake.item():.4f}",
-                    flush=True
-                )
+                with torch.no_grad():
+                    x_fake = self.G(z, y_oh)
+                d_real = self.D(x_real, y_oh).mean()
+                d_fake = self.D(x_fake, y_oh).mean()
+                gp = self.gradient_penalty(x_real, x_fake, y_oh)
+                d_loss = -(d_real - d_fake) + self.gp_lambda * gp
+                self.opt_D.zero_grad(set_to_none=True)
+                d_loss.backward()
+                self.opt_D.step()
+
+            # --- Generator ---
+            z = torch.randn(x_real.size(0), self.z_dim, device=self.device)
+            x_gen = self.G(z, y_oh)
+            g_loss = -self.D(x_gen, y_oh).mean()
+            self.opt_G.zero_grad(set_to_none=True)
+            g_loss.backward()
+            self.opt_G.step()
+
+            # Atualiza gap com último mini-batch
+            last_gap = (d_real - d_fake).item()
+            gaps.append(last_gap)
+
+        if stop_now:
+            break
+
+        # Logs básicos
+        if ep % log_every == 0 or ep == 1:
+            gap_ma = float(np.mean(gaps)) if len(gaps) else float('nan')
+            print(f"[{ep:04d}/{epochs}] D_loss={d_loss.item():.4f}  G_loss={g_loss.item():.4f}  "
+                  f"D(real)={d_real.item():.4f} D(fake)={d_fake.item():.4f}  gap={last_gap:.4f} gap_ma={gap_ma:.4f}",
+                  flush=True)
+
+        # Avaliação periódica + early stop
+        if eval_every and (ep % eval_every == 0):
+            gap_ma = float(np.mean(gaps)) if len(gaps) else float('nan')
+            metrics = {"epoch": ep, "gap_ma": gap_ma, "gap_last": last_gap}
+            if callable(eval_fn):
+                try:
+                    ev = eval_fn(self)
+                    metrics.update(ev)
+                except Exception as e:
+                    print(f"[WARN] eval_fn falhou: {e}")
+            eval_history.append(metrics)
+
+            # Early stop check
+            if early_cfg:
+                # TSTR métrica principal
+                cur_tstr = metrics.get("tstr_macro_f1", None)
+                if cur_tstr is not None:
+                    # considera melhora em pontos percentuais
+                    if best_tstr is None or (cur_tstr - best_tstr) > (early_cfg.get("tstr_tol", 0.5) / 100.0):
+                        best_tstr = cur_tstr
+                        plateau = 0
+                    else:
+                        plateau += 1
+                # gap estável dentro do intervalo
+                if (gap_ma == gap_ma) and (early_cfg.get("gap_low", 0.05) <= gap_ma <= early_cfg.get("gap_high", 0.30)):
+                    stable_gap += 1
+                else:
+                    stable_gap = 0
+
+                # Condição de parada: após min_epochs, se tivemos 'patience' avaliações sem melhora E gap estável
+                if ep >= early_cfg.get("min_epochs", 2000) and plateau >= early_cfg.get("patience", 3) and stable_gap >= early_cfg.get("patience", 3):
+                    print(f"[EARLY STOP] Sem melhora TSTR por {plateau} avaliações e gap_ma estável ({gap_ma:.3f}). Ep={ep}", flush=True)
+                    break
+
+            # Print resumo da avaliação
+            msg = [f"[EVAL ep={ep}] gap_ma={gap_ma:.4f}"]
+            for k in ("tstr_macro_f1", "ks_median", "corr_gap_fro", "class_diff_mean", "class_diff_max"):
+                if k in metrics and metrics[k] is not None:
+                    if k == "tstr_macro_f1":
+                        msg.append(f"{k}={metrics[k]*100:.2f}%")
+                    else:
+                        msg.append(f"{k}={metrics[k]:.4f}")
+            print("  " + "  |  ".join(msg), flush=True)
+
+    return eval_history
+
 def load_tabular(excel_path: Path, sheet: str, target: str, ignore_labels: str, return_full_df=False):
     df = pd.read_excel(excel_path, sheet_name=sheet).copy()
     if target not in df.columns:
@@ -442,7 +529,7 @@ def main():
 
     # Split half-split (padrão ligado)
     if args.half_split:
-        train_mask = per_class_split(df_full, args.target, perc=args.split_perc, seed=args.seed)
+        train_mask = per_class_split(df_full, args.target, seed=args.seed)
         df_train = df_full.loc[train_mask].reset_index(drop=True)
         df_holdout = df_full.loc[~train_mask].reset_index(drop=True)
         # reconstruir X,y de treino respeitando feat_cols atuais
@@ -454,7 +541,7 @@ def main():
         X = np.clip(df_train[num_cols].to_numpy(dtype=np.float32), 0.0, 1.0)
         y_series = df_train[args.target].astype(str).str.strip()
         y = y_series.map(label_to_idx).to_numpy(dtype=np.int64)
-        print(f"[INFO] Half-split ({args.split_perc:.1f}% por classe): train={len(df_train)}  holdout={len(df_holdout)}")
+        print(f"[INFO] Half-split: train={len(df_train)}  holdout={len(df_holdout)}")
     else:
         X = X_all; y = y_all
         df_holdout = None
@@ -500,7 +587,75 @@ def main():
         g_depth=args.g_depth, d_depth=args.d_depth,
         n_critic=args.n_critic, gp_lambda=args.gp_lambda, seed=args.seed
     )
-    model.train(loader, n_classes=n_classes, epochs=args.epochs, log_every=args.log_every)
+    
+    # ----- Avaliação periódica (TSTR/KS/Correlação) -----
+    # Prepara conjunto REAL para avaliação (holdout se existir; do contrário, usa parte do treino original)
+    if df_holdout is not None and len(df_holdout) > 0:
+        X_eval = np.clip(df_holdout[feat_cols].to_numpy(dtype=np.float32), 0.0, 1.0)
+        y_eval = df_holdout[args.target].astype(str).str.strip().map(label_to_idx).to_numpy(dtype=np.int64)
+    else:
+        # carve out 20% do conjunto original X_all/y_all apenas para avaliação (não influencia o treino do GAN)
+        from sklearn.model_selection import train_test_split as _ttsplit
+        X_eval, _, y_eval, _ = _ttsplit(X_all, y_all, test_size=0.80, random_state=args.seed, stratify=y_all)
+
+    counts_sm = np.bincount(y_sm, minlength=n_classes).astype(float)
+    p_sm = counts_sm / counts_sm.sum()
+
+    def _eval_fn(model: 'CWGAN_GP'):
+        # Tamanho da amostra sintética para avaliação
+        n_syn = min(len(X_eval), 5000)
+        # Amostra rótulos sintéticos proporcionalmente à distribuição do treino SMOTE
+        y_idx_syn = np.random.choice(np.arange(n_classes), size=n_syn, replace=True, p=p_sm)
+        y_idx_syn_t = torch.tensor(y_idx_syn, dtype=torch.long, device=model.device)
+        X_syn, Y_syn = model.sample(n_syn, y_idx=y_idx_syn_t, n_classes=n_classes)
+
+        # --- TSTR ---
+        # Treina classificador no SINTÉTICO, testa no REAL (holdout ou carve-out)
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.metrics import f1_score
+
+        scaler = StandardScaler().fit(X_syn)
+        Xtr = scaler.transform(X_syn); Xte = scaler.transform(X_eval)
+        clf = LogisticRegression(max_iter=300, multi_class="auto")
+        clf.fit(Xtr, Y_syn)
+        y_pred = clf.predict(Xte)
+        tstr_macro_f1 = f1_score(y_eval, y_pred, average="macro")
+
+        # --- KS/Corr --- (avaliando contra REAL de avaliação)
+        ks_df = ks_report(X_eval, X_syn, feat_cols)
+        ks_median = float(ks_df["ks_stat"].median()) if not ks_df.empty else float('nan')
+        corr_fro = corr_gap(X_eval, X_syn)
+
+        # --- Diferença de distribuição de classes geradas ---
+        real_p = np.bincount(y_eval, minlength=n_classes).astype(float); real_p /= real_p.sum()
+        syn_p = np.bincount(Y_syn, minlength=n_classes).astype(float); syn_p /= max(syn_p.sum(), 1.0)
+        class_diff = np.abs(real_p - syn_p)
+        class_diff_mean = float(class_diff.mean())
+        class_diff_max  = float(class_diff.max())
+
+        return {
+            "tstr_macro_f1": float(tstr_macro_f1),
+            "ks_median": ks_median,
+            "corr_gap_fro": float(corr_fro),
+            "class_diff_mean": class_diff_mean,
+            "class_diff_max": class_diff_max
+        }
+
+    # ----- Treino com avaliação periódica + early stop -----
+    early_cfg = dict(
+        patience=args.early_patience,
+        gap_window=args.gap_window,
+        gap_low=args.gap_stable_low,
+        gap_high=args.gap_stable_high,
+        tstr_tol=args.tstr_tol,
+        min_epochs=args.min_epochs_early
+    )
+    eval_history = model.train(
+        loader, n_classes=n_classes, epochs=args.epochs, log_every=args.log_every,
+        eval_every=args.eval_every, eval_fn=_eval_fn, early_cfg=early_cfg
+    )
+
 
     # Geração por classe
     all_Xs = []; all_Ys = []
@@ -596,6 +751,15 @@ def main():
         if args.save_excel_report:
             rep.to_excel(writer, index=False, sheet_name='REPORT')
 
+            # Histórico de avaliações durante o treino
+            try:
+                import pandas as _pd
+                _hist_df = _pd.DataFrame(eval_history)
+                if not _hist_df.empty:
+                    _hist_df.to_excel(writer, index=False, sheet_name='EVAL_HISTORY')
+            except Exception as e:
+                print(f"[WARN] Não foi possível salvar EVAL_HISTORY: {e}")
+
     print(f"[OK] Excel saved: {out_xlsx}  (synthetic_rows={len(df_out)})")
 
     # Exporta CSV do relatório na mesma pasta de saída do Excel
@@ -635,3 +799,4 @@ def user_pressed_q_nonblocking() -> bool:
     except Exception:
         pass
     return False
+

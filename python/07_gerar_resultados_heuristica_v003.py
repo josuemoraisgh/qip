@@ -46,9 +46,9 @@ def parse_multilabel(series, core_classes):
 
 def main():
     p = argparse.ArgumentParser(description="Gera Resultado_Heuristica_Tunada e Resultado (inferência softmax, colunas alinhadas).")
-    p.add_argument("--input", default=r"c:\\SourceCode\\qip\\saida_modelo\\banco_dados_vt_full.xlsx", help="Caminho do .xlsx de entrada (com TDados e Pontuação/_Tunada).")
+    p.add_argument("--input", default=r"c:\\SourceCode\\qip\\saida_modelo\\banco_dados_vt20250917_162151_20250917_162404.xlsx", help="Caminho do .xlsx de entrada (com TDados e Pontuação/_Tunada).")
     p.add_argument("--output", default=None, help="Arquivo de saída (por padrão, sobrescreve o input).")
-    p.add_argument("--sheet-dados", default="DATA_UNUSED")
+    p.add_argument("--sheet-dados", default="DATAUNUSED")
     p.add_argument("--sheet-pontos", default="Pontuação")
     p.add_argument("--sheet-pontos-tunada", default="Pontuação_Tunada")
     p.add_argument("--sheet-res-tun", default="Resultado_Heuristica_Tunada")
