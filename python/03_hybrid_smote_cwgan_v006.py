@@ -1,13 +1,12 @@
 
 import os
 import sys
-import time
 import math
 import argparse
 import warnings
 import numpy as np
-import unicodedata
 import pandas as pd
+import unicodedata
 
 warnings.filterwarnings("ignore")
 
@@ -35,27 +34,6 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
 # ---------- Utils ----------
-
-def _strip_accents(s: str) -> str:
-    return ''.join(ch for ch in unicodedata.normalize('NFKD', s) if not unicodedata.combining(ch))
-
-def _normalize_series_text(ser: pd.Series) -> pd.Series:
-    return ser.astype(str).str.strip().apply(lambda x: _strip_accents(x).lower())
-
-def impute_numeric(df: pd.DataFrame, feat_cols, strategy="median"):
-    df = df.copy()
-    # replace inf with NaN
-    for c in feat_cols:
-        col = df[c].astype(float)
-        col = col.replace([np.inf, -np.inf], np.nan)
-        df[c] = col
-    if strategy == "median":
-        med = df[feat_cols].median(numeric_only=True)
-        df[feat_cols] = df[feat_cols].fillna(med)
-    else:
-        df[feat_cols] = df[feat_cols].fillna(0.0)
-    return df
-
 
 def set_seed(seed: int = 42):
     import random
@@ -91,12 +69,10 @@ def ks_report(X_real: np.ndarray, X_syn: np.ndarray, feat_cols):
     return pd.DataFrame(rows, columns=["feature", "ks_stat"])
 
 def corr_gap(X_real: np.ndarray, X_syn: np.ndarray) -> float:
-    # Corr por coluna (features nas linhas? usar rowvar=False)
     try:
         C_r = np.corrcoef(X_real, rowvar=False)
         C_s = np.corrcoef(X_syn, rowvar=False)
         if np.isnan(C_r).any() or np.isnan(C_s).any():
-            # substitui NaN nas diagonais e zeros fora
             C_r = np.nan_to_num(C_r, nan=0.0)
             C_s = np.nan_to_num(C_s, nan=0.0)
         return float(np.linalg.norm(C_r - C_s, ord='fro'))
@@ -118,6 +94,26 @@ def per_class_split(df, target_col, perc=50.0, seed=42):
         mask[choose] = True
     return mask
 
+def _strip_accents(s: str) -> str:
+    return ''.join(ch for ch in unicodedata.normalize('NFKD', s) if not unicodedata.combining(ch))
+
+def _normalize_series_text(ser: pd.Series) -> pd.Series:
+    return ser.astype(str).str.strip().apply(lambda x: _strip_accents(x).lower())
+
+def impute_numeric(df: pd.DataFrame, feat_cols, strategy="median"):
+    df = df.copy()
+    # replace inf with NaN
+    for c in feat_cols:
+        col = pd.to_numeric(df[c], errors='coerce')
+        col = col.replace([np.inf, -np.inf], np.nan)
+        df[c] = col
+    if strategy == "median":
+        med = df[feat_cols].median(numeric_only=True)
+        df[feat_cols] = df[feat_cols].fillna(med)
+    else:
+        df[feat_cols] = df[feat_cols].fillna(0.0)
+    return df
+
 def fit_resample_balanced(X, y, n_classes, seed=42, target_total=5400):
     """Tenta SMOTE; se falhar, usa RandomOverSampler. Garante ~balanceamento e ~target_total."""
     X_res, y_res = X, y
@@ -132,21 +128,19 @@ def fit_resample_balanced(X, y, n_classes, seed=42, target_total=5400):
     if (SMOTE is None) or (used != "SMOTE"):
         if RandomOverSampler is None:
             print("[WARN] imblearn não disponível; seguindo sem oversampling.", flush=True)
-            return X, y
+            return X, y, used
         ros = RandomOverSampler(random_state=seed)
         X_res, y_res = ros.fit_resample(X, y)
         used = "ROS"
 
     # Se ainda não atingiu target_total, faz oversample para alcançar
     if target_total is not None and len(X_res) < target_total and RandomOverSampler is not None:
-        # calcula alvo por classe
         counts = np.bincount(y_res, minlength=n_classes)
         per_cls = int(math.ceil(float(target_total) / n_classes))
         sampling_strategy = {c: max(per_cls, int(counts[c])) for c in range(n_classes)}
         ros2 = RandomOverSampler(random_state=seed, sampling_strategy=sampling_strategy)
         X_res, y_res = ros2.fit_resample(X_res, y_res)
         used = used + "+ROS2" if used != "None" else "ROS2"
-
     return X_res, y_res, used
 
 # ---------- Data ----------
@@ -171,7 +165,7 @@ class Generator(nn.Module):
             nn.Linear(hidden, hidden),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(hidden, x_dim),
-            nn.Sigmoid()  # mantém em [0,1] se seus dados são normalizados
+            nn.Sigmoid()
         )
 
     def forward(self, z, y_onehot):
@@ -186,7 +180,7 @@ class Discriminator(nn.Module):
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(hidden, hidden),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(hidden, 1)  # score (não é probabilidade)
+            nn.Linear(hidden, 1)
         )
 
     def forward(self, x, y_onehot):
@@ -195,19 +189,25 @@ class Discriminator(nn.Module):
 
 class CWGAN_GP:
     def __init__(self, x_dim, n_classes, z_dim=64, hidden=256, gp_lambda=10.0, n_critic=5,
-                 lrG=1e-4, lrD=1e-4, device=None):
+                 lrG=1e-4, lrD=1e-4, inst_noise=0.0, device=None):
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.z_dim = z_dim
         self.gp_lambda = gp_lambda
         self.n_critic = n_critic
+        self.inst_noise = float(inst_noise)
         self.G = Generator(z_dim, n_classes, x_dim, hidden).to(self.device)
         self.D = Discriminator(x_dim, n_classes, hidden).to(self.device)
         self.opt_G = torch.optim.Adam(self.G.parameters(), lr=lrG, betas=(0.5, 0.9))
         self.opt_D = torch.optim.Adam(self.D.parameters(), lr=lrD, betas=(0.5, 0.9))
 
+    def _add_instance_noise(self, x):
+        if self.inst_noise > 0.0:
+            x = x + self.inst_noise * torch.randn_like(x)
+            x = torch.clamp(x, 0.0, 1.0)
+        return x
+
     def gradient_penalty(self, x_real, x_fake, y_onehot):
-        alpha = torch.rand(x_real.size(0), 1, device=self.device)
-        alpha = alpha.expand_as(x_real)
+        alpha = torch.rand(x_real.size(0), 1, device=self.device).expand_as(x_real)
         interpolates = alpha * x_real + (1 - alpha) * x_fake
         interpolates.requires_grad_(True)
         d_interpolates = self.D(interpolates, y_onehot)
@@ -237,12 +237,6 @@ class CWGAN_GP:
 
     def train(self, loader, n_classes, epochs=2000, log_every=100,
               eval_every=0, eval_fn=None, early_cfg=None):
-        """
-        Treinamento com:
-          - Log do gap de Wasserstein (D(real)-D(fake)) e média móvel (gap_ma)
-          - Avaliação periódica (TSTR/KS/Correlação) via eval_fn
-          - Parada antecipada por plateau + gap estável
-        """
         stop_now = False
         last_gap = None
         gaps = deque(maxlen=(early_cfg['gap_window'] if early_cfg else 500))
@@ -261,18 +255,23 @@ class CWGAN_GP:
                     stop_now = True
                     break
                 x_real = x_real.to(self.device)
-                x_real = torch.nan_to_num(x_real, nan=0.0, posinf=1.0, neginf=0.0)
                 y_idx = y_idx.to(self.device)
                 y_oh = onehot(y_idx, n_classes)
+
+                # Segurança contra NaNs/inf
+                x_real = torch.nan_to_num(x_real, nan=0.0, posinf=1.0, neginf=0.0)
 
                 # --- Critic updates ---
                 for _ in range(self.n_critic):
                     z = torch.randn(x_real.size(0), self.z_dim, device=self.device)
                     with torch.no_grad():
                         x_fake = self.G(z, y_oh)
-                    d_real = self.D(x_real, y_oh).mean()
-                    d_fake = self.D(x_fake, y_oh).mean()
-                    gp = self.gradient_penalty(x_real, x_fake, y_oh)
+                    # Instance noise em ambas as entradas do D
+                    xr = self._add_instance_noise(x_real)
+                    xf = self._add_instance_noise(x_fake)
+                    d_real = self.D(xr, y_oh).mean()
+                    d_fake = self.D(xf, y_oh).mean()
+                    gp = self.gradient_penalty(xr, xf, y_oh)
                     d_loss = -(d_real - d_fake) + self.gp_lambda * gp
                     self.opt_D.zero_grad(set_to_none=True)
                     d_loss.backward()
@@ -281,7 +280,8 @@ class CWGAN_GP:
                 # --- Generator update ---
                 z = torch.randn(x_real.size(0), self.z_dim, device=self.device)
                 x_gen = self.G(z, y_oh)
-                g_loss = -self.D(x_gen, y_oh).mean()
+                xg = self._add_instance_noise(x_gen)
+                g_loss = -self.D(xg, y_oh).mean()
                 self.opt_G.zero_grad(set_to_none=True)
                 g_loss.backward()
                 self.opt_G.step()
@@ -312,27 +312,25 @@ class CWGAN_GP:
 
                 if early_cfg:
                     cur_tstr = metrics.get("tstr_macro_f1", None)
-                    if cur_tstr is not None:
+                    if cur_tstr is not None and not np.isnan(cur_tstr):
                         if best_tstr is None or (cur_tstr - best_tstr) > (early_cfg.get("tstr_tol", 0.5) / 100.0):
                             best_tstr = cur_tstr
                             plateau = 0
                         else:
                             plateau += 1
-
                     if (gap_ma == gap_ma) and (early_cfg.get("gap_low", 0.05) <= gap_ma <= early_cfg.get("gap_high", 0.30)):
                         stable_gap += 1
                     else:
                         stable_gap = 0
-
                     if ep >= early_cfg.get("min_epochs", 2000) and plateau >= early_cfg.get("patience", 3) and stable_gap >= early_cfg.get("patience", 3):
                         print(f"[EARLY STOP] Sem melhora TSTR por {plateau} avaliações e gap_ma estável ({gap_ma:.3f}). Ep={ep}", flush=True)
                         break
 
                 # Print resumo eval
                 msg = [f"[EVAL ep={ep}] gap_ma={gap_ma:.4f}"]
-                for k in ("tstr_macro_f1", "ks_median", "corr_gap_fro", "class_diff_mean", "class_diff_max"):
+                for k in ("tstr_macro_f1", "tstr_ratio", "baseline_macro_f1", "ks_median", "corr_gap_fro", "class_diff_mean", "class_diff_max"):
                     if k in metrics and metrics[k] is not None:
-                        if k == "tstr_macro_f1":
+                        if k.endswith("macro_f1") or k == "tstr_ratio":
                             msg.append(f"{k}={metrics[k]*100:.2f}%")
                         else:
                             msg.append(f"{k}={metrics[k]:.4f}")
@@ -362,6 +360,8 @@ def main():
     ap.add_argument("--n-critic", type=int, default=5)
     ap.add_argument("--lrG", type=float, default=1e-4)
     ap.add_argument("--lrD", type=float, default=1e-4)
+    ap.add_argument("--inst-noise", type=float, default=0.0,
+                    help="Desvio-padrão do ruído gaussiano (instance noise) aplicado às entradas do D.")
     ap.add_argument("--eval-every", type=int, default=1000,
                     help="Frequência (épocas) para rodar avaliação TSTR/KS/correlação durante o treino (0 desativa).")
     ap.add_argument("--early-patience", type=int, default=3,
@@ -386,7 +386,7 @@ def main():
 
     args = ap.parse_args()
 
-    # Fallback defensivo (caso outra versão chame sem novos args)
+    # Fallback defensivo
     _defaults = dict(
         split_perc=100.0,
         eval_every=1000,
@@ -430,21 +430,28 @@ def main():
         except Exception:
             pontos_df = None
 
-    # Normaliza colunas numéricas para [0,1] se necessário (assume já no range; apenas clipe)
+    # Drop 'não/nao' (desconhecido), se habilitado
+    if args.drop_nao:
+        tgt_norm = _normalize_series_text(df_full[target])
+        drop_mask = tgt_norm.eq("nao") | tgt_norm.eq("não") | tgt_norm.eq("nao/nao") | tgt_norm.eq("nao / nao")
+        before = len(df_full)
+        df_full = df_full.loc[~drop_mask].copy()
+        removed = before - len(df_full)
+        if removed > 0:
+            print(f"[INFO] Removidas {removed} linhas com alvo 'não/nao'.")
+
+    # Seleciona colunas numéricas como features
     num_cols = df_full.select_dtypes(include=[np.number]).columns.tolist()
     if target in num_cols:
         num_cols.remove(target)
     feat_cols = [c for c in num_cols if c != target]
-
     if len(feat_cols) == 0:
         raise ValueError("Nenhuma feature numérica encontrada. Verifique suas colunas.")
 
-    # Alvo como string limpa
-    y_str = df_full[target].astype(str).str.strip()
-    classes = sorted(y_str.unique())
+    # Alvo como string limpa e mapa de índices
+    y_str_full = df_full[target].astype(str).str.strip()
+    classes = sorted(y_str_full.unique())
     label_to_idx = {c: i for i, c in enumerate(classes)}
-    y_all = y_str.map(label_to_idx).to_numpy(dtype=np.int64)
-
     print(f"[INFO] Found {len(classes)} classes: {classes}")
 
     # Split opcional por classe
@@ -456,19 +463,12 @@ def main():
     else:
         df_train = df_full.copy()
         df_holdout = None
-    # Imputação de NaNs nas features numéricas (usa estatística do df_train)
+
+    # Imputação de NaNs nas features numéricas
     if args.impute:
-        # Seleciona colunas numéricas novamente (em caso de mudanças)
-        num_cols_all = df_full.select_dtypes(include=[np.number]).columns.tolist()
-        if target in num_cols_all:
-            num_cols_all.remove(target)
-        feat_cols = [c for c in num_cols_all if c != target]
-        # Imputa no train
         df_train = impute_numeric(df_train, feat_cols, strategy=args.impute)
-        # Imputa no holdout usando a mesma estratégia (medianas do próprio holdout não são usadas; aplicamos strategy "median" per-frame)
         if df_holdout is not None and len(df_holdout) > 0:
             df_holdout = impute_numeric(df_holdout, feat_cols, strategy=args.impute)
-
 
     # Matriz X e y a partir do train
     X_all = df_train[feat_cols].to_numpy(dtype=np.float32)
@@ -481,7 +481,7 @@ def main():
     y_all = df_train[target].astype(str).str.strip().map(label_to_idx).to_numpy(dtype=np.int64)
     n_classes = len(classes)
 
-    # Oversampling para balancear e expandir
+    # Oversampling
     X_sm, y_sm, over_used = fit_resample_balanced(X_all, y_all, n_classes, seed=args.seed, target_total=args.smote_target)
     print(f"[INFO] SMOTE: {len(X_all)} -> {len(X_sm)} rows (training set) [{over_used}]")
 
@@ -489,14 +489,15 @@ def main():
     ds = TabularDataset(X_sm, y_sm)
     loader = DataLoader(ds, batch_size=args.batch_size, shuffle=True, drop_last=True)
 
-    # Prepara conjunto REAL para avaliação (holdout se existir; senão carve-out 20% do df_train)
+    # Conjunto REAL para avaliação (holdout; senão carve-out 20% do train)
     if df_holdout is not None and len(df_holdout) > 0:
-        X_eval = np.clip(df_holdout[feat_cols].to_numpy(dtype=np.float32), 0.0, 1.0)
+        X_eval = df_holdout[feat_cols].to_numpy(dtype=np.float32)
+        X_eval = np.nan_to_num(X_eval, nan=0.0, posinf=1.0, neginf=0.0)
+        X_eval = np.clip(X_eval, 0.0, 1.0)
         y_eval = df_holdout[target].astype(str).str.strip().map(label_to_idx).to_numpy(dtype=np.int64)
     else:
         eval_frac = 0.20
-        y_tmp_all = y_all.copy()
-        counts = np.bincount(y_tmp_all, minlength=n_classes)
+        counts = np.bincount(y_all, minlength=n_classes)
         can_strat = (
             counts.min() >= 2 and
             np.all(counts * eval_frac >= 1) and
@@ -511,6 +512,8 @@ def main():
             stratify=(y_all if can_strat else None),
         )
         del X_tmp, y_tmp
+        X_eval = np.nan_to_num(X_eval, nan=0.0, posinf=1.0, neginf=0.0)
+        X_eval = np.clip(X_eval, 0.0, 1.0)
 
     # Modelo
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -522,24 +525,29 @@ def main():
         gp_lambda=args.gp_lambda,
         n_critic=args.n_critic,
         lrG=args.lrG, lrD=args.lrD,
+        inst_noise=args.inst_noise,
         device=device
     )
 
+    # Distribuições para amostragem de rótulos durante avaliação
     counts_sm = np.bincount(y_sm, minlength=n_classes).astype(float)
-    p_sm = counts_sm / counts_sm.sum()
+    p_sm = counts_sm / max(counts_sm.sum(), 1.0)
+    counts_real_eval = np.bincount(y_eval, minlength=n_classes).astype(float)
+    p_real = counts_real_eval / max(counts_real_eval.sum(), 1.0)
 
     def _eval_fn(m: 'CWGAN_GP'):
+        # Escolhe distribuição real se disponível; senão, usa a do treino SMOTE
+        p_use = p_real if np.isfinite(p_real).all() and p_real.sum() > 0 else p_sm
         n_syn = min(len(X_eval), 5000) if len(X_eval) > 0 else 1000
-        y_idx_syn = np.random.choice(np.arange(n_classes), size=n_syn, replace=True, p=p_sm)
+        y_idx_syn = np.random.choice(np.arange(n_classes), size=n_syn, replace=True, p=p_use)
         y_idx_syn_t = torch.tensor(y_idx_syn, dtype=torch.long, device=m.device)
         X_syn, Y_syn = m.sample(n_syn, y_idx=y_idx_syn_t, n_classes=n_classes)
 
-        # TSTR
+        # TSTR: treino no sintético, teste no real
         X_syn = np.nan_to_num(X_syn, nan=0.0, posinf=1.0, neginf=0.0)
         scaler = StandardScaler().fit(X_syn)
         Xtr = scaler.transform(X_syn)
-        X_eval_safe = np.nan_to_num(X_eval, nan=0.0, posinf=1.0, neginf=0.0) if len(X_eval) > 0 else X_eval
-        Xte = scaler.transform(X_eval_safe) if len(X_eval) > 0 else X_eval_safe
+        Xte = scaler.transform(X_eval) if len(X_eval) > 0 else X_eval
         clf = LogisticRegression(max_iter=300, multi_class="auto")
         try:
             clf.fit(Xtr, Y_syn)
@@ -548,6 +556,24 @@ def main():
         except Exception as e:
             print(f"[WARN] TSTR falhou: {e}")
             tstr_macro_f1 = float('nan')
+
+        # Baseline real→real (treina no real de treino, testa no real de avaliação)
+        try:
+            scaler_b = StandardScaler().fit(X_all)
+            Xtr_b = scaler_b.transform(X_all)
+            Xte_b = scaler_b.transform(X_eval) if len(X_eval) > 0 else X_eval
+            clf_b = LogisticRegression(max_iter=300, multi_class="auto").fit(Xtr_b, y_all)
+            yb = clf_b.predict(Xte_b) if len(X_eval) > 0 else np.array([])
+            baseline_macro_f1 = f1_score(y_eval, yb, average="macro") if len(X_eval) > 0 else float('nan')
+        except Exception as e:
+            print(f"[WARN] Baseline real→real falhou: {e}")
+            baseline_macro_f1 = float('nan')
+
+        # tstr_ratio
+        if baseline_macro_f1 is not None and baseline_macro_f1 == baseline_macro_f1 and baseline_macro_f1 > 0:
+            tstr_ratio = float(tstr_macro_f1 / baseline_macro_f1)
+        else:
+            tstr_ratio = float('nan')
 
         # KS/Corr
         try:
@@ -562,8 +588,8 @@ def main():
 
         # Diferença de distribuição de classes
         try:
-            real_p = np.bincount(y_eval, minlength=n_classes).astype(float); real_p /= real_p.sum() if real_p.sum() > 0 else 1.0
-            syn_p = np.bincount(Y_syn, minlength=n_classes).astype(float); syn_p /= syn_p.sum() if syn_p.sum() > 0 else 1.0
+            real_p = counts_real_eval / max(counts_real_eval.sum(), 1.0)
+            syn_p = np.bincount(Y_syn, minlength=n_classes).astype(float); syn_p /= max(syn_p.sum(), 1.0)
             class_diff = np.abs(real_p - syn_p)
             class_diff_mean = float(class_diff.mean())
             class_diff_max  = float(class_diff.max())
@@ -573,6 +599,8 @@ def main():
 
         return {
             "tstr_macro_f1": float(tstr_macro_f1),
+            "baseline_macro_f1": float(baseline_macro_f1),
+            "tstr_ratio": float(tstr_ratio),
             "ks_median": ks_median,
             "corr_gap_fro": float(corr_fro),
             "class_diff_mean": class_diff_mean,

@@ -1,0 +1,30 @@
+\section{Metodologia}
+
+\subsection{Instrumento}
+A presente pesquisa foi conduzida a partir da elaboração de um \textit{instrumento psicopatológico estruturado} em formato de questionário. O objetivo deste instrumento foi levantar indicadores para diferentes transtornos mentais, a partir de respostas individuais.  
+
+Inicialmente, constituiu-se uma equipe de quatro psicólogos clínicos, os quais, de forma independente, atribuíram \textit{pesos específicos} a cada alternativa de resposta. Esses pesos representavam a relevância ou contribuição de cada resposta para a identificação de determinados transtornos.  
+
+Os valores atribuídos foram posteriormente agregados por meio da \textbf{média aritmética}, resultando em escores finais que variaram entre \(-1\) e \(1\). Esse procedimento originou a aba denominada \textbf{Pontuação} no banco de dados.
+
+\subsection{Procedimento de Modelagem}
+Na etapa seguinte, implementou-se um modelo linear de inferência. Para tanto, desenvolveu-se um algoritmo computacional em Python, no qual se alinharam estritamente as colunas da aba \textbf{TDados} (respostas brutas do questionário) com as colunas da aba \textbf{Pontuação} (ou sua versão ajustada, \textbf{Pontuação\_Tunada}).  
+
+Esse alinhamento permitiu a aplicação de uma \textbf{matriz de pesos \(W\)} sobre as variáveis observadas (\(X\)), gerando uma matriz de escores (\(Z\)). Sobre essa matriz de escores foi aplicada a \textbf{função softmax}, recurso amplamente utilizado em problemas de classificação multiclasse, de modo a converter os escores em \textbf{probabilidades normalizadas} para cada transtorno avaliado.  
+
+Dessa forma, para cada indivíduo avaliado, o modelo estimou a probabilidade de pertencer a cada classe de transtorno, organizando os resultados em ordem decrescente de confiança.
+
+\subsection{Filtragem de Variáveis: ``Regra de Ouro''}
+Um aspecto metodológico central foi a aplicação da chamada \textbf{``regra de ouro''}, que consistiu em eliminar todas as variáveis cujos pesos eram iguais a zero em todas as classes. Essa filtragem visou reduzir ruídos e evitar que variáveis irrelevantes impactassem o cálculo final.
+
+\subsection{Geração dos Resultados}
+O resultado foi disponibilizado em duas abas distintas:  
+\begin{itemize}
+    \item \textbf{Resultado\_Heurística\_Tunada}, que considerou apenas os casos com rótulos compatíveis com as classes principais de interesse;
+    \item \textbf{Resultado}, que incluiu todas as observações do banco de dados.
+\end{itemize}
+
+Além disso, foram calculadas métricas de desempenho específicas, como a \textbf{macro-precisão@top1, @top2 e @top3}, permitindo avaliar a taxa de acertos do modelo em diferentes níveis de recomendação.
+
+\subsection{Síntese Metodológica}
+Esse processo metodológico possibilitou a construção de um sistema de classificação probabilística de transtornos psicopatológicos, unindo \textbf{expertise clínica} (atribuição de pesos por psicólogos) com \textbf{modelagem estatística e computacional} (uso de matriz de pesos, função softmax e filtragem de variáveis).

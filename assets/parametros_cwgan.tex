@@ -1,0 +1,213 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  showstringspaces=false
+}
+
+\title{Guia de Parâmetros --- \textit{Hybrid SMOTE + cWGAN-GP} para Síntese Tabular Condicional}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+Este documento descreve, em detalhes, cada parâmetro da linha de comando do script, o efeito prático no sistema, sintomas comuns nos logs e recomendações de ajuste para melhorar a qualidade dos dados sintéticos e a estabilidade do treino.
+
+\section{Caminho de dados e organização}
+
+\paragraph{\texttt{--input} (str)} Arquivo Excel de entrada.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: define completamente o conjunto de dados carregado.
+  \item \textbf{Boas práticas}: versionar arquivos (\verb|..._2025-09-20.xlsx|) para rastreabilidade.
+\end{itemize}
+
+\paragraph{\texttt{--sheet} (str, default: \texttt{TDados})} Aba com \textbf{features + alvo}.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: escolher a aba errada mistura schemas; o modelo aprende informações inconsistentes.
+\end{itemize}
+
+\paragraph{\texttt{--target} (str, default: \texttt{Alvo})} Nome da coluna de rótulos.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Risco de \emph{leak}}: se o alvo entrar nas features, métricas explodem (ex.: \texttt{baseline\_macro\_f1} em 100\%). Garanta que a coluna alvo não entre em \texttt{feat\_cols}.
+\end{itemize}
+
+\paragraph{\texttt{--out} (str)} Nome do Excel de saída.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Uso}: controle de versionamento dos resultados; se omitido, usa timestamp.
+\end{itemize}
+
+\section{Reprodutibilidade e ciclo de treino}
+
+\paragraph{\texttt{--seed} (int, default: 42)} Semente de aleatoriedade para NumPy/PyTorch.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: splits, SMOTE, inicializações ficam reprodutíveis.
+  \item \textbf{Dica}: fixe 1--3 sementes para validar robustez.
+\end{itemize}
+
+\paragraph{\texttt{--epochs} (int, default: 50000)} Épocas máximas do cWGAN.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: teto do treino; com \emph{early stop}, nem sempre será atingido.
+\end{itemize}
+
+\paragraph{\texttt{--log-every} (int, default: 100)} Frequência de logs.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Trade-off}: mais logs ajudam \emph{debug}, mas aumentam I/O.
+\end{itemize}
+
+\section{Divisão de dados (holdout) e limpeza}
+
+\paragraph{\texttt{--half-split} (bool, default: False)} Ativa split por classe.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{ON}: usa \texttt{--split-perc} por classe para treino; o restante vira holdout.
+  \item \textbf{OFF}: usa 100\% para treino e faz \emph{carve-out} interno (20\%) para avaliação.
+\end{itemize}
+
+\paragraph{\texttt{--split-perc} (float, default: 100.0)} Percentual por classe para treino quando \texttt{--half-split} está ON.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Exemplo}: 80$\Rightarrow$ 80/20 por classe.
+\end{itemize}
+
+\paragraph{\texttt{--min-samples-per-class} (int, default: 4)} Remove classes com menos amostras que o limiar \emph{antes} do split.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Motivo}: SMOTE falha com classes singleton; estratificação também.
+  \item \textbf{Ajuste}: 2 (mínimo técnico); 3--5 melhora estabilidade, mas pode excluir classes raras demais.
+\end{itemize}
+
+\paragraph{\texttt{--drop-nao} (bool, default: True)} Remove linhas com alvo ``não/nao''.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: tira rótulos desconhecidos; reduz ruído.
+\end{itemize}
+
+\paragraph{\texttt{--impute} (\texttt{median}|\texttt{zero}, default: \texttt{median})} Imputação de NaNs nas features.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: evita \texttt{nan/inf} em SMOTE e treino.
+  \item \textbf{Escolha}: \texttt{median} é robusto; \texttt{zero} apenas se 0 tiver semântica clara.
+\end{itemize}
+
+\paragraph{\texttt{--drop-zero-by-pontuacao} (bool, default: True)} Regra de ouro: se a coluna correspondente na aba \texttt{Pontuação} for toda zero, a feature é removida de \texttt{X}.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: elimina variáveis sem peso/uso; diminui ruído e risco de \emph{leak}.
+  \item \textbf{Relatório}: a aba \texttt{FEATURES\_DROPPED\_BY\_PONTUACAO} lista o que saiu.
+\end{itemize}
+
+\section{Oversampling e tamanho do conjunto balanceado}
+
+\paragraph{\texttt{--smote-target} (int, default: 5400)} Tamanho-alvo após SMOTE/ROS (balanceado).
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: mais exemplos para o GAN; maior custo computacional.
+  \item \textbf{Faixas típicas}: 2k--10k.
+\end{itemize}
+
+\section{Arquitetura e dinâmica do GAN}
+
+\paragraph{\texttt{--batch-size} (int, default: 128)} Tamanho do mini-batch.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: estabilidade do gradiente e tempo de treino.
+\end{itemize}
+
+\paragraph{\texttt{--z-dim} (int, default: 64)} Dimensionalidade do ruído latente.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: diversidade das amostras sintéticas.
+  \item \textbf{Ajuste}: subir para 128--192 se KS/correlação seguem altos com gap aceitável.
+\end{itemize}
+
+\paragraph{\texttt{--hidden} (int, default: 256)} Largura das camadas MLP do Gerador/Discriminador.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: capacidade de modelar relações não lineares.
+  \item \textbf{Ajuste}: 384/512 quando \texttt{ks\_median} e \texttt{corr\_gap\_fro} persistem altos.
+\end{itemize}
+
+\paragraph{\texttt{--n-critic} (int, default: 5)} Atualizações do D por atualização do G.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: poder relativo do D.
+  \item \textbf{Ajuste}: se D domina (gap alto), reduzir para 2--3; se G colapsa, aumentar.
+\end{itemize}
+
+\paragraph{\texttt{--gp-lambda} (float, default: 10.0)} Peso da penalidade de gradiente (WGAN-GP).
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: suavidade/estabilidade do D.
+  \item \textbf{Ajuste}: 20--50 se D estiver dominando; 5--10 se D estiver ``mole''.
+\end{itemize}
+
+\paragraph{\texttt{--lrG}, \texttt{--lrD} (floats, default: $10^{-4}$)} Taxas de aprendizado de G e D.
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Regra}: relação \texttt{lrG:lrD} é crítica.
+  \item \textbf{Ajuste prático}: D forte $\Rightarrow$ diminuir \texttt{lrD} (ex.: $5\cdot10^{-5}$) e aumentar \texttt{lrG} (ex.: $2\cdot10^{-4}$).
+\end{itemize}
+
+\paragraph{\texttt{--inst-noise} (float, default: 0.0)} Ruído gaussiano nas entradas do D (\emph{instance noise}).
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: regulariza o D nas primeiras épocas.
+  \item \textbf{Ajuste}: 0.005--0.02 no começo; decaia a 0 mais tarde (versão com \emph{schedule} opcional).
+\end{itemize}
+
+\section{Avaliação contínua e parada antecipada}
+
+\paragraph{\texttt{--eval-every} (int, default: 1000)} Frequência das avaliações (TSTR, baseline, KS, correlação, distribuição de classes).
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Impacto}: monitora qualidade e alimenta o \emph{early stop}.
+\end{itemize}
+
+\paragraph{\texttt{--early-patience} (int, default: 3)} Número de avaliações sem melhora suficiente em TSTR antes de contar \emph{plateau}.
+\paragraph{\texttt{--tstr-tol} (float, default: 0.5)} Tolerância mínima em pontos percentuais para considerar que o TSTR melhorou.
+\paragraph{\texttt{--gap-window} (int, default: 500)} Janela da média móvel do gap.
+\paragraph{\texttt{--gap-stable-low}/\texttt{--gap-stable-high} (floats, default: 0.05/0.30)} Faixa de gap considerada ``estável''.
+\paragraph{\texttt{--min-epochs-early} (int, default: 2000)} Número mínimo de épocas antes de permitir o \emph{early stop}.
+
+\section{Relatórios e saída}
+
+\paragraph{\texttt{--save-excel-report} (bool, default: True)} Salva abas de relatório:
+\texttt{REPORT}, \texttt{EVAL\_HISTORY}, \texttt{DATA\_TRAIN}, \texttt{DATA\_HOLDOUT}, \texttt{Pontuação},
+\texttt{DATA\_EXCLUDED\_RARE}, \texttt{FEATURES\_DROPPED\_BY\_PONTUACAO}.
+
+\section{Receitas de \emph{tuning}}
+
+\subsection*{D muito forte (gap alto, KS alto, TSTR baixo)}
+\begin{lstlisting}
+--n-critic 2 --lrD 5e-5 --lrG 2e-4 --gp-lambda 30 --inst-noise 0.01
+\end{lstlisting}
+
+\subsection*{G subcapaz (gap moderado; KS/correlação altos; TSTR baixo)}
+\begin{lstlisting}
+--hidden 384 --z-dim 128 --n-critic 3 --lrG 3e-4 --lrD 3e-5 --gp-lambda 20
+\end{lstlisting}
+
+\subsection*{Dados barulhentos (raras + NaN/∞)}
+\begin{lstlisting}
+--min-samples-per-class 3 --impute median
+\end{lstlisting}
+
+\subsection*{Muitas features inúteis (risco de leak/ruído)}
+\begin{lstlisting}
+--drop-zero-by-pontuacao   # mantenha ligado
+\end{lstlisting}
+
+\section{Como ler rapidamente se ``melhorou''}
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{gap\_ma}: ideal $\approx 0.05$--$0.30$ (faixa ajustável); muito alto $\Rightarrow$ D dominando.
+  \item \textbf{ks\_median}: busque $<0.10$--$0.20$ (marginais próximas).
+  \item \textbf{corr\_gap\_fro}: deve cair de forma consistente (correlações sintéticas $\to$ reais).
+  \item \textbf{tstr\_macro\_f1} e \textbf{tstr\_ratio}: meta $\geq 85$--$95$\% do baseline real$\to$real.
+  \item \textbf{class\_diff\_max}: ideal $<0.10$--$0.15$.
+\end{itemize}
+
+\bigskip
+\noindent\textbf{Dica final}: monitore \emph{em conjunto} (gap, KS, correlação e TSTR). Ajustes isolados podem melhorar uma métrica e piorar outra; busque equilíbrio: D suficientemente informativo sem sufocar o G, e G com capacidade para aprender estrutura de dependências, não apenas marginais.
+
+\end{document}
