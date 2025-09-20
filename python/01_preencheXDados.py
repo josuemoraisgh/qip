@@ -195,6 +195,14 @@ if __name__ == '__main__':
     #           "Saber como desaparecer minha dor e sofrimento existencial"
     #         ]
     # df_replace['Tela 43'] = df_replace['Tela 43'].apply(lambda valor: resposta_para_binario(valor, opcoes))
+    # Tela 48
+    df_replace['Tela 48'] = df_replace['Tela 48'].apply(lambda texto: extrair_partes(texto, ';', [0, 1]))
+    opcoes = [
+              'A Reta A é maior que a Reta B',
+              'A Reta A é menor que a Reta B',
+              'Retas A e B, são do mesmo tamanho',
+            ]
+    df_replace['Tela 48'] = df_replace['Tela 48'].apply(lambda valor: resposta_para_binario(valor, opcoes))
     # Tela 49
     df_replace['Tela 49'] = df_replace['Tela 49'].apply(lambda texto: extrair_partes(texto, ';', [0, 1]))
     opcoes = [
