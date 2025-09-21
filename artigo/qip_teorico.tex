@@ -1,0 +1,251 @@
+
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, shapes.geometric, shapes.misc, positioning, fit}
+\geometry{left=3cm,right=2cm,top=3cm,bottom=2cm}
+\linespread{1.1}
+\title{\textbf{Referencial Teórico e Metodologia (Fluxo Corrigido)}}
+\author{Trabalho de Conclusão de Curso}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+
+\chapter{Referencial Teórico}
+
+\section{Preparação dos dados e seleção de atributos}
+
+Considera-se um conjunto de dados tabulares $X\in\mathbb{R}^{n\times d}$ e um alvo categórico $y\in\{1,\dots,K\}^n$. Em aplicações clínicas baseadas em questionários, como no contexto de saúde mental, itens psicométricos validados --- por exemplo, o \emph{Major Depression Inventory} (MDI) --- funcionam como \emph{sinais} (``sensores'' \emph{proxy}) do estado latente do respondente, devendo ser priorizados em detrimento de variáveis demográficas quando o objetivo é reduzir vieses e aumentar interpretabilidade \cite{Bech2001MDI,Olsen2003MDI}.
+
+\paragraph{Limpeza e padronização.}
+Amostras com rótulos desconhecidos ou inconsistentes devem ser removidas antes da modelagem, por prevenirem viés no condicionamento de geradores e em classificadores supervisionados \cite{He2009Imbalance}. Valores ausentes em $X$ podem ser imputados por estratégias robustas (mediana) e variáveis numéricas devem ser normalizadas quando exigido por algoritmos subsequentes.
+
+\paragraph{Seleção informada de atributos.}
+Seja $\mathcal{S}\subseteq\{1,\dots,d\}$ o subconjunto de atributos de interesse, definido por critérios substantivos (itens clínicos \emph{interpretáveis}) ou por uma máscara de relevância prévia. A matriz de trabalho é $X_{\mathcal{S}}=X[:,\mathcal{S}]$. A priori externa (derivada de literatura/escala) pode ser registrada como matriz $W_0\in\mathbb{R}^{(|\mathcal{S}|+1)\times K}$ para apoiar regularizações posteriores (Seção de Metodologia).
+
+\paragraph{Tratamento de classes raras.}
+Dadas contagens $n_k=|\{i: y_i=k\}|$, estabelece-se um limiar $n_k\geq n_{\min}$ (p.ex., $n_{\min}=2$) para manter estabilidade numérica em vizinhanças (\emph{e.g.}, SMOTE) e confiabilidade em métricas por classe \cite{He2009Imbalance}.
+
+\section{Divisão estratificada 50/50: \emph{análise} vs. \emph{validação}}
+
+Amostras são bipartidas de forma estratificada em dois subconjuntos disjuntos: $\mathcal{A}$ (``metade A'', para \emph{análise}) e $\mathcal{B}$ (``metade B'', para \emph{validação externa}). A independência entre $\mathcal{A}$ e $\mathcal{B}$ evita vazamento de informação e permite estimativa imparcial de generalização \cite{Prechelt1998EarlyStopping}.
+
+\section{Balanceamento prévio (SMOTE/ROS) na metade A}
+\label{sec:smote}
+
+Desbalanceamento entre classes pode deteriorar tanto geradores condicionais quanto classificadores \cite{He2009Imbalance}. Um método amplamente aceito é o \emph{Synthetic Minority Over-sampling Technique} (SMOTE) \cite{Chawla2002SMOTE}: para uma amostra minoritária $\mathbf{x}_i$ e um vizinho $\mathbf{x}_{\text{nn}}$, gera-se
+\begin{equation}
+\mathbf{x}_{\text{new}}=\mathbf{x}_i + \lambda\left(\mathbf{x}_{\text{nn}}-\mathbf{x}_i\right),\qquad \lambda\sim \mathcal{U}(0,1).
+\end{equation}
+Caso não haja vizinhança suficiente, utiliza-se \emph{oversampling} aleatório com reposição (ROS) como mecanismo de robustez \cite{He2009Imbalance}.
+
+\section{Síntese condicional com cWGAN-GP}
+\label{sec:cwgan}
+
+Considere um gerador $G(\mathbf{z},\mathbf{c})$ e um crítico $D(\mathbf{x},\mathbf{c})$ condicionados pelo rótulo $\mathbf{c}\in\{0,1\}^K$ (\emph{one-hot}). O \emph{Wasserstein GAN} \cite{Arjovsky2017WGAN} com penalidade de gradiente \cite{Gulrajani2017ImprovedWGAN} otimiza
+\begin{align}
+\mathcal{L}_D
+&= -\mathbb{E}_{(\mathbf{x},\mathbf{c})\sim p_{\text{real}}} \big[ D(\mathbf{x},\mathbf{c}) \big]
+    + \mathbb{E}_{\mathbf{z}\sim\mathcal{N}(0,I),\,\mathbf{c}} \big[ D(G(\mathbf{z},\mathbf{c}),\mathbf{c}) \big] \nonumber\\
+&\quad + \lambda \,\mathbb{E}_{\hat{\mathbf{x}}} \Big(\big\|\nabla_{\hat{\mathbf{x}}} D(\hat{\mathbf{x}},\mathbf{c})\big\|_2 - 1\Big)^2, \label{eq:ld}\\[3pt]
+\mathcal{L}_G
+&= -\mathbb{E}_{\mathbf{z}\sim\mathcal{N}(0,I),\,\mathbf{c}} \big[ D(G(\mathbf{z},\mathbf{c}),\mathbf{c}) \big], \label{eq:lg}
+\end{align}
+com amostras interpoladas para a penalidade
+\begin{equation}
+\hat{\mathbf{x}}=\alpha\,\mathbf{x}_{\text{real}}+(1-\alpha)\,\mathbf{x}_{\text{fake}},\qquad \alpha\sim\mathcal{U}(0,1).
+\end{equation}
+A condição de Lipschitz é imposta pela penalidade quadrática no desvio da norma do gradiente para $1$ \cite{Gulrajani2017ImprovedWGAN}. Em variáveis tabulares, é prática comum aplicar normalização por atributo no intervalo $[0,1]$ durante o treinamento e reverter ao domínio original na geração, assegurando \emph{post-processing} para variáveis discretas (binárias e inteiras).
+
+\paragraph{Utilidade do sintético.}
+Para avaliar se amostras sintéticas são \emph{úteis} e não apenas \emph{verossímeis}, emprega-se a métrica \textsc{TSTR} (\emph{Train on Synthetic, Test on Real}), popularizada em dados médicos temporais \cite{Yoon2019TimeGAN,Esteban2017RGAN}.
+
+\section{Treinamento final de uma heurística \emph{softmax} com dados sintéticos}
+\label{sec:heuristica}
+
+Seja $X_b\in\mathbb{R}^{n\times(d+1)}$ a matriz de atributos com viés (coluna de 1s) e $W\in\mathbb{R}^{(d+1)\times K}$ a matriz de parâmetros. O modelo \emph{softmax} produz, para a amostra $i$,
+\begin{equation}
+p_{ik} = \frac{\exp\big((X_b W)_{ik}\big)}{\sum_{\ell=1}^K \exp\big((X_b W)_{i\ell}\big)},\qquad
+P=\mathrm{softmax}(X_b W).
+\end{equation}
+Admitindo rótulos \emph{one-hot} $\mathbf{y}_i$ (ou distribuições alvo $Y\in[0,1]^{n\times K}$), a função de perda média é a entropia cruzada
+\begin{equation}
+\mathcal{L}_{\mathrm{CE}}(W) = -\frac{1}{n}\sum_{i=1}^n \sum_{k=1}^K Y_{ik}\,\log p_{ik},
+\end{equation}
+cujo gradiente é o clássico \cite{Bishop2006PRML}:
+\begin{equation}
+\nabla_W \mathcal{L}_{\mathrm{CE}}(W) = X_b^\top\,\frac{(P-Y)}{n}. \label{eq:grad-ce}
+\end{equation}
+Para incorporar uma a priori $W_0$ e induzir parcimônia/estabilidade, emprega-se regularização elástica \emph{ao redor} de $W_0$,
+\begin{equation}
+\mathcal{R}(W;W_0)=\lambda_1\|W-W_0\|_1 + \lambda_2\|W-W_0\|_F^2,
+\end{equation}
+levando ao problema
+\begin{equation}
+\min_{W}\ \mathcal{L}_{\mathrm{CE}}(W)+\mathcal{R}(W;W_0)
+\quad\text{sujeito a}\quad W_{\text{feat}}\in[-1,1],
+\end{equation}
+em que apenas pesos associados a atributos selecionados podem variar, enquanto limites em $[-1,1]$ promovem interpretabilidade. A atualização de $W$ pode ser feita por \emph{gradiente proximal} \cite{Parikh2014Proximal}:
+\begin{align}
+\widetilde{W} &\leftarrow W - \eta\Big(\nabla_W \mathcal{L}_{\mathrm{CE}}(W) + 2\lambda_2(W-W_0)\Big),\\
+W &\leftarrow \operatorname{proj}_{[-1,1]}\!\left(W_0 + \operatorname{soft}\big(\widetilde{W}-W_0,\ \eta\lambda_1\big)\right),
+\end{align}
+onde $\operatorname{soft}(u,\tau)=\mathrm{sign}(u)\max\{|u|-\tau,0\}$ é o \emph{soft-thresholding} e $\operatorname{proj}_{[-1,1]}$ projeta componentes dos atributos para o intervalo permitido. Critérios de \emph{early stopping} \cite{Prechelt1998EarlyStopping} controlam o platô em validação.
+
+\section{Validação externa e métricas estatísticas}
+A validação externa utiliza unicamente as amostras em $\mathcal{B}$. Para além de acurácia e \emph{macro top-$k$} (média entre classes da fração de ocorrências em que o rótulo verdadeiro está entre as $k$ maiores probabilidades), são empregadas métricas de proximidade distribuição-síntese:
+\begin{itemize}
+    \item \textbf{KS univariado} por atributo: a estatística de Kolmogorov--Smirnov compara $F_{\text{real}}(x)$ e $F_{\text{sint}}(x)$ \cite{Massey1951KS};
+    \item \textbf{Hiato de correlação}: mede-se $\left\|\mathrm{Corr}(X_{\text{real}})-\mathrm{Corr}(X_{\text{sint}})\right\|_F$; a norma de Frobenius é um operador natural para distâncias matriciais \cite{Golub2013Matrix};
+    \item \textbf{Desvio de proporções de classe}: diferenças absoluta média e máxima entre proporções de rótulos reais e sintéticos.
+\end{itemize}
+Para utilidade do sintético em classificação, a métrica \textsc{TSTR} é particularmente informativa \cite{Yoon2019TimeGAN,Esteban2017RGAN,Xu2019CTGAN}: treina-se um classificador simples em dados sintéticos e mede-se seu desempenho em dados reais.
+
+\section*{Conclusão}
+O encadeamento proposto --- limpeza e seleção interpretável de atributos, divisão estratificada com independência de validação, balanceamento robusto, síntese condicional com WGAN-GP, treinamento \emph{softmax} regularizado ao redor de uma a priori e validação externa com métricas de verossimilhança e utilidade --- constitui uma base teórica sólida para análise em cenários de amostras escassas e classes desbalanceadas.
+
+\begin{thebibliography}{99}
+
+\bibitem{Bech2001MDI}
+P.~Bech, A.~Rafaelsen, et~al. \newblock The {M}ajor {D}epression {I}nventory ({MDI}): validity and reliability. \newblock \emph{Journal of Affective Disorders}, 66(2–3):159--164, 2001.
+
+\bibitem{Olsen2003MDI}
+L.~R. Olsen, P.~Jensen, P.~Bech. \newblock The sensitivity and specificity of the {M}ajor {D}epression {I}nventory, using the present state examination as the index of diagnostic validity. \newblock \emph{Journal of Affective Disorders}, 73(1–2): 133--138, 2003.
+
+\bibitem{He2009Imbalance}
+H.~He and E.~A. Garcia. \newblock Learning from imbalanced data. \newblock \emph{IEEE Transactions on Knowledge and Data Engineering}, 21(9):1263--1284, 2009.
+
+\bibitem{Chawla2002SMOTE}
+N.~V. Chawla, K.~W. Bowyer, L.~O. Hall, W.~P. Kegelmeyer. \newblock SMOTE: Synthetic Minority Over-sampling Technique. \newblock \emph{Journal of Artificial Intelligence Research}, 16:321--357, 2002.
+
+\bibitem{Arjovsky2017WGAN}
+M.~Arjovsky, S.~Chintala, L.~Bottou. \newblock Wasserstein Generative Adversarial Networks. \newblock In \emph{Proc. ICML}, 2017.
+
+\bibitem{Gulrajani2017ImprovedWGAN}
+I.~Gulrajani, F.~Ahmed, M.~Arjovsky, V.~Dumoulin, A.~Courville. \newblock Improved Training of Wasserstein GANs. \newblock In \emph{Proc. NeurIPS}, 2017.
+
+\bibitem{Yoon2019TimeGAN}
+J.~Yoon, D.~Jarrett, M.~van~der Schaar. \newblock Time-series Generative Adversarial Networks. \newblock \emph{NeurIPS}, 2019. (Usa \textsc{TSTR} como métrica de utilidade).
+
+\bibitem{Esteban2017RGAN}
+C.~Esteban, S.~Hyland, G.~R\"atsch. \newblock Real-valued (Medical) Time Series Generation with Recurrent GANs. \newblock \emph{arXiv:1706.02633}, 2017. (Populariza \textsc{TSTR}).
+
+\bibitem{Xu2019CTGAN}
+L.~Xu, M.~Skou~laris, A.~Veeramachaneni. \newblock Modeling Tabular Data using Conditional GAN. \newblock \emph{NeurIPS Workshop on Causal Learning}, 2019.
+
+\bibitem{Bishop2006PRML}
+C.~M. Bishop. \newblock \emph{Pattern Recognition and Machine Learning}. \newblock Springer, 2006.
+
+\bibitem{Parikh2014Proximal}
+N.~Parikh and S.~Boyd. \newblock Proximal Algorithms. \newblock \emph{Foundations and Trends in Optimization}, 1(3):127--239, 2014.
+
+\bibitem{Prechelt1998EarlyStopping}
+L.~Prechelt. \newblock Early Stopping --- But When? \newblock In \emph{Neural Networks: Tricks of the Trade}, Springer, 1998.
+
+\bibitem{Massey1951KS}
+F.~J. Massey. \newblock The Kolmogorov–Smirnov test for goodness of fit. \newblock \emph{Journal of the American Statistical Association}, 46(253):68--78, 1951.
+
+\bibitem{Golub2013Matrix}
+G.~H. Golub, C.~F. Van~Loan. \newblock \emph{Matrix Computations} (4th ed.). \newblock Johns Hopkins University Press, 2013.
+
+\bibitem{Shokri2017Membership}
+R.~Shokri, M.~Stronati, C.~Song, V.~Shmatikov. \newblock Membership Inference Attacks Against Machine Learning Models. \newblock In \emph{Proc. IEEE S\&P}, 2017.
+
+\end{thebibliography}
+
+\chapter{Metodologia (Fluxo Corrigido)}
+\label{chap:metodologia}
+
+Este capítulo descreve, em ordem estrita, o fluxo metodológico adotado. O encadeamento parte da preparação dos dados reais, prossegue pela divisão estratificada em conjuntos de análise e validação, realiza o balanceamento e a síntese condicional com \emph{cWGAN\textendash GP}, avalia a qualidade estatística das amostras sintéticas, e somente então treina a heurística \emph{softmax} com tais amostras. Ao final, procede-se à validação externa exclusiva no conjunto de validação.
+
+\section{Preparação e seleção de atributos}
+Parte-se de dados tabulares oriundos de um questionário clínico. São removidas observações cujo rótulo de classe seja desconhecido ou inconsistente. A seleção de atributos privilegia itens clínicos interpretáveis e exclui variáveis demográficas e questões cujo efeito seja de difícil justificativa heurística. Valores ausentes são tratados por imputação robusta e as variáveis são padronizadas quando requerido pelos métodos subsequentes.
+
+\section{Divisão estratificada 50/50}
+O conjunto é bipartido em duas metades aproximadamente estratificadas: \textbf{Metade A} (análise) e \textbf{Metade B} (validação externa). A Metade B permanece totalmente intocada até a etapa de validação final, preservando a independência estatística entre ajuste e avaliação \cite{Prechelt1998EarlyStopping}.
+
+\section{Balanceamento prévio na Metade A}
+Devido ao desbalanceamento entre classes, aplica-se \emph{oversampling} na Metade A para estabilizar o treinamento dos modelos condicionais. Prioriza-se o \emph{SMOTE} \cite{Chawla2002SMOTE}; quando não houver vizinhanças suficientes, recorre-se ao \emph{oversampling} aleatório com reposição (ROS) \cite{He2009Imbalance}.
+
+\section{Síntese condicional com cWGAN\textendash GP}
+Na Metade A, treina-se um gerador adversarial condicional (\emph{cWGAN\textendash GP}) \cite{Arjovsky2017WGAN,Gulrajani2017ImprovedWGAN} para modelar a distribuição de atributos condicionada à classe. O treinamento observa normalização por atributo durante o ajuste e reversão ao domínio original na geração, incluindo pós-processamento para atributos discretos. Como medida de utilidade das amostras geradas, considera-se a métrica \textsc{TSTR} (\emph{Train on Synthetic, Test on Real}) \cite{Yoon2019TimeGAN,Esteban2017RGAN}.
+
+\section{Avaliação estatística da síntese}
+Concluído o treinamento do cWGAN\textendash GP, procede-se à avaliação estatística das amostras sintéticas, contemplando: (i) estatística de Kolmogorov--Smirnov (KS) por atributo \cite{Massey1951KS}; (ii) hiato de correlação via norma de Frobenius entre correlações real e sintética \cite{Golub2013Matrix}; (iii) diferenças de proporções por classe; e (iv) utilidade medida por \textsc{TSTR}. Essa etapa antecede qualquer treinamento de heurística, garantindo que apenas amostras sintéticas com qualidade adequada sirvam de insumo.
+
+\section{Treinamento final da heurística \emph{softmax} com dados sintéticos}
+Somente após a avaliação estatística, treina-se o classificador \emph{softmax} com viés. Seja $X_b$ a matriz de atributos com coluna de 1s e $W$ a matriz de parâmetros; as probabilidades preditas são $P=\mathrm{softmax}(X_bW)$. A estimação minimiza a entropia cruzada média com regularização elástica ao redor de uma a priori $W_0$, empregando gradiente proximal com projeção dos pesos de atributos a um intervalo limitado para promover interpretabilidade \cite{Bishop2006PRML,Parikh2014Proximal}.
+
+\section{Uso estrito da Metade B (50 observações) para validação externa}
+\textbf{Os 50 registros da Metade B} são utilizados \emph{exclusivamente} para validação final do modelo treinado com dados sintéticos. Nenhum procedimento de ajuste --- seja do cWGAN\textendash GP, seja da heurística --- emprega exemplos da Metade B. Após a inferência no conjunto de validação, reportam-se as métricas de desempenho (macro top-$k$ e por classe) e repete-se, quando pertinente, a bateria de comparações distribuição-síntese para auditoria final. Esse arranjo assegura estimativas imparciais de generalização.
+
+\section*{Fluxograma do processo (atualizado)}
+\begin{figure}[h!]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+    node distance=7mm and 14mm,
+    every node/.style={font=\small},
+    >={Latex},
+    box/.style={draw, rounded corners=2pt, align=center, minimum width=44mm, minimum height=8mm, fill=gray!5},
+    io/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110, align=center, minimum width=44mm, minimum height=8mm, fill=blue!5},
+    decision/.style={draw, diamond, aspect=2, align=center, inner sep=1pt, fill=orange!10}
+]
+
+% Entrada
+\node[io] (start) {TDados (real)};
+\node[box, below=of start] (clean) {Remoção de rótulos desconhecidos\\ (\texttt{não/nao})};
+\node[box, below=of clean] (sel) {Seleção de atributos\\ (excluir demográficos e itens difíceis)};
+\node[box, below=of sel] (rare) {Remoção de classes raras\\ (suporte $\leq$ limiar)};
+
+% Split
+\node[decision, below=of rare] (split) {Divisão estratificada 50/50};
+
+% Metade A (Análise)
+\node[box, below left=14mm and 18mm of split] (A) {Metade A (análise)};
+\node[box, below=of A] (bal) {Balanceamento (SMOTE/ROS)};
+\node[box, below=of bal] (gan) {Treino cWGAN-GP\\ (condicionado por classe)};
+\node[box, below=of gan] (aug) {Geração de sintéticos\\ (apenas A)};
+\node[box, below=of aug] (evals) {Avaliação estatística\\ (KS, corr., proporções, TSTR)};
+\node[box, below=of evals] (heur) {Treinamento final\\ (softmax/heurística $W\in[-1,1]$)\\ \textbf{usando sintéticos (A)}};
+
+% Metade B (Validação)
+\node[box, below right=14mm and 18mm of split] (B) {Metade B (validação externa)};
+\node[box, below=of B] (hold) {Mantida intocada};
+\node[box, below=of hold] (test) {Aplicar heurística final\\ e medir desempenho (B)};
+
+% Ligações principais
+\draw[->] (start) -- (clean);
+\draw[->] (clean) -- (sel);
+\draw[->] (sel) -- (rare);
+\draw[->] (rare) -- (split);
+\draw[->] (split) -- node[above, sloped]{A} (A);
+\draw[->] (split) -- node[above, sloped]{B} (B);
+\draw[->] (A) -- (bal);
+\draw[->] (bal) -- (gan);
+\draw[->] (gan) -- (aug);
+\draw[->] (aug) -- (evals);
+\draw[->] (evals) -- (heur);
+\draw[->] (B) -- (hold);
+\draw[->] (hold) -- (test);
+
+% Conexão do modelo treinado até a validação (entra pela ESQUERDA de test)
+\draw[dashed,->] (heur.east) to[out=0, in=180] node[midway, above]{\footnotesize modelo final} (test.west);
+
+\end{tikzpicture}}
+\caption{Fluxo atualizado: avaliação estatística ANTES do treinamento final da heurística; validação exclusiva na Metade B.}
+\end{figure}
+
+
+\end{document}

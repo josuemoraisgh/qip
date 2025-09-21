@@ -1,0 +1,135 @@
+
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{caption}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, shapes.geometric, shapes.misc, positioning, fit}
+
+\geometry{left=3cm,right=2cm,top=3cm,bottom=2cm}
+
+\title{\textbf{Metodologia de Preparação, Síntese e Validação de Dados (QIP) -- Versão Revisada}}
+\author{Resia Silva de Morais}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Visão geral}
+A metodologia adotada baseia-se em: (i) preparar a base real; (ii) calibrar uma heurística de decisão multi-classe; (iii) sintetizar dados condicionais por classe com um cWGAN\textendash GP; (iv) treinar, \textbf{exclusivamente com os dados sintéticos gerados na etapa anterior}, um modelo heurístico baseado em \emph{softmax}; e (v) validar o desempenho em um conjunto externo não utilizado em nenhuma etapa anterior. A abordagem foi concebida para cenários de amostras escassas e classes desbalanceadas, garantindo rastreabilidade e separação rigorosa entre \emph{dados para análise} e \emph{dados para validação}.
+
+\section{Preparação dos dados e ``Seleção de Dados''}
+\subsection{Base original e limpeza}
+A base original, extraída do questionário QIP, contém variáveis numéricas e um alvo categórico. Amostras com rótulo \emph{desconhecido} (e.g., \texttt{não/nao}) são removidas antes de qualquer etapa posterior. Esse procedimento evita viés no condicionamento do gerador e impede contaminação do conjunto de validação.\footnote{Implementação de remoção e normalização do alvo nos scripts de pré-processamento.}
+
+\subsection{Seleção de atributos orientada}
+Adota-se o critério de \textbf{não utilizar variáveis demográficas} e/ou outras perguntas cuja influência seja difícil de analisar por conhecimentos heurísticos. Essa filtragem reduz dimensionalidade e preserva apenas atributos com contribuição informativa prévia. Regras adicionais de exclusão podem ser incorporadas (por exemplo, uma \emph{regra de ouro} baseada em pontuações).
+
+\subsection{Tratamento de classes raras}
+Classes com menos de um limiar mínimo de amostras são removidas (p.ex., $\leq 2$ respostas). Essa decisão evita falhas em procedimentos que requerem pelo menos duas amostras por classe (e.g., vizinhanças do SMOTE) e estabiliza a estimação de parâmetros condicionais.\footnote{Contagens por classe, limiar adotado e remoções são registradas em log e planilhas de saída.}
+
+\section{Heurística de decisão (calibração de $W$)}
+\subsection{Mudança de faixa e motivação}
+Inicialmente, a heurística considerou pesos $W\in[0,1]$. Após testes, adotou-se $W\in[-1,1]$, o que promoveu melhor discriminação: ao reforçar a classe correta, penaliza-se as demais. Observou-se incremento de desempenho em validações internas (e.g., $\approx36\%\rightarrow45\%$).
+
+\subsection{Formulação}
+Seja $X\in\mathbb{R}^{n\times d}$ o conjunto de atributos e $W\in\mathbb{R}^{(d+1)\times K}$ os pesos (incluindo viés). As probabilidades são $P=\mathrm{softmax}(X_b W)$, com $X_b$ denotando $X$ acrescido de 1s (viés). A calibração maximiza uma métrica alvo (macro top-$k$) sob restrições: máscara de atributos permitidos (consistente com a seleção anterior), projeção em $[-1,1]$ nos pesos dos atributos e \emph{early stopping} por platô.
+
+\section{Síntese condicional com cWGAN-GP}
+\subsection{Separação analítica vs. validação externa}
+A base é dividida em duas metades aproximadamente estratificadas: \textbf{(A)} metade para \emph{análise} (treino/ajuste) e \textbf{(B)} metade para \emph{validação externa}, que não participa de nenhuma etapa de ajuste (nem cWGAN, nem heurística).
+
+\subsection{Balanceamento e condicionamento}
+Na metade A, a distribuição por classe é balanceada com \emph{oversampling} (SMOTE com \emph{fallback} para amostragem aleatória com reposição, quando necessário). Em seguida, treina-se um cWGAN-GP condicional por classe, operando em espaço escalado $[0,1]$ e revertendo ao espaço original para análise. Variáveis binárias e inteiras (0..10) são arredondadas na exportação dos dados sintéticos.
+
+\subsection{Geração de dados sintéticos}
+O cWGAN é aplicado exclusivamente na metade A para gerar amostras virtuais, ampliando a cobertura de padrões sob as distribuições condicionais de classe. A metade B permanece preservada para validação externa.
+
+\section{Treinamento final (softmax/heurística) com \textbf{dados sintéticos} de A}
+O modelo heurístico final é treinado \textbf{somente sobre os dados sintéticos} produzidos a partir da metade A, mantendo as mesmas restrições de projeto (máscara de atributos, projeção $[-1,1]$, \emph{early stopping}). Essa etapa consolida um classificador \emph{softmax} que generaliza a partir de exemplos gerados.
+
+\section{Validação externa e análises estatísticas}
+A heurística final é aplicada \textbf{exclusivamente} na metade B (jamais vista). Em seguida, são conduzidas as análises estatísticas e de qualidade: macro top-$k$ (para $k=1,2,3$), métricas por classe (acerto/suporte), bem como \emph{KS}, diferença de proporções de classe e \emph{gap} de correlação quando pertinente.
+
+\section{Fluxograma do processo (versão revisada)}
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=7mm and 14mm,
+    every node/.style={font=\small},
+    >={Latex},
+    box/.style={draw, rounded corners=2pt, align=center, minimum width=44mm, minimum height=8mm, fill=gray!5},
+    io/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110, align=center, minimum width=44mm, minimum height=8mm, fill=blue!5},
+    decision/.style={draw, diamond, aspect=2, align=center, inner sep=1pt, fill=orange!10},
+    dashedbox/.style={draw, dashed, rounded corners=2pt, align=center, minimum width=44mm, minimum height=8mm, fill=gray!3}
+]
+
+% Entrada
+\node[io] (start) {Respostas do \\Questionário Interativo Psicopatológico - QIP};
+\node[box, below=of start] (clean) {Remoção de rótulos desconhecidos\\ (\texttt{não/nao})};
+\node[box, below=of clean] (sel) {Seleção de atributos\\ (excluir demográficos e itens difíceis)};
+\node[box, below=of sel] (rare) {Remoção de classes raras\\ (suporte $\leq$ limiar)};
+
+% Split
+\node[decision, below=of rare] (split) {Divisão estratificada 50/50};
+
+% Metade A (Análise)
+\node[box, below left=14mm and 18mm of split] (A) {Metade A (análise)};
+\node[box, below=of A] (bal) {Balanceamento (SMOTE/ROS)};
+\node[box, below=of bal] (gan) {Treino cWGAN-GP\\ (condicionado por classe)};
+\node[box, below=of gan] (aug) {Geração de sintéticos\\ (apenas A)};
+\node[box, below=of aug] (heur) {Treinamento final\\ (softmax/heurística $W\in[-1,1]$)\\ \textbf{usando sintéticos (A)}};
+
+% Metade B (Validação)
+\node[box, below right=14mm and 18mm of split] (B) {Metade B (validação externa)};
+\node[box, below=of B] (hold) {Mantida intocada};
+\node[box, below=of hold] (test) {Aplicar heurística final\\ e medir desempenho (B)};
+
+% Ligações principais
+\draw[->] (start) -- (clean);
+\draw[->] (clean) -- (sel);
+\draw[->] (sel) -- (rare);
+\draw[->] (rare) -- (split);
+\draw[->] (split) -- node[above, sloped]{A} (A);
+\draw[->] (split) -- node[above, sloped]{B} (B);
+\draw[->] (A) -- (bal);
+\draw[->] (bal) -- (gan);
+\draw[->] (gan) -- (aug);
+\draw[->] (aug) -- (heur);
+\draw[->] (B) -- (hold);
+\draw[->] (hold) -- (test);
+
+% Conexão do modelo treinado até a validação (indicativa)
+\draw[dashed,->] (heur.east) -- ++(10mm,0) |- node[pos=0.25, right]{\footnotesize modelo final} (test.west);
+
+% Caixa de análises estatísticas (após validação)
+\node[box, below=16mm of test] (metrics) {Análises estatísticas\\ (KS, correlação, proporções)};
+
+% Setas para métricas (apenas após validação)
+\draw[->] (test) -- (metrics);
+
+% Grupos visuais
+\node[draw, rounded corners=3pt, fit=(A)(bal)(gan)(aug)(heur), inner sep=4pt, label=above:{\footnotesize Pipeline da Metade A}] {};
+\node[draw, rounded corners=3pt, fit=(B)(hold)(test), inner sep=4pt, label=above:{\footnotesize Pipeline da Metade B}] {};
+
+\end{tikzpicture}
+\caption{Fluxograma revisado: o treinamento final usa \textbf{apenas sintéticos (A)} e a validação ocorre na \textbf{Metade B}; as análises estatísticas são realizadas \textbf{após} a validação.}
+\end{figure}
+
+\section{Parâmetros e escolhas de projeto}
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Seleção de dados}: exclusão explícita de variáveis demográficas/itens de difícil interpretação; limiar mínimo de suporte por classe;
+    \item \textbf{Heurística}: pesos de atributos projetados em $[-1,1]$; viés livre; \emph{early stopping};
+    \item \textbf{cWGAN-GP}: dimensão de ruído $z$, largura/profundidade das camadas, $n_{\text{critic}}$, penalidade de gradiente, ruído de instância opcional;
+    \item \textbf{Balanceamento}: alvo total de amostras e estratégia (SMOTE com \emph{fallback} ROS/duas passadas);
+    \item \textbf{Avaliação}: frequência de avaliação e relatórios automáticos.
+\end{itemize}
+
+\end{document}
