@@ -1,0 +1,55 @@
+{
+  "topk": [
+    {
+      "epoch": 33750,
+      "tstr": 0.5424242424242424,
+      "path": "C:\\SourceCode\\qip\\checkpoints\\ckpt_tstr_ep33750_tstr54.24.pt",
+      "metrics": {
+        "epoch": 33750,
+        "gap_ma": 0.34305140089988706,
+        "gap_last": 0.30144912004470825,
+        "tstr_macro_f1": 0.5424242424242424,
+        "baseline_macro_f1": 1.0,
+        "tstr_ratio": 0.5424242424242424,
+        "ks_median": 0.09090909090909091,
+        "corr_gap_fro": 103.32535202001972,
+        "class_diff_mean": 0.03636363636363637,
+        "class_diff_max": 0.09090909090909094
+      }
+    },
+    {
+      "epoch": 46500,
+      "tstr": 0.5333333333333333,
+      "path": "C:\\SourceCode\\qip\\checkpoints\\ckpt_tstr_ep46500_tstr53.33.pt",
+      "metrics": {
+        "epoch": 46500,
+        "gap_ma": 0.33366707611083984,
+        "gap_last": 0.34427177906036377,
+        "tstr_macro_f1": 0.5333333333333333,
+        "baseline_macro_f1": 1.0,
+        "tstr_ratio": 0.5333333333333333,
+        "ks_median": 0.09090909090909091,
+        "corr_gap_fro": 98.97619232895468,
+        "class_diff_mean": 0.036363636363636355,
+        "class_diff_max": 0.09090909090909088
+      }
+    },
+    {
+      "epoch": 13250,
+      "tstr": 0.519047619047619,
+      "path": "C:\\SourceCode\\qip\\checkpoints\\ckpt_tstr_ep13250_tstr51.90.pt",
+      "metrics": {
+        "epoch": 13250,
+        "gap_ma": 0.37160496091842654,
+        "gap_last": 0.3952428102493286,
+        "tstr_macro_f1": 0.519047619047619,
+        "baseline_macro_f1": 1.0,
+        "tstr_ratio": 0.519047619047619,
+        "ks_median": 0.09090909090909091,
+        "corr_gap_fro": 92.56153117820946,
+        "class_diff_mean": 0.1090909090909091,
+        "class_diff_max": 0.18181818181818182
+      }
+    }
+  ]
+}
